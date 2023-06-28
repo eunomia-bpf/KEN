@@ -1,7 +1,7 @@
 ## ChatGPT Desktop Companion
 
 The [ChatGPT desktop companion app](https://github.com/thinkdj/ChatGPT-Desktop-Companion) is a convenient and easy-to-use tool that allows users to access ChatGPT parallelly while they work on their computer. With this app, ChatGPT will always be available at the user's fingertips, eliminating the need to switch between tabs or applications. The sidebar can be docked on the side of the desktop screen and can be resized to the user's preference.
-
+// TODO https://github.com/keybraker/python-gui-electron/blob/master/electron/guiExample.js
 
 ```cmd
  npm i -g electron
