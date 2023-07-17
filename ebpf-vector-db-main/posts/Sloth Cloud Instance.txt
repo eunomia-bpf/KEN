@@ -1,0 +1,183 @@
+These are rough notes. No editing, spell checking, or comments. Mostly screenshots. On an instance the CPUs are running WAYYYYY slow. "man ls" took over 3 seconds of CPU time. Using my showboost tool (it uses MSRs): $ sudo ./showboost 1 Base CPU MHz : 2500
+Set CPU MHz  : 2500
+Turbo MHz(s) : 3100 3200 3300 3500
+Turbo Ratios : 124% 128% 132% 140%
+CPU 0 summary every 1 seconds...
+
+TIME       C0_MCYC      C0_ACYC        UTIL  RATIO    MHz
+20:06:07   773606000    49841835        30%     6%    161
+20:06:08   1761449784   92605278        70%     5%    131
+20:06:10   1285622620   71142915        51%     5%    138
+20:06:11   739044666    33746410        29%     4%    114
+20:06:12   570170430    32956112        22%     5%    144
+20:06:13   1313317036   73682898        52%     5%    140
+^C This instance is running at Pentium Pro speeds! $ sudo dmesg [    0.000000] Initializing cgroup subsys cpuset
+[    0.000000] Initializing cgroup subsys cpu
+[    0.000000] Initializing cgroup subsys cpuacct
+[    0.000000] Linux version 4.4.0-116-generic (buildd@lgw01-amd64-021) (gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.9) ) #140-Ubuntu SMP Mon Feb 12 21:23:04 UTC 2018 (Ubuntu 4.4.0-116.140-generic 4.4.98)
+[    0.000000] Command line: BOOT_IMAGE=/boot/vmlinuz-4.4.0-116-generic root=UUID=c04c287c-ab03-4b4b-adf5-f6845c01b8bc ro console=tty1 console=ttyS0 ip=dhcp tsc=reliable kaslr net.ifnames=0
+[    0.000000] KERNEL supported cpus:
+[    0.000000]   Intel GenuineIntel
+[    0.000000]   AMD AuthenticAMD
+[    0.000000]   Centaur CentaurHauls
+[    0.000000] x86/fpu: xstate_offset[2]:  576, xstate_sizes[2]:  256
+[...]
+[   51.989968] ..TIMER: vector=0x30 apic1=0 pin1=0 apic2=-1 pin2=-1
+[   52.111146] TSC deadline timer enabled
+[   52.111462] smpboot: CPU0: Intel(R) Xeon(R) Platinum 8175M CPU @ 2.50GHz (family: 0x6, model: 0x55, stepping: 0x4)
+[   52.339015] Performance Events: unsupported p6 CPU model 85 no PMU driver, software events only.
+[   52.665907] x86: Booting SMP configuration:
+[   52.760844] .... node  #0, CPUs:      #1
+[...] Nothing unusual in dmesg. $ cat /sys/devices/system/clocksource/clocksource0/current_clocksource kvm-clock
+
+# echo tsc > /sys/devices/system/clocksource/clocksource0/current_clocksource Did not fix it. The MHz was so low I started wondering if there was a bug in my showboost tool. Let's try turbostat (which wasn't available for our hosts when I developed showboost): # turbostat CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz
+       -      45   33.26     134    2501
+       0      58   42.81     136    2501
+       4      94   73.08     128    2501
+       1      32   23.72     137    2501
+       5      10    7.24     132    2501
+       2      22   16.17     139    2500
+       6      13    9.46     133    2500
+       3     119   87.38     136    2500
+       7       8    6.23     135    2500
+
+     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz
+       -      59   44.20     133    2500
+       0      36   26.18     137    2500
+       4     128  100.00     128    2500
+       1      39   28.28     138    2500
+       5      19   14.60     132    2500
+       2     133   97.24     137    2500
+       6      24   18.27     133    2500
+       3      34   24.75     139    2500
+       7      58   44.32     131    2500
+     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz
+       -      68   50.53     135    2498
+       0     122   90.44     135    2497
+       4      16   12.30     131    2497
+       1      86   63.88     135    2497
+       5      51   38.97     130    2498
+       2     106   78.01     136    2498
+       6      20   15.14     133    2500
+       3     136  100.00     136    2500
+       7       7    5.53     134    2500
+^C
+
+# turbostat -v turbostat version 4.12 5 Apr 2016 - Len Brown # turbostat -h Usage: turbostat [OPTIONS][(--interval seconds) | COMMAND ...]
+
+Turbostat forks the specified COMMAND and prints statistics
+when COMMAND completes.
+If no COMMAND is specified, turbostat wakes every 5-seconds
+to print statistics, until interrupted.
+--debug run in "debug" mode
+--interval sec  Override default 5-second measurement interval
+--help      print this help message
+--counter msr   print 32-bit counter at address "msr"
+--Counter msr   print 64-bit Counter at address "msr"
+--out file  create or truncate "file" for all output
+--msr msr   print 32-bit value at address "msr"
+--MSR msr   print 64-bit Value at address "msr"
+--version   print version information
+
+For more help, run "man turbostat"
+
+# turbostat --debug turbostat version 4.12 5 Apr 2016 - Len Brown CPUID(0): GenuineIntel 13 CPUID levels; family:model:stepping 0x6:55:4 (6:85:4)
+CPUID(1): SSE3 - - - - TSC MSR - -
+CPUID(6): APERF, No-DTS, No-PTM, No-HWP, No-HWPnotify, No-HWPwindow, No-HWPepp, No-HWPpkg, No-EPB
+cpu7: MSR_IA32_MISC_ENABLE: 0x00000001 (  )
+CPUID(7): No-SGX
+cpu7: MSR_MISC_PWR_MGMT: 0x00000000 (ENable-EIST_Coordination DISable-EPB)
+RAPL: inf sec. Joule Counter Range, at 0 Watts
+cpu7: MSR_PLATFORM_INFO: 0xc0000001900
+12 * 100 = 1200 MHz max efficiency frequency
+25 * 100 = 2500 MHz base frequency
+cpu7: MSR_IA32_POWER_CTL: 0x00000000 (C1E auto-promotion: DISabled)
+cpu7: MSR_TURBO_RATIO_LIMIT: 0x1f1f202020202123
+31 * 100 = 3100 MHz max turbo 8 active cores
+31 * 100 = 3100 MHz max turbo 7 active cores
+32 * 100 = 3200 MHz max turbo 6 active cores
+32 * 100 = 3200 MHz max turbo 5 active cores
+32 * 100 = 3200 MHz max turbo 4 active cores
+32 * 100 = 3200 MHz max turbo 3 active cores
+33 * 100 = 3300 MHz max turbo 2 active cores
+35 * 100 = 3500 MHz max turbo 1 active cores
+cpu7: MSR_CONFIG_TDP_NOMINAL: 0x00000000 (base_ratio=0)
+cpu7: MSR_CONFIG_TDP_LEVEL_1: 0x00000000 ()
+cpu7: MSR_CONFIG_TDP_LEVEL_2: 0x00000000 ()
+cpu7: MSR_CONFIG_TDP_CONTROL: 0x00000000 ( lock=0)
+cpu7: MSR_TURBO_ACTIVATION_RATIO: 0x00000000 (MAX_NON_TURBO_RATIO=0 lock=0)
+cpu7: MSR_NHM_SNB_PKG_CST_CFG_CTL: 0x00008000 (locked: pkg-cstate-limit=0: pc0)
+cpu0: MSR_RAPL_POWER_UNIT: 0x00000000 (1.000000 Watts, 1.000000 Joules, 0.000977 sec.)
+cpu0: MSR_PKG_POWER_INFO: 0x00000000 (0 W TDP, RAPL 0 - 0 W, 0.000000 sec.)
+cpu0: MSR_PKG_POWER_LIMIT: 0x00000000 (UNlocked)
+cpu0: PKG Limit #1: DISabled (0.000000 Watts, 0.000977 sec, clamp DISabled)
+cpu0: PKG Limit #2: DISabled (0.000000 Watts, 0.000977* sec, clamp DISabled)
+cpu0: MSR_DRAM_POWER_INFO,: 0x00000000 (0 W TDP, RAPL 0 - 0 W, 0.000000 sec.)
+cpu0: MSR_DRAM_POWER_LIMIT: 0x00000000 (UNlocked)
+cpu0: DRAM Limit: DISabled (0.000000 Watts, 0.000977 sec, clamp DISabled)
+cpu7: MSR_PKGC3_IRTL: 0x00000000 (NOTvalid, 0 ns)
+cpu7: MSR_PKGC6_IRTL: 0x00000000 (NOTvalid, 0 ns)
+cpu7: MSR_PKGC7_IRTL: 0x00000000 (NOTvalid, 0 ns)
+    Core     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz     IRQ     SMI  CPU%c1  CPU%c3  CPU%c6  CPU%c7 PkgWatt RAMWatt   PKG_%   RAM_%
+       -       -      48   35.95     133    2506    2747       0   64.05    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+       0       0      17   12.58     138    2508     483       0   87.42    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+       0       4      24   18.23     129    2508     329       0   81.77
+       1       1      17   11.98     139    2509     334       0   88.02    0.00    0.00    0.00
+       1       5      47   35.81     131    2506     374       0   64.19
+       2       2     136  100.00     136    2503     540       0    0.00    0.00    0.00    0.00
+       2       6       7    5.10     134    2507      55       0   94.90
+       3       3       6    4.36     143    2503      90       0   95.64    0.00    0.00    0.00
+       3       7     128   99.82     128    2500     542       0    0.18
+    Core     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz     IRQ     SMI  CPU%c1  CPU%c3  CPU%c6  CPU%c7 PkgWatt RAMWatt   PKG_%   RAM_%
+       -       -      45   33.62     132    2506    2925       0   66.38    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+       0       0      41   30.22     136    2509     408       0   69.78    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+       0       4      22   17.06     130    2509     279       0   82.94
+       1       1      22   15.63     138    2508     367       0   84.37    0.00    0.00    0.00
+       1       5      11    7.97     132    2509     243       0   92.03
+       2       2       5    3.67     142    2508      84       0   96.33    0.00    0.00    0.00
+       2       6     128  100.00     128    2500     563       0    0.00
+       3       3     116   85.48     135    2501     558       0   14.52    0.00    0.00    0.00
+       3       7      12    9.19     134    2500     423       0   90.81
+    Core     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz     IRQ     SMI  CPU%c1  CPU%c3  CPU%c6  CPU%c7 PkgWatt RAMWatt   PKG_%   RAM_%
+       -       -      44   33.86     130    2499    2886       0   66.14    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+       0       0      23   16.86     138    2497     133       0   83.14    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+       0       4     128   99.85     128    2498     555       0    0.15
+       1       1      16   11.84     139    2499     203       0   88.16    0.00    0.00    0.00
+       1       5     113   89.47     127    2499     515       0   10.53
+       2       2      28   20.11     139    2499     430       0   79.89    0.00    0.00    0.00
+       2       6       9    6.57     134    2499     222       0   93.43
+       3       3      23   16.90     138    2499     418       0   83.10    0.00    0.00    0.00
+       3       7      12    9.31     133    2500     410       0   90.69
+    Core     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz     IRQ     SMI  CPU%c1  CPU%c3  CPU%c6  CPU%c7 PkgWatt RAMWatt   PKG_%   RAM_%
+       -       -      61   45.31     134    2499    4156       0   54.69    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+       0       0     136  100.00     136    2498     568       0    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+       0       4      23   17.57     130    2498     258       0   82.43
+       1       1      55   40.58     136    2498     411       0   59.42    0.00    0.00    0.00
+       1       5      95   75.05     126    2499     468       0   24.95
+       2       2      72   51.79     140    2500     643       0   48.21    0.00    0.00    0.00
+       2       6      25   18.82     132    2500     618       0   81.18
+       3       3      43   31.06     139    2500     645       0   68.94    0.00    0.00    0.00
+       3       7      36   27.66     131    2500     545       0   72.34
+    Core     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz     IRQ     SMI  CPU%c1  CPU%c3  CPU%c6  CPU%c7 PkgWatt RAMWatt   PKG_%   RAM_%
+       -       -      49   36.50     133    2499    3182       0   63.50    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+       0       0      24   17.45     137    2500     371       0   82.55    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+       0       4      45   35.60     127    2500     400       0   64.40
+       1       1       7    4.77     140    2499      95       0   95.23    0.00    0.00    0.00
+       1       5     127   99.87     127    2497     544       0    0.13
+       2       2      23   16.68     139    2497     491       0   83.32    0.00    0.00    0.00
+       2       6      14   10.78     133    2500     504       0   89.22
+       3       3     140  100.00     140    2500     569       0    0.00    0.00    0.00    0.00
+       3       7       9    6.85     133    2500     208       0   93.15
+^C Output agrees with showboost. Some sanity checks: $ time perl -e 'for ($i = 0; $i < 100000; $i++) { $j++ }' real    0m1.066s
+user    0m0.960s
+sys 0m0.108s
+
+$ time cksum /bin/bash 3195328013 1037528 /bin/bash
+
+real    0m0.365s
+user    0m0.272s
+sys 0m0.092s
+
+$ time man ls > /dev/null real    0m2.766s
+user    0m2.560s
+sys 0m1.172s These should generally take <100ms. The times seen here agreed with the slow CPU clock seen earlier in showboost and turbostat. Conclusion: EC2 problem (e.g., BIOS).

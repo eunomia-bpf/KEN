@@ -1,0 +1,28 @@
+My laptop was recently running low on available disk space, and it was a mystery as to why. I have different tools to explore the file system, including running the "find / -ls" command from a terminal, but they can be time consuming to use. I wanted a big picture view of space by directories, subdirectories, and so on. I've created a simple open source tool to do this, using flame graphs as the final visualization. To demonstrate, here's the space consumed by the Linux 4.9-rc5 source code. Click to zoom, and Ctrl-F to search ( SVG ): If you are new to flame graphs, see my flame graphs page. In this case, width corresponds to total size. I created them for visualizing stack traces, but since they are a generic hierarchical visualization (technically an adjacency diagram with an inverted icicle layout ), they are suited for the hierarchy of directories as well. I've also used this to diagnose a similar problem with a friend's laptop, which turned out to be due to a backup application consuming space in a directory completely unknown to them. The following sections show how to create one yourself. Start by opening a terminal session so you can use the command line. Using git If you have the "git" command, you can fetch the FlameGraph repository and run the commands from it: git clone https://github.com/brendangregg/FlameGraph
+cd FlameGraph
+./files.pl /Users | ./flamegraph.pl --hash --countname=bytes > out.svg Then open out.svg in a browser. Change "/Users" to be the directory you want to visualize. This could be "/" for everything (provided you don't have removable storage or network file systems mounted, which if you do, it would include them in the report by accident). Without git If you don't have git, you can download the two Perl programs straight from github: files.pl and flamegraph.pl , either using wget or download them via your browser (save as). The steps can then be: chmod 755 files.pl flamegraph.pl
+./files.pl /Users | ./flamegraph.pl --hash --countname=bytes > out.svg Again, change "/Users" to be the directory you want to visualize, then open out.svg in a browser. Linux source example For reference, the Linux source example I included above was created using: files.pl linux-4.9-rc5 | flamegraph.pl --hash --countname=bytes \
+    --title="Linux source tree by file size" --width=800 > files_linux49.svg You can customize the flame graph using options: $ ./flamegraph.pl -h
+Option h is ambiguous (hash, height, help)
+USAGE: ./flamegraph.pl [options] infile > outfile.svg
+
+    --title       # change title text
+    --width       # width of image (default 1200)
+    --height      # height of each frame (default 16)
+    --minwidth    # omit smaller functions (default 0.1 pixels)
+    --fonttype    # font type (default "Verdana")
+    --fontsize    # font size (default 12)
+    --countname   # count type label (default "samples")
+    --nametype    # name type label (default "Function:")
+    --colors      # set color palette. choices are: hot (default), mem, io,
+                  # wakeup, chain, java, js, perl, red, green, blue, aqua,
+                  # yellow, purple, orange
+    --hash        # colors are keyed by function name hash
+    --cp          # use consistent palette (palette.map)
+    --reverse     # generate stack-reversed flame graph
+    --inverted    # icicle graph
+    --negate      # switch differential hues (blue<->red)
+    --help        # this message
+
+    eg,
+    ./flamegraph.pl --title="Flame Graph: malloc()" trace.txt > graph.svg You might need to know about the --minwidth option: rectangles thinner than this (1/10th of a pixel when zoomed out) will be elided, to conserve space in the SVG. But that can mean things are missing when you zoom in. If it's a problem, you can set minwidth to 0. Update: see my follow-on post Flame Graphs vs Tree Maps vs Sunburst .

@@ -1,0 +1,32 @@
+Two new technologies, BTF and CO-RE, are paving the way for BPF to become a billion-dollar industry. Right now there are many BPF (eBPF) startups building networking, security, and performance products (and more in stealth), yet requiring customers to install the LLVM, Clang, and kernel header dependencies – which can consume over 100 Mbytes of storage – is an adoption drag. BTF and CO-RE eliminate these dependencies at runtime, not only making BPF more practical for embedded Linux environments, but for adoption everywhere. These technologies are: BTF : BPF Type Format, which provides struct information to avoid needing Clang and kernel headers. CO-RE : BPF Compile-Once Run-Everywhere, which allows compiled BPF bytecode to be relocatable, avoiding the need for recompilation by LLVM. Clang and LLVM are still required for compilation, but the result is a lightweight ELF binary that includes the precompiled BPF bytecode and can be run everywhere. The BCC project has a collection of these, called libbpf tools . As an example, I ported over my opensnoop(8) tool: # ./opensnoop PID    COMM              FD ERR PATH
+27974  opensnoop         28   0 /etc/localtime
+1482   redis-server       7   0 /proc/1482/stat
+1657   atlas-system-ag    3   0 /proc/stat
+[…] This opensnoop(8) is an ELF binary that doesn't use libLLVM or libclang: # file opensnoop opensnoop: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/l, for GNU/Linux 3.2.0, BuildID[sha1]=b4b5320c39e5ad2313e8a371baf5e8241bb4e4ed, with debug_info, not stripped
+
+# ldd opensnoop linux-vdso.so.1 (0x00007ffddf3f1000)
+    libelf.so.1 => /usr/lib/x86_64-linux-gnu/libelf.so.1 (0x00007f9fb7836000)
+    libz.so.1 => /lib/x86_64-linux-gnu/libz.so.1 (0x00007f9fb7619000)
+    libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f9fb7228000)
+    /lib64/ld-linux-x86-64.so.2 (0x00007f9fb7c76000)
+
+# ls -lh opensnoop opensnoop.stripped -rwxr-xr-x 1 root root 645K Feb 28 23:18 opensnoop
+-rwxr-xr-x 1 root root 151K Feb 28 23:33 opensnoop.stripped ... and stripped is only 151 Kbytes. Now imagine a BPF product: instead of requiring customers install various heavyweight (and brittle) dependencies, a BPF agent may now be a single tiny binary that works on any kernel that has BTF. How this works It's not just a matter of saving the BPF bytecode in ELF and then sending it to any other kernel. Many BPF programs walk kernel structs that can change from one kernel version to another. Your BPF bytecode may still execute on different kernels, but it may be reading the wrong struct offsets and printing garbage output! opensnoop(8) doesn't walk kernel structs since it instruments stable tracepoints and their arguments, but many other tools do. This is an issue of relocation , and both BTF and CO-RE solve this for BPF binaries. BTF provides type information so that struct offsets and other details can be queried as needed, and CO-RE records which parts of a BPF program need to be rewritten, and how. CO-RE developer Andrii Nakryiko has written long posts explaining this in more depth: BPF Portability and CO-RE and BTF Type Information . CONFIG_DEBUG_INFO_BTF=y These new BPF binaries are only possible if this kernel config option is set. It adds about 1.5 Mbytes to the kernel image (this is tiny in comparison to DWARF debuginfo, which can be hundreds of Mbytes). Ubuntu 20.10 has already made this config option the default, and all other distros should follow. Note to distro maintainers: it requires pahole >= 1.16. The future of BPF performance tools, BCC Python, and bpftrace For BPF performance tools, you should start with running BCC and bpftrace tools, and then coding in bpftrace. The BCC tools should eventually be switched from Python to libbpf C under the hood, but will work the same. Coding performance tools in BCC Python is now considered deprecated as we move to libbpf C with BTF and CO-RE (although we still have library work to do, such as for USDT support, so the Python versions will be needed for a while). Note that there are other use cases of BCC that may continue to use the Python interface; BPF co-maintainer Alexei Starovoitov and myself briefly discussed this on iovisor-dev . My BPF Performance Tools book focused on running BCC tools and coding in bpftrace, and that doesn't change. However, Appendix C's Python programming examples are now considered deprecated. Apologies for the inconvenience. Fortunately it's only 15 pages of appendix material out of the 880-page book. What about bpftrace? It does support BTF, and in the future we're looking at reducing its installation footprint as well (it can currently get to 29 Mbytes , and we think it can go a lot smaller). Given an average libbpf program size of 229 Kbytes (based on the current libbpf tools, stripped), and an average bpftrace program size of 1 Kbyte (my book tools), a large collection of bpftrace tools plus the bpftrace binary may become a smaller installation footprint than the equivalent in libbpf. Plus the bpftrace versions can be modified on the fly. libbpf is better suited for more complex and mature tools that needs custom arguments and libraries. As screenshots, the future of BPF performance tools is this: # ls /usr/share/bcc/tools /usr/sbin/*.bt argdist       drsnoop         mdflush         pythongc     tclobjnew
+bashreadline  execsnoop       memleak         pythonstat   tclstat
+[...]
+/usr/sbin/bashreadline.bt    /usr/sbin/mdflush.bt    /usr/sbin/tcpaccept.bt
+/usr/sbin/biolatency.bt      /usr/sbin/naptime.bt    /usr/sbin/tcpconnect.bt
+[...] ... and this: # bpftrace -e 'BEGIN { printf("Hello, World!\n"); }' Attaching 1 probe...
+Hello, World!
+^C ... and not this: #!/usr/bin/python
+
+from bcc import BPF
+from bcc.utils import printb
+
+prog = """
+int hello(void *ctx) {
+    bpf_trace_printk("Hello, World!\\n");
+    return 0;
+}
+"""
+[...] Thanks to Yonghong Song (Facebook) for leading development of BTF, Andrii Nakryiko (Facebook) for leading development of CO-RE, and everyone else involved in making this happen.

@@ -1,0 +1,17 @@
+If you start digging into Linux kernel internals, like function disassembly and profiling, you may run into two mysteries of kernel engineering, as I did: What is this "__fentry__" stuff at the start of every kernel function? Profiling? Why doesn't it massively slow down the Linux kernel? How can Ftrace instrument all kernel functions almost instantly, and with low overhead? To show what I mean, here's a screenshot for (1) (I used ElfMaster's kdress to turn my vmlinuz into vmlinux): # gdb ./vmlinux /proc/kcore [...]
+(gdb) disas schedule Dump of assembler code for function schedule:
+   0xffffffff819b6530 <+0>: callq  0xffffffff81a01cd0 < __fentry__ >
+   0xffffffff819b6535 <+5>: push   %rbp
+[...] That's at the start of every kernel function on Linux. What the heck! And for (2), using my perf-tools : # ~/Git/perf-tools/bin/funccount '*' Tracing "*"... Ctrl-C to end.
+^C
+FUNC                              COUNT
+aa_af_perm                            1
+[...truncated...]
+_raw_spin_lock                  1811959
+__mod_node_page_state           1856254
+_cond_resched                   1921320
+rcu_all_qs                      1924218
+__accumulate_pelt_segments      2883418
+decay_load                      8684460
+
+Ending tracing... Despite this tracing every kernel function on my laptop, I didn't notice any slow down. How?? At a Linux conference in Düsseldorf, 2014, I saw a talk by kernel maintainer Steven Rostedt that answered both questions. It was and is the most technical talk I've ever seen. Unfortunately, it wasn't videoed. Fortunately, he just gave an updated version at Kernel Recipes in Paris, 2019, titled ftrace: Where modifying a running kernel all started . You can now learn the answers to these mysteries and answer many more questions about kernel internals. Steven covers things that aren't documented elsewhere. The video is on youtube : The slides are on slideshare : Thanks to Steven for updating and delivering the talk, and Kernel Recipes organizers for sharing this and other talks on video. I'll need to come back to a future Kernel Recipes! I'd also recommend watching: BPF at Facebook by Alexei Starovoitov ( youtube ) The ubiquity but also the necessity of eBPF as a technology to keep the kernel relevant by David S. Miller

@@ -1,0 +1,74 @@
+For my AWS re:Invent talk on BPF Performance Analysis at Netflix, I began with a demo of "BPF superpowers" (aka eBPF). The video is on youtube and the demo starts at 0:50 (the slides are here or as a PDF ): I'm demonstrating a tool I developed to turn my laptop's wifi signal strength into audio (someone described this as a BPF theremin .) I first developed it as this bpftrace one-liner: bpftrace -e 'k:__iwl_dbg /str(arg4) == "Rssi %d, TSF %llu\n"/ { printf("strength: %d\n", arg5);  }' Attaching 1 probe...
+strength: -46
+strength: -46
+strength: -45
+strength: -45
+[...] This only works for the iwl driver. In the video I explained how I arrived at tracing __iwl_dbg() in this way, and how you can follow a similar approach for tracing unfamiliar code. Since I wanted to emit audio, I then switched to BCC and rewrote it in Python so I could use an audio library. This is not my best code, since I hacked it in a hurry, but here it is: #!/usr/bin/python
+#
+# iwlstrength.py    iwl wifi stregth as audio
+#           For Linux, uses BCC, eBPF. Embedded C.
+#
+# Tone generation from: https://gist.github.com/nekozing/5774628
+#
+# 29-Apr-2019   Brendan Gregg   Created this.
+
+from __future__ import print_function
+from bcc import BPF
+import pygame, numpy, pygame.sndarray
+
+# Sound setup
+sampleRate = 44100
+pygame.mixer.pre_init(sampleRate, -16, 1) 
+pygame.init()
+note = {}
+for f in range(-100, 20):
+    # pregenerate lookup table of frequency to note
+    # this avoids the CPU cost at runtime
+    # please, we need a better tone generation library (if it exists I didn't find it)
+    freq = 1700 + (f * 15)
+    peakvol = 4096
+    note[f] = numpy.array([peakvol * numpy.sin(2.0 * numpy.pi * freq * x / sampleRate) for x in range(0, sampleRate / 5)]).astype(numpy.int16)
+sound = pygame.sndarray.make_sound(note[0])
+
+# BPF
+b = BPF(text="""
+#include <uapi/linux/ptrace.h>
+
+int kprobe____iwl_dbg(struct pt_regs *ctx, int a, int b, int c, int d, const char *fmt, int val0) {
+    bpf_trace_printk("%d %s\\n", val0, fmt);
+    return 0;
+}
+""")
+
+last=0
+while 1:
+    try:
+        (task, pid, cpu, flags, ts, msg) = b.trace_fields()
+        (val0, fmt) = msg.split(' ', 1)
+        if (fmt == "Rssi %d, TSF %llu"):
+            signal = int(val0);
+            for c in range(0, (100 + signal) / 2):
+                print("*", end="")
+            print("")
+            if (last != signal):
+                sound.stop()
+                sound = pygame.sndarray.make_sound(note[signal])
+                sound.play(-1)
+            last = signal
+    except KeyboardInterrupt:
+        exit()
+    except ValueError:
+        next
+
+sound.stop() Remember how this was a one-liner in bpftrace? If you wish to develop your own BPF observability tools, start with bpftrace and only use BCC when needed. My BPF Performance Tools book has plenty of examples. This is the culmination of five years of work: the BPF kernel runtime, C support, LLVM and Clang support, the BCC front-end, and finally the bpftrace language. Starting with other interfaces is like writing your first Java program in JVM bytecode . You can...but if you're looking for an educational exercise, I'd recommend using BPF tools to find performance wins. bpftrace became even more powerful on Linux 5.3, which raised the BPF instruction limit from four thousand instructions to effectively unlimited (one million instructions.) Masanori Misono has already ported Tetris to bpftrace (originally by Tomoki Sekiyama): It reads keystrokes by tracing the pty_write() kernel function. On the topic of tracing keystrokes, David S. Miller (networking maintainer) recently asked if I still used my "noisy typewriter," which I had turned on a little too loud during a LISA 2016 demo. Since I switched laptops it no longer works, so I just wrote it using BPF: bpf-typewriter . The source is: #!/usr/local/bin/bpftrace --unsafe
+#include <uapi/linux/input-event-codes.h>
+
+kprobe:kbd_event
+/arg1 == EV_KEY && arg3 == 1/
+{
+    if (arg2 == KEY_ENTER) {
+        system("aplay -q clink.au >/dev/null 2>&1 &");
+    } else {
+        system("aplay -q click.au >/dev/null 2>&1 &");
+    }
+} You can check it out on github . If desired, it could be rewritten in BCC to avoid calling aplay(1). I hope you enjoy these tools, and I look forward to seeing what other people create, either practical or for fun!
