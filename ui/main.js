@@ -34,8 +34,8 @@ function createMainWindow () {
     y: appConfigWindowBounds?.y ?? 0,
     frame: false,
     alwaysOnTop: appConfigAlwaysOnTop,
-    resizable: true,
-    movable: true, // Window dragging
+    resizable: false,
+    movable: false, // Window dragging
     webPreferences: {
       nodeIntegration: true, // Enable Node.js integration in the renderer process
       contextIsolation: false, // Enable Node.js integration in the renderer process
