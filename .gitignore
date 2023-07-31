@@ -2,3 +2,4 @@
 *.ll
 build
 gpttrace/__pycache__
+gpttrace/utils/__pycache__
