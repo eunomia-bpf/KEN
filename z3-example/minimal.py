@@ -1,5 +1,6 @@
 from z3 import *
 
+
 def verify_equation():
     x = Int('x')  # Declare an integer variable 'x'
 
@@ -17,5 +18,6 @@ def verify_equation():
         print("Solution for x:", model[x])
     else:
         print("No solution found.")
+
 
 verify_equation()

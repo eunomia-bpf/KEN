@@ -1,0 +1,30 @@
+If you've been following my previous posts about Linux ftrace, you'll want to read my recent lwn.net article: Ftrace: The Hidden Light Switch . This showed how I used ftrace at Netflix to confirm whether a kernel tunable change took affect immediately, and how it was set. It was also a tour of some ftrace capabilities. ftrace is particularly useful for us since it is already available in all our Linux systems, and has been for years. The biggest problem is that it's not very well known. I've hopefully helped raise awareness with this article, and I also included ftrace in my Linux Performance Tools talk at LinuxCon. I mentioned the following commands, but didn't include screenshots. Here I'm checking if the deadline or noop I/O schedulers are active, based on counting the function calls: # ./funccount -i 1 'deadline*' Tracing "deadline*"... Ctrl-C to end.
+
+FUNC                              COUNT
+deadline_add_request                178
+deadline_merge                      178
+deadline_remove_request.isra.4      178
+deadline_dispatch_requests          712
+
+FUNC                              COUNT
+deadline_add_request                698
+deadline_merge                      698
+deadline_remove_request.isra.4      698
+deadline_dispatch_requests         2792
+^C
+FUNC                              COUNT
+deadline_add_request                316
+deadline_merge                      316
+deadline_remove_request.isra.4      316
+deadline_dispatch_requests         1264
+
+Ending tracing...
+# ./funccount -i 1 'noop*' Tracing "noop*"... Ctrl-C to end.
+
+FUNC                              COUNT
+
+FUNC                              COUNT
+^C
+FUNC                              COUNT
+
+Ending tracing... So, deadline is active right now... These and the other ftrace capabilities have been invaluable so far, which we've been using via my perf-tools wrappers. If you want to do more with ftrace, see trace-cmd by Steven Rostedt, which is a more powerful multi-tool. ftrace can't yet do everything that I want from a kernel tracer. For example, I can't yet do custom in-kernel aggregations. But it can do a lot more than I previously thought possible. Thanks to Deirdré Straughan and Jonathan Corbet for editing help with the article. For more about ftrace, see the resources I linked to at the end (many also on lwn.net), and my previous posts on ftrace .

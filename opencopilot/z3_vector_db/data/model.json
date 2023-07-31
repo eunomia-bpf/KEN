@@ -1,0 +1,18 @@
+{
+  "bpf_jit_charge_modmem": {
+   "pre": {
+    "X": "<100"
+  },
+  "post": {
+    "X": ">1"
+  }},
+  "inet_csk_reqsk_queue_hash_add": {
+   "pre": {
+    "X": "<100",
+     "Y": ">100"
+  },
+  "post": {
+    "X": ">1",
+    "Y" : ">19"
+  }}
+}

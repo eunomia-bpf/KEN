@@ -22,12 +22,11 @@ setuptools.setup(
     version="0.2.3",
     author="csunny",
     author_email="cfqcsunny@gmail.com",
-    description="DB-GPT is an experimental open-source project that uses localized GPT large models to interact with your data and environment."
-    " With this solution, you can be assured that there is no risk of data leakage, and your data is 100% private and secure.",
+    description="OpenCopilot is an experimental open-source project that uses localized GPT large models to maintain your Linux as prompted and verified the semantic by automatic assertion verification.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=parse_requirements("requirements.txt"),
-    url="https://github.com/csunny/DB-GPT",
+    url="https://github.com/SlugLab/OpenCopilot",
     license="https://opensource.org/license/mit/",
     python_requires=">=3.10",
     entry_points={
