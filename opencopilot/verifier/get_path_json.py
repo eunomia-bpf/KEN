@@ -4,12 +4,12 @@ import os
 import subprocess
 from opencopilot.z3_vector_db import get_onefunction
 
-def prompt(program:str, error:str):
 
+def prompt(context: str, program: str, error: str):
     pass
 
 
-def parse_bpftrace_program(program: str):
+def parse_bpftrace_program(context: str, program: str):
     """
     parse one program, the bpftrace will first compile, the compiler has the assume for z3 to verify
     Args:
@@ -18,15 +18,13 @@ def parse_bpftrace_program(program: str):
     Returns:
 
     """
-    with open("/tmp/tmp.bt","w") as f:
+    with open("/tmp/tmp.bt", "w") as f:
         f.write(program)
     try:
         var = subprocess.check_output["sudo", "bpftrace", "-d", "/tmp/tmp.bt"]
-
-    except:
-        pass
-        # prompt(program, error)
-
+        print(var)
+    except Exception as error:
+        prompt(context, program, error)
 
 
 def symbolize_func(func: str, variable):
@@ -39,7 +37,6 @@ def symbolize_var(variable: str):
 
 def read_function(file: object):
     """
-
     """
 
 
@@ -48,23 +45,9 @@ def read_function(file: object):
 # prompt from the vectordb and gen
 
 if __name__ == "__main__":
+    context = "The following is the code Print entered bash commands from all running shells. For Linux, uses bpftrace and eBPF. This works by tracing the readline() function using a uretprobe (uprobes)."
     program = """
 #!/usr/bin/env bpftrace
-/*
- * bashreadline    Print entered bash commands from all running shells.
- *                 For Linux, uses bpftrace and eBPF.
- *
- * This works by tracing the readline() function using a uretprobe (uprobes).
- *
- * USAGE: bashreadline.bt
- *
- * This is a bpftrace version of the bcc tool of the same name.
- *
- * Copyright 2018 Netflix, Inc.
- * Licensed under the Apache License, Version 2.0 (the "License")
- *
- * 06-Sep-2018	Brendan Gregg	Created this.
- */
 
 BEGIN
 {
@@ -79,4 +62,4 @@ uretprobe:/bin/bash:readline
 }
 
 }"""
-    parse_bpftrace_program(program)
+    parse_bpftrace_program(context, program)
