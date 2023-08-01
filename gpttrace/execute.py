@@ -2,12 +2,10 @@ import os
 import json
 import shutil
 import tempfile
-import openai
 
 from gpttrace.utils.common import get_doc_content_for_query, init_conversation
 from gpttrace.prompt import construct_running_prompt, construct_prompt_on_error, construct_prompt_for_explain
 from gpttrace.bpftrace import run_bpftrace
-
 
 def call_gpt_api(prompt: str) -> str:
     """

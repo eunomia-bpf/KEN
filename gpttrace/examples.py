@@ -56,7 +56,7 @@ bpftrace -e 'tracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/c
 
 def get_bpftrace_basic_examples(query: str) -> str:
     loader = JSONLoader(
-        file_path='./tools/examples.json',
+        file_path='examples/bpftrace/examples.json',
         jq_schema='.data[].content',
         json_lines=True
     )
