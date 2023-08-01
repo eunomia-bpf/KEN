@@ -1,9 +1,11 @@
 #include <vmlinux.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
+#include <bpf/bpf_core_read.h>
 
 #define MAX_ENTRIES	10240
 #define TASK_COMM_LEN	16
+const volatile bool failed_only = false;
 
 struct event {
 	unsigned int pid;
@@ -47,6 +49,9 @@ static int probe_exit(void *ctx, int ret)
 	if (!eventp)
 		return 0;
 
+	if (failed_only && ret >= 0)
+        goto cleanup;
+		
 	eventp->ret = ret;
 	bpf_printk("PID %d (%s) sent signal %d ",
 		   eventp->pid, eventp->comm, eventp->sig);

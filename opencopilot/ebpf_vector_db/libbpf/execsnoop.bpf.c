@@ -14,7 +14,7 @@ SEC("tracepoint/syscalls/sys_enter_execve")
 int tracepoint__syscalls__sys_enter_execve(struct trace_event_raw_sys_enter* ctx)
 {
 	u64 id;
-	pid_t pid, tgid;
+	pid_t tgid;
 	struct event event={0};
 	struct task_struct *task;
 
