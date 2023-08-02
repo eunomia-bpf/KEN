@@ -2,7 +2,7 @@
 from z3 import *
 import os
 import subprocess
-from opencopilot.z3_vector_db import get_onefunction
+from opencopilot.z3_vector_db.summary import get_onefunction
 
 
 def prompt(context: str, program: str, error: str):
@@ -13,7 +13,8 @@ def parse_bpftrace_program(context: str, program: str):
     """
     parse one program, the bpftrace will first compile, the compiler has the assume for z3 to verify
     Args:
-        program:
+        context: The context is for the current context
+        program: 
 
     Returns:
 

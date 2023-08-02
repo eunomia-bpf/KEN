@@ -4,6 +4,39 @@ from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import ConversationChain
 
+def generate_libbpf_once():
+    """
+    Generates summaries for articles and saves them in a JSON file.
+
+    Returns:
+        None
+    """
+
+    folder_path = "./posts"
+    files = os.listdir(folder_path)
+    articles = {}
+    for file_name in files:
+        json_file = "../ebpf-vector-db-main/libbpf/output.json"
+        file_path = os.path.join(folder_path, file_name)
+        file_name = file_name[:-4]
+        if file_name in articles:
+            print(
+                f"The article named {file_name} already exists. Skipping...")
+            continue
+        if os.path.isfile(file_path):
+            try:
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    content = file.read()
+                    result = get_onefunction(content)
+                    articles[file_name] = result
+                    print(
+                        f"The article named <{file_name}> is finished. \n\n")
+                    with open(json_file, 'w', encoding='utf-8') as file:
+                        json.dump(articles, file)
+            except Exception as _:
+                print(
+                    f"The article named <{file_name}> has failed... \n\n")
+
 
 def generate_bpftrace_once():
     """
