@@ -2,7 +2,7 @@
 from z3 import *
 import os
 import subprocess
-from opencopilot.z3_vector_db.summary import get_onefunction
+from opencopilot.z3_vector_db.z3_conditions_for_ebpf import get_onefunction
 
 
 def prompt(context: str, program: str, error: str):
