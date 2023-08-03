@@ -1,3 +1,4 @@
+from langchain.tools import StructuredTool
 import subprocess
 import json
 import unittest
@@ -10,6 +11,13 @@ import os
 from langchain.document_loaders import JSONLoader
 from langchain.vectorstores import FAISS
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.agents import Tool
+from langchain.agents import AgentType
+from langchain.memory import ConversationBufferMemory
+from langchain import OpenAI
+from langchain.utilities import SerpAPIWrapper
+from langchain.agents import initialize_agent
+from langchain import LLMMathChain, OpenAI, SerpAPIWrapper, SQLDatabase, SQLDatabaseChain
 
 simple_examples = """
 Below are some simple examples of bpftrace usage:
@@ -53,7 +61,17 @@ Below are some simple examples of bpftrace usage:
 Some more complex examples:
 """
 
+
 def get_examples_from_db(query: str) -> str:
+    """
+    Get bpftrace examples from the database, with a query.
+    Remember to get examples from the database for reference.
+
+    The input should be an instruction, like:
+        Write a BPF code that traces block I/O and measures the latency by initializing stacks, using kprobes and histogram.
+
+    The return example is more complex examples, for top 4 results.
+    """
     embeddings = OpenAIEmbeddings()
     # Check if the vector database files exist
     if not (os.path.exists("./data_save/vector_db.faiss") and os.path.exists("./data_save/vector_db.pkl")):
@@ -72,17 +90,20 @@ def get_examples_from_db(query: str) -> str:
 
     results = db.search(query, search_type='similarity')
     results = [result.page_content for result in results]
-    return "\n".join(results[:4])
+    return simple_examples + "\n".join(results[:4])
+
 
 def construct_bpftrace_examples(text: str) -> str:
     examples = get_examples_from_db(text)
     return examples
+
 
 class CommandResult(TypedDict):
     command: str
     stdout: str
     stderr: str
     returncode: int
+
 
 def run_command_with_timeout(command: List[str], timeout: int, require_check: bool = True) -> CommandResult:
     """
@@ -97,7 +118,7 @@ def run_command_with_timeout(command: List[str], timeout: int, require_check: bo
             exit()
     # Start the process
     with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:
-        timer = threading.Timer(timeout, process.kill)
+        timer = threading.Timer(timeout, process.send_signal(2))
         stdout = ""
         stderr = ""
         try:
@@ -131,20 +152,64 @@ def run_command_with_timeout(command: List[str], timeout: int, require_check: bo
                 "returncode": process.returncode
             }
 
+
 def bpftrace_run_program(program: str, timeout: int = 5) -> CommandResult:
     """
+    If user ask to trace or profile something, 
+    You need to use this tool to run eBPF programs.
+    You should explain the program to the user first, and then run it.
+    After that, You can show and explain the result to the user.
+
     This function runs a bpftrace program with a timeout.
+    timeout is in seconds, the recommended timeout is no more than 30 seconds,
+    not less than 5 seconds.
+
+    Examples can be found in get_examples_from_db tool. 
+    Remember to get examples from the database for reference.
     """
     return run_command_with_timeout(["sudo", "bpftrace", "-e", program], timeout)
 
-def bpftrace_get_probes(regex: str) -> CommandResult:
-    """
-    This function gets the probes from bpftrace.
-    """
-    return run_command_with_timeout(["sudo", "bpftrace", "-l", regex], 5, False)
 
-res = bpftrace_get_probes("*sleep*")
-print(res)
+def bpftrace_get_probes(regex: str) -> str:
+    """
+    Gets the useable probes from bpftrace. If You need to write a ebpf program,
+    Use this tool to check the hook points first. The input should be a regex,
+    For example:
+
+    '*sleep*'
+
+    Will get the following probes:
+
+    kprobe:mmc_sleep_busy_cb
+    kprobe:msleep
+    kprobe:msleep_interruptible
+    kprobe:pinctrl_force_sleep
+    kprobe:pinctrl_pm_select_sleep_state
+    tracepoint:syscalls:sys_enter_nanosleep
+    tracepoint:syscalls:sys_exit_clock_nanosleep
+    tracepoint:syscalls:sys_exit_nanosleep
+    """
+    res = run_command_with_timeout(["sudo", "bpftrace", "-l", regex], 5, False)
+    return json
+
+
+bpftrace_run_tool = StructuredTool.from_function(bpftrace_run_program)
+bpftrace_probe_tool = StructuredTool.from_function(bpftrace_get_probes)
+get_examples_from_db_tool = StructuredTool.from_function(get_examples_from_db)
+
+llm = OpenAI(temperature=0)
+llm_math_chain = LLMMathChain.from_llm(llm=llm, verbose=True)
+tools = [
+    bpftrace_run_tool,
+    bpftrace_probe_tool,
+    get_examples_from_db_tool,
+]
+memory = ConversationBufferMemory(memory_key="chat_history")
+agent_chain = initialize_agent(
+    tools, llm, agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+    verbose=True, memory=memory)
+agent_chain.run(input="Count page faults by process")
+
 
 class TestRunBpftrace(unittest.TestCase):
     def test_run_command_with_timeout_short_live(self):
@@ -155,7 +220,7 @@ class TestRunBpftrace(unittest.TestCase):
         self.assertTrue(result["stdout"])
         self.assertEqual(result["command"], "ls -l")
         self.assertEqual(result["returncode"], 0)
-    
+
     def test_bpftrace_get_probes(self):
         res = bpftrace_get_probes("*sleep*")
         print(res)
@@ -166,4 +231,3 @@ class TestRunBpftrace(unittest.TestCase):
             "Trace allocations and display each individual allocator function call")
         print(res)
         self.assertTrue(res)
-
