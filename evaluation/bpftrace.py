@@ -12,59 +12,57 @@ from langchain.vectorstores import FAISS
 from langchain.embeddings.openai import OpenAIEmbeddings
 
 simple_examples = """
-# list probes containing "sleep"
-bpftrace -l '*sleep*'
+Below are some simple examples of bpftrace usage:
 
 # trace processes calling sleep
-bpftrace -e 'kprobe:do_nanosleep { printf("PID %d sleeping...\n", pid); }'
+'kprobe:do_nanosleep { printf("PID %d sleeping...\n", pid); }'
 
 # count syscalls by process name
-bpftrace -e 'tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }'
+'tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }'
 
 # Files opened by process
-bpftrace -e 'tracepoint:syscalls:sys_enter_open { printf("%s %s\n", comm, str(args->filename)); }'
+'tracepoint:syscalls:sys_enter_open { printf("%s %s\n", comm, str(args->filename)); }'
 
 # Syscall count by program
-bpftrace -e 'tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }'
+'tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }'
 
 # Read bytes by process:
-bpftrace -e 'tracepoint:syscalls:sys_exit_read /args->ret/ { @[comm] = sum(args->ret); }'
+'tracepoint:syscalls:sys_exit_read /args->ret/ { @[comm] = sum(args->ret); }'
 
 # Read size distribution by process:
-bpftrace -e 'tracepoint:syscalls:sys_exit_read { @[comm] = hist(args->ret); }'
+'tracepoint:syscalls:sys_exit_read { @[comm] = hist(args->ret); }'
 
 # Show per-second syscall rates:
-bpftrace -e 'tracepoint:raw_syscalls:sys_enter { @ = count(); } interval:s:1 { print(@); clear(@); }'
+'tracepoint:raw_syscalls:sys_enter { @ = count(); } interval:s:1 { print(@); clear(@); }'
 
 # Trace disk size by process
-bpftrace -e 'tracepoint:block:block_rq_issue { printf("%d %s %d\n", pid, comm, args->bytes); }'
+'tracepoint:block:block_rq_issue { printf("%d %s %d\n", pid, comm, args->bytes); }'
 
 # Count page faults by process
-bpftrace -e 'software:faults:1 { @[comm] = count(); }'
+'software:faults:1 { @[comm] = count(); }'
 
 # Count LLC cache misses by process name and PID (uses PMCs):
-bpftrace -e 'hardware:cache-misses:1000000 { @[comm, pid] = count(); }'
+'hardware:cache-misses:1000000 { @[comm, pid] = count(); }'
 
 # Profile user-level stacks at 99 Hertz, for PID 189:
-bpftrace -e 'profile:hz:99 /pid == 189/ { @[ustack] = count(); }'
+'profile:hz:99 /pid == 189/ { @[ustack] = count(); }'
 
 # Files opened, for processes in the root cgroup-v2
-bpftrace -e 'tracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s\n", str(args->filename)); }'
+'tracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s\n", str(args->filename)); }'
 
+Some more complex examples:
 """
 
-
-def get_bpftrace_basic_examples(query: str) -> str:
-    loader = JSONLoader(
-        file_path='../examples/bpftrace/examples.json',
-        jq_schema='.data[].content',
-        json_lines=True
-    )
-    documents = loader.load()
+def get_examples_from_db(query: str) -> str:
     embeddings = OpenAIEmbeddings()
-
     # Check if the vector database files exist
     if not (os.path.exists("./data_save/vector_db.faiss") and os.path.exists("./data_save/vector_db.pkl")):
+        loader = JSONLoader(
+            file_path='../examples/bpftrace/examples.json',
+            jq_schema='.data[].content',
+            json_lines=True
+        )
+        documents = loader.load()
         db = FAISS.from_documents(documents, embeddings)
         db.save_local("./data_save", index_name="vector_db")
     else:
@@ -74,22 +72,17 @@ def get_bpftrace_basic_examples(query: str) -> str:
 
     results = db.search(query, search_type='similarity')
     results = [result.page_content for result in results]
-    return "\n".join(results[:2])
+    return "\n".join(results[:4])
 
 def construct_bpftrace_examples(text: str) -> str:
-    examples = get_bpftrace_basic_examples(text)
-    # docs = db.similarity_search(text)
-    # examples += "\n The following is a more complex example: \n"
-    # examples += docs[0].page_content
+    examples = get_examples_from_db(text)
     return examples
-
 
 class CommandResult(TypedDict):
     command: str
     stdout: str
     stderr: str
     returncode: int
-
 
 def run_command_with_timeout(command: List[str], timeout: int, require_check: bool = True) -> CommandResult:
     """
@@ -138,6 +131,20 @@ def run_command_with_timeout(command: List[str], timeout: int, require_check: bo
                 "returncode": process.returncode
             }
 
+def bpftrace_run_program(program: str, timeout: int = 5) -> CommandResult:
+    """
+    This function runs a bpftrace program with a timeout.
+    """
+    return run_command_with_timeout(["sudo", "bpftrace", "-e", program], timeout)
+
+def bpftrace_get_probes(regex: str) -> CommandResult:
+    """
+    This function gets the probes from bpftrace.
+    """
+    return run_command_with_timeout(["sudo", "bpftrace", "-l", regex], 5, False)
+
+res = bpftrace_get_probes("*sleep*")
+print(res)
 
 class TestRunBpftrace(unittest.TestCase):
     def test_run_command_with_timeout_short_live(self):
@@ -145,10 +152,18 @@ class TestRunBpftrace(unittest.TestCase):
         timeout = 5
         result = run_command_with_timeout(command, timeout, False)
         print(result)
-        self.assert_(result["stdout"] != "")
+        self.assertTrue(result["stdout"])
         self.assertEqual(result["command"], "ls -l")
+        self.assertEqual(result["returncode"], 0)
+    
+    def test_bpftrace_get_probes(self):
+        res = bpftrace_get_probes("*sleep*")
+        print(res)
         self.assertEqual(result["returncode"], 0)
 
     def test_get_examples(self):
-        get_bpftrace_basic_examples(
+        res = get_examples_from_db(
             "Trace allocations and display each individual allocator function call")
+        print(res)
+        self.assertTrue(res)
+
