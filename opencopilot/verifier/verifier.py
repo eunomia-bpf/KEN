@@ -13,6 +13,21 @@ def prompt(
     """
     pass
 
+def verify_z3()->object:
+    """
+    compile the result gives sat/unsat
+    """
+
+def compile_bpftrace_once(program:str):
+    with open("/tmp/tmp.bt", "w") as f:
+        f.write(program)
+    try:
+        var = subprocess.check_output["sudo", "bpftrace", "-d", "/tmp/tmp.bt"]
+        print(var)
+        # parce from the normal function to result
+    except Exception as error:
+        prompt(context, program, error)
+        
 
 def parse_bpftrace_program(context: str, program: str):
     """
@@ -33,17 +48,14 @@ def parse_bpftrace_program(context: str, program: str):
                 try:
                     prompt_json = prompt(context, program, line, linenumber)
                     # TODO: passed the json in 
+                    program_tmp = program
+                    for it in prompt_json["pre"]:
+                        pass # parse template
+                    program.replace(match, "assume(")
+                    verify_z3()
                 except:
                     pass
                 
-
-    with open("/tmp/tmp.bt", "w") as f:
-        f.write(program)
-    try:
-        var = subprocess.check_output["sudo", "bpftrace", "-d", "/tmp/tmp.bt"]
-        print(var)
-    except Exception as error:
-        prompt(context, program, error)
 
 
 def parse_libbpf_program(context: str, program: str):
@@ -59,28 +71,14 @@ def parse_libbpf_program(context: str, program: str):
     for line in program.splitlines():
         print(line)
         print("\n")
-        # TODO
         prompt(context, line)
-    with open("/tmp/tmp.bt", "w") as f:
+    with open("/tmp/tmp.bpc.c", "w") as f:
         f.write(program)
     try:
-        var = subprocess.check_output["sudo", "bpftrace", "-d", "/tmp/tmp.bt"]
+        var = subprocess.check_output["sudo", "bpftrace", "-d", "/tmp/tmp.bpf.c"]
         print(var)
     except Exception as error:
         prompt(context, program, error)
-
-
-def symbolize_func(func: str, variable):
-    pass
-
-
-def symbolize_var(variable: str):
-    pass
-
-
-def read_function(file: object):
-    """ """
-
 
 # extract all the function calls
 
@@ -108,19 +106,44 @@ uretprobe:/bin/bash:readline
 
     context = "The following is the code Print entered bash commands from all running shells. For Linux, uses bpftrace and eBPF. This works by tracing the readline() function using a uretprobe (uprobes)."
     program = """
-#!/usr/bin/env bpftrace
+#include <vmlinux.h>
+#include <bpf/bpf_helpers.h>
+#include <bpf/bpf_tracing.h>
+#include <bpf/bpf_core_read.h>
+#include "maps.bpf.h"
 
-BEGIN
+#define BUCKET_MULTIPLIER 50
+#define BUCKET_COUNT 20
+
+struct {
+    __uint(type, BPF_MAP_TYPE_HASH);
+    __uint(max_entries, BUCKET_COUNT + 2);
+    __type(key, u64);
+    __type(value, u64);
+} tcp_syn_backlog SEC(".maps");
+
+static int do_count(u64 backlog)
 {
-	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
-	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+    u64 bucket = backlog / BUCKET_MULTIPLIER;
+
+    increment_map(&tcp_syn_backlog, &bucket, 1);
+    increment_map(&tcp_syn_backlog, &bucket, backlog);
+
+    return 0;
 }
 
-uretprobe:/bin/bash:readline
+SEC("kprobe/tcp_v4_syn_recv_sock")
+int BPF_KPROBE(kprobe__tcp_v4_syn_recv_sock, struct sock *sk)
 {
-	time("%H:%M:%S  ");
-	printf("%-6d %s\n", pid, str(retval));
+    return do_count(BPF_CORE_READ(sk, sk_ack_backlog) / 50);
 }
 
-}"""
+SEC("kprobe/tcp_v6_syn_recv_sock")
+int BPF_KPROBE(kprobe__tcp_v6_syn_recv_sock, struct sock *sk)
+{
+    return do_count(BPF_CORE_READ(sk, sk_ack_backlog) / 50);
+}
+
+char LICENSE[] SEC("license") = "GPL";
+"""
     parse_libbpf_program(context, program)
