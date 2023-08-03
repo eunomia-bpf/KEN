@@ -226,8 +226,8 @@ def get_gpttrace_tools() -> List[Tool]:
         description=GET_EXAMPLE_PROMPT)
     tools = [
         bpftrace_probe_tool,
-        get_examples_from_db_tool,
         bpftrace_run_tool,
+        get_examples_from_db_tool,
     ]
     return tools
 
@@ -244,7 +244,6 @@ def setup_openai_agent(model_name: str = "gpt-3.5-turbo", temperature: float = 0
         tools, llm, agent=AgentType.OPENAI_MULTI_FUNCTIONS,  max_iterations=10,
         verbose=True, memory=memory)
     return agent_chain
-
 
 def setup_react_agent(model_name: str = "gpt-3.5-turbo", temperature: float = 0) -> AgentType:
     """
@@ -284,15 +283,13 @@ def main() -> None:
             f"Either provide your access token through `-k` or through environment variable {OPENAI_API_KEY}")
         return
     if args.input_string is not None:
-        agent_chain = setup_react_agent()
+        agent_chain = setup_openai_agent()
         agent_chain.run(input=args.input_string)
     else:
         parser.print_help()
 
-
 if __name__ == "__main__":
     main()
-
 
 class TestRunBpftrace(unittest.TestCase):
     def test_run_command_short_live(self):
