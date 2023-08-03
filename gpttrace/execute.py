@@ -19,7 +19,10 @@ def call_gpt_api(prompt: str) -> str:
     return response["choices"][0]["message"]["content"]
 
 
-def execute(user_input: str, verbose: bool = False, retry: int = 5, previous_prompt: str = None, output: str = None) -> None:
+def execute(user_input: str, 
+            verbose: bool = False, 
+            retry: int = 5,
+            previous_prompt: str = None, output: str = None) -> None:
     """
     Convert the user request into a BPF command and execute it.
 

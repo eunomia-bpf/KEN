@@ -3,3 +3,4 @@
 build
 gpttrace/__pycache__
 gpttrace/utils/__pycache__
+evaluation/__pycache__
