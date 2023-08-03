@@ -3,9 +3,12 @@
 CC := clang
 
 ARCH := $(shell uname -m | sed -e 's/x86_64/x86/' -e 's/aarch64/arm64/')
-
-SRC = ${wildcard *.bpf.c}
-OBJ = ${patsubst %.bpf.c, %.bpf.o, $(SRC)}
+DOCKER_PATH := /code/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/
+SRC_C = ${wildcard *.bpf.c}
+SRC_LL = ${wildcard ./build/*.bpf.ll}
+OBJ_O = ${patsubst %.bpf.c, %.bpf.o, $(SRC_C)}
+OBJ_LL = ${patsubst %.bpf.c, %.bpf.ll, $(SRC_C)}
+OBJ_SMT = ${patsubst %.bpf.ll, %.bpf.smt2, $(SRC_LL)}
 
 # From https://github.com/libbpf/libbpf-bootstrap/blob/a7c0f7e4a28/examples/c/Makefile#L34-L43
 # Get Clang's default includes on this system. We'll explicitly add these dirs
@@ -19,12 +22,18 @@ OBJ = ${patsubst %.bpf.c, %.bpf.o, $(SRC)}
 CLANG_BPF_SYS_INCLUDES = $(shell $(CC) -v -E - </dev/null 2>&1 \
 	| sed -n '/<...> search starts here:/,/End of search list./{ s| \(/.*\)|-idirafter \1|p }')
 
-$(OBJ): %.bpf.o: %.bpf.c ../include/$(ARCH)/vmlinux.h
+$(OBJ_O): %.bpf.o: %.bpf.c ../include/$(ARCH)/vmlinux.h
 	$(CC) -mcpu=v3 -g -O2 -Wall -Werror -D__TARGET_ARCH_$(ARCH) $(CFLAGS) $(CLANG_BPF_SYS_INCLUDES) -I../include/$(ARCH) -c -target bpf $< -o build/$@
+
+$(OBJ_LL): %.bpf.ll: %.bpf.c ../include/$(ARCH)/vmlinux.h
+	$(CC) -mcpu=v3 -S -emit-llvm -Xclang -no-opaque-pointers -Xclang -disable-llvm-passes -O3 -g -Wall -Werror -D__TARGET_ARCH_$(ARCH) $(CFLAGS) $(CLANG_BPF_SYS_INCLUDES) -I../include/$(ARCH) -target bpf $< -o build/$@
+
+$(OBJ_SMT): %.bpf.smt2: %.bpf.ll ../include/$(ARCH)/vmlinux.h
+	sudo docker exec d6c sea smt ${DOCKER_PATH}/$< -o ${DOCKER_PATH}/$@
 
 .PHONY: clean
 clean:
-	rm -f *.o
+	rm -f build
 
 .PHONY: build
-build: $(OBJ)
+build: $(OBJ_O) $(OBJ_LL) $(OBJ_SMT)
