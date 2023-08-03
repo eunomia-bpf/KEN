@@ -4,14 +4,41 @@ import os
 import subprocess
 from opencopilot.z3_vector_db.summary import get_onefunction
 
+def is_function_call()->bool:
+    pass
 
-def prompt(context: str, program: str, error: str):
+def prompt(context: str, program: str, error: str)->object:
+    """
+    prompt the current codedb and return the pre condition and post conditino
+    """
     pass
 
 
 def parse_bpftrace_program(context: str, program: str):
     """
     parse one program, the bpftrace will first compile, the compiler has the assume for z3 to verify
+    Args:
+        context: The context is for the current context
+        program: 
+
+    Returns:
+
+    """
+    for line in program:
+        if is_function_call():
+            prompt(context, line)
+            
+    with open("/tmp/tmp.bt", "w") as f:
+        f.write(program)
+    try:
+        var = subprocess.check_output["sudo", "bpftrace", "-d", "/tmp/tmp.bt"]
+        print(var)
+    except Exception as error:
+        prompt(context, program, error)
+
+def parse_libbpf_program(context: str, program: str):
+    """
+    parse one program, the libbpf will first compile, the compiler has the assume for z3 to verify
     Args:
         context: The context is for the current context
         program: 
