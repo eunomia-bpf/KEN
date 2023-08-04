@@ -4,3 +4,6 @@ __pycache__
 __pycache__
 *.o
 *.bc
+gpttrace/__pycache__
+gpttrace/utils/__pycache__
+evaluation/__pycache__

@@ -2,12 +2,10 @@ import os
 import json
 import shutil
 import tempfile
-import openai
 
 from gpttrace.utils.common import get_doc_content_for_query, init_conversation
 from gpttrace.prompt import construct_running_prompt, construct_prompt_on_error, construct_prompt_for_explain
 from gpttrace.bpftrace import run_bpftrace
-
 
 def call_gpt_api(prompt: str) -> str:
     """
@@ -21,7 +19,10 @@ def call_gpt_api(prompt: str) -> str:
     return response["choices"][0]["message"]["content"]
 
 
-def execute(user_input: str, verbose: bool = False, retry: int = 5, previous_prompt: str = None, output: str = None) -> None:
+def execute(user_input: str, 
+            verbose: bool = False, 
+            retry: int = 5,
+            previous_prompt: str = None, output: str = None) -> None:
     """
     Convert the user request into a BPF command and execute it.
 
