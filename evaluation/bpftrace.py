@@ -184,14 +184,13 @@ RUN_PROGRAM_PROMPT: str = """
     - if error occurs, you should try to explain the error and get the examples and hook points to retry again.
     """
 
-save_file: str = "./program" + str(os.getpid()) + ".json"
+save_file: str = "result/program-" + str(os.getpid()) + ".json"
 
 def bpftrace_run_program(program: str) -> str:
     res = run_command(["sudo", "timeout", "--preserve-status",
-                      "-s", "2", "3", "bpftrace", "-e", program])
-    # save the running res to a file
-    with open(save_file, "w") as f:
-        f.writelines(json.dumps(res))
+                      "-s", "2", "20", "bpftrace", "-e", program])
+    with open(save_file, "a") as f:
+        f.write(json.dumps(res))
     return json.dumps(res)[:1024]
 
 
@@ -314,10 +313,8 @@ def main() -> None:
     else:
         parser.print_help()
 
-
 if __name__ == "__main__":
     main()
-
 
 class TestRunBpftrace(unittest.TestCase):
     def test_run_command_short_live(self):

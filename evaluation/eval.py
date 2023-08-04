@@ -17,8 +17,11 @@ def main():
         process = subprocess.run(
             ["python3", "./bpftrace.py", line, "--save_file",
                 save_file, "--model_name", "gpt-3.5-turbo-16k"],
+            capture_output=True,
         )
-
+        # save the output to a file
+        with open(save_file, "w") as f:
+            f.write(process.stdout.decode("utf-8"))
         print(f"Test case completed. Output saved to: {save_file}\n")
 
 
