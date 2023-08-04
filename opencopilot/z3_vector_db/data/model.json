@@ -14,12 +14,5 @@
        "arg1":"<40",
        "arg2":"<40"
     }
-  },  
-  "kretprobe:cap_capable":{
-    "description":"The output hook point of cap_capable, the functionaility of kernel function is for checking whether the socket's cap is capable or not?",
-    "pre":{
-       "arg1":"<40"
-    }
   }
-
 }

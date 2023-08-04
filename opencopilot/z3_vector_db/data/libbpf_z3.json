@@ -733,7 +733,6 @@
         "description": "Attempt to set the value of the bpf_sock_ops_cb_flags field for the full TCP socket associated to bpf_sock_ops to argval.",
         "pre": {
             "bpf_sock_ops": "!=null",
-            "argval": "!=null",
             "argval": "in [BPF_SOCK_OPS_RTO_CB_FLAG, BPF_SOCK_OPS_RETRANS_CB_FLAG, BPF_SOCK_OPS_STATE_CB_FLAG, BPF_SOCK_OPS_RTT_CB_FLAG]"
         },
         "post": {
@@ -1600,7 +1599,7 @@
 },
 {
     "bpf_sk_assign": {
-        "description": "Assign the *sk* to the *skb*. When combined with appropriate routing configuration to receive the packet towards the socket, will cause *skb* to be delivered to the specified socket. Subsequent redirection of *skb* via **bpf_redirect**\ (), **bpf_clone_redirect**\ () or other methods outside of BPF may interfere with successful delivery to the socket. This operation is only valid from TC ingress path.",
+        "description": "Assign the *sk* to the *skb*. When combined with appropriate routing configuration to receive the packet towards the socket, will cause *skb* to be delivered to the specified socket. Subsequent redirection of *skb* via **bpf_redirect** (), **bpf_clone_redirect** () or other methods outside of BPF may interfere with successful delivery to the socket. This operation is only valid from TC ingress path.",
         "pre": {
             "ctx": "!=null",
             "sk": "!=null",

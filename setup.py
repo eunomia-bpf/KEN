@@ -17,11 +17,11 @@ def parse_requirements(file_name: str) -> List[str]:
 
 
 setuptools.setup(
-    name="DB-GPT",
-    packages=find_packages(),
-    version="0.2.3",
-    author="csunny",
-    author_email="cfqcsunny@gmail.com",
+    name="opencopilot",
+    packages=["opencopilot"],
+    version="0.1.0",
+    author=["yunwei"],
+    author_email=["yunwei356@gmail.com"],
     description="OpenCopilot is an experimental open-source project that uses localized GPT large models to maintain your Linux as prompted and verified the semantic by automatic assertion verification.",
     long_description=long_description,
     long_description_content_type="text/markdown",

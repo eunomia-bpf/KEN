@@ -86,29 +86,24 @@ def generate_bpftrace_once():
         None
     """
 
-    folder_path = "./posts"
-    files = os.listdir(folder_path)
-    articles = {}
-    for file_name in files:
-        json_file = "../ebpf-vector-db-main/bpftrace/output.json"
-        file_path = os.path.join(folder_path, file_name)
-        file_name = file_name[:-4]
-        if file_name in articles:
-            print(
-                f"The article named {file_name} already exists. Skipping...")
-            continue
-        if os.path.isfile(file_path):
-            try:
-                with open(file_path, 'r', encoding='utf-8') as file:
-                    content = file.read()
-                    result = get_onefunction(content)
-                    articles[file_name] = result
-                    print(
-                        f"The article named <{file_name}> is finished. \n\n")
-                    with open(json_file, 'w', encoding='utf-8') as file:
-                        json.dump(articles, file)
-            except Exception as _:
-                print(f"The article named <{file_name}> has failed... \n\n")
+    responses = []
+    with open("opencopilot/z3_vector_db/data/bpf_kprobe_defs_format.json", 'r', encoding='utf-8') as file:
+        data = json.load(file)
+        for key, value in data.items():
+
+            prompt = libbpf_prompt(key, value)
+            response = generate_response(prompt)
+
+            code_pattern = r'```json\n(.*?)\n```'
+            json_code = re.findall(code_pattern, response, re.DOTALL)
+            if not json_code:
+                json_code = response
+
+            responses += json_code
+            print(json_code, '\n\n')
+
+            with open("opencopilot/z3_vector_db/data/bpftrace_z3.json", 'a+', encoding='utf-8') as file:
+                file.write(json_code[0] + ",\n")
 
 
 def get_onefunction(content):
@@ -147,5 +142,5 @@ def get_onefunction(content):
 
 
 if __name__ == "__main__":
-
-    generate_libbpf_once()
+    # generate_libbpf_once()
+    generate_bpftrace_once()

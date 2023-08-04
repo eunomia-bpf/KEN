@@ -1,5 +1,6 @@
 .idea
-*.ll
 build
-gpttrace/__pycache__
-gpttrace/utils/__pycache__
+__pycache__
+__pycache__
+*.o
+*.bc
