@@ -36,6 +36,51 @@ def libbpf_prompt(statement, doc):
     """
     return prompt + info
 
+def bpftrace_prompt(statement, doc, is_return:True):
+    prompt = """
+    I'm working on a project involving eBPF (Extended Berkeley Packet Filter) programs and I need to generate Z3 conditions for various eBPF helpers. These conditions will be used to prove the correctness of the eBPF programs. 
+    """+("Remember this is the kretprobe function of the bpftrace, which the post condition is the return value's constraints and the name should be kretprobe:[function name]" if is_return else  "Remember this is the kprobe function of the bpftrace, which the pre condition is the input argument's constraints and the name should be kprobe:[function name]" )+("""
+    The output should be in JSON format. For example:
+    ```json
+    {
+        "kretprobe:bpf_map_update_elem": {
+            "description": "Add or update the value of the entry associated to *key* in *map* with *value*.",
+            "pre": {
+                "map": "!=null",
+                "key": "!=null",
+                "value": "!=null",
+                "flags": "in [BPF_NOEXIST, BPF_EXIST, BPF_ANY]",
+                "map_type": "not in [BPF_MAP_TYPE_ARRAY, BPF_MAP_TYPE_PERCPU_ARRAY] when flags == BPF_NOEXIST"
+            },
+        }
+    }
+    ```
+    """ if is_return else """
+    The output should be in JSON format. For example:
+    ```json
+    {
+        "kprobe:bpf_map_update_elem": {
+            "description": "Add or update the value of the entry associated to *key* in *map* with *value*.",
+            "pre": {
+                "map": "!=null",
+                "key": "!=null",
+                "value": "!=null",
+                "flags": "in [BPF_NOEXIST, BPF_EXIST, BPF_ANY]",
+                "map_type": "not in [BPF_MAP_TYPE_ARRAY, BPF_MAP_TYPE_PERCPU_ARRAY] when flags == BPF_NOEXIST"
+            },
+        }
+    }
+    ```
+    """)
+    
+    info = f"""
+    Could you assist me generate these conditions for function `{statement}` in JSON format? The helper doc is:
+    ```txt
+    {doc}
+    ```
+    """
+    return prompt + info
+
 def generate_response(PROMPT):
     """
     Generates a response using the OpenAI GPT-3.5 language model.
@@ -85,13 +130,14 @@ def generate_bpftrace_once():
     Returns:
         None
     """
-
+    with open("opencopilot/z3_vector_db/data/bpftrace_z3.json", 'w', encoding='utf-8') as file:
+        file.write("[")
     responses = []
-    with open("opencopilot/z3_vector_db/data/bpf_kprobe_defs_format.json", 'r', encoding='utf-8') as file:
+    with open("opencopilot/z3_vector_db/data/bpf_kprobe_def_format.json", 'r', encoding='utf-8') as file:
         data = json.load(file)
         for key, value in data.items():
-
-            prompt = libbpf_prompt(key, value)
+            # kretprobe
+            prompt = bpftrace_prompt(key, value,True)
             response = generate_response(prompt)
 
             code_pattern = r'```json\n(.*?)\n```'
@@ -104,7 +150,21 @@ def generate_bpftrace_once():
 
             with open("opencopilot/z3_vector_db/data/bpftrace_z3.json", 'a+', encoding='utf-8') as file:
                 file.write(json_code[0] + ",\n")
+            # kprobe
+            prompt = bpftrace_prompt(key, value,False)
+            response = generate_response(prompt)
+            code_pattern = r'```json\n(.*?)\n```'
+            json_code = re.findall(code_pattern, response, re.DOTALL)
+            if not json_code:
+                json_code = response
 
+            responses += json_code
+            print(json_code, '\n\n')
+
+            with open("opencopilot/z3_vector_db/data/bpftrace_z3.json", 'a+', encoding='utf-8') as file:
+                file.write(json_code[0] + ",\n")
+    with open("opencopilot/z3_vector_db/data/bpftrace_z3.json", 'a+', encoding='utf-8') as file:
+        file.write("]")
 
 def get_onefunction(content):
     """

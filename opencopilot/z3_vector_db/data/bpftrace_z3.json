@@ -1,0 +1,1269 @@
+[{
+    "kretprobe:__bitmap_shift_right": {
+        "description": "Logical right shift of the bits in a bitmap",
+        "pre": {
+            "dst": "!=null",
+            "src": "!=null",
+            "shift": ">= 0",
+            "nbits": ">= 0"
+        }
+    }
+},
+{
+    "kprobe:__bitmap_shift_right": {
+        "description": "Logical right shift of the bits in a bitmap",
+        "pre": {
+            "dst": "!=null",
+            "src": "!=null",
+            "shift": ">=0",
+            "nbits": ">0",
+            "dst_size": "==nbits",
+            "src_size": "==nbits",
+            "shift": "<nbits"
+        }
+    }
+},
+{
+    "kretprobe:__bitmap_shift_left": {
+        "description": "Logical left shift of the bits in a bitmap",
+        "pre": {
+            "dst": "!=null",
+            "src": "!=null",
+            "shift": ">=0",
+            "nbits": ">=0"
+        }
+    }
+},
+{
+    "kprobe:__bitmap_shift_left": {
+        "description": "Logical left shift of the bits in a bitmap",
+        "pre": {
+            "dst": "!=null",
+            "src": "!=null",
+            "shift": ">=0",
+            "nbits": ">=0"
+        }
+    }
+},
+{
+    "kretprobe:bitmap_cut": {
+        "description": "Remove bit region from bitmap and right shift remaining bits",
+        "pre": {
+            "dst": "!=null",
+            "src": "!=null",
+            "first": ">=0",
+            "cut": ">=0",
+            "nbits": ">=0"
+        }
+    }
+},
+{
+    "kprobe:bitmap_cut": {
+        "description": "Remove bit region from bitmap and right shift remaining bits.",
+        "pre": {
+            "dst": "!=null",
+            "src": "!=null",
+            "first": ">=0",
+            "cut": ">=0",
+            "nbits": ">=0"
+        }
+    }
+},
+{
+    "kretprobe:bitmap_find_next_zero_area_off": {
+        "description": "Find a contiguous aligned zero area",
+        "pre": {
+            "map": "!=null",
+            "size": ">=0",
+            "start": ">=0",
+            "nr": ">=0",
+            "align_mask": ">=0",
+            "align_offset": ">=0",
+            "align_mask": "is one less than a power of 2"
+        }
+    }
+},
+{
+    "kprobe:bitmap_find_next_zero_area_off": {
+        "description": "Find a contiguous aligned zero area",
+        "pre": {
+            "map": "!=null",
+            "size": ">=0",
+            "start": ">=0",
+            "nr": ">=0",
+            "align_mask": ">=0",
+            "align_offset": ">=0",
+            "align_mask": "is one less than a power of 2",
+            "align_offset": "is multiple of the power of 2 specified by align_mask"
+        }
+    }
+},
+{
+    "kretprobe:bitmap_parse_user": {
+        "description": "Convert an ASCII hex string in a user buffer into a bitmap",
+        "pre": {
+            "ubuf": "!=null",
+            "ulen": ">=0",
+            "maskp": "!=null",
+            "nmaskbits": ">=0"
+        }
+    }
+},
+{
+    "kprobe:bitmap_parse_user": {
+        "description": "Convert an ASCII hex string in a user buffer into a bitmap.",
+        "pre": {
+            "ubuf": "!=null",
+            "ulen": ">=0",
+            "maskp": "!=null",
+            "nmaskbits": ">=0"
+        }
+    }
+},
+{
+    "kretprobe:bitmap_print_to_pagebuf": {
+        "description": "Convert bitmap to list or hex format ASCII string",
+        "pre": {
+            "list": "bool",
+            "buf": "!=null",
+            "maskp": "!=null",
+            "nmaskbits": "int"
+        },
+        "post": {
+            "return": "int",
+            "buf": "!=null",
+            "buf_length": "int"
+        }
+    }
+},
+{
+    "kprobe:bitmap_print_to_pagebuf": {
+        "description": "Convert bitmap to list or hex format ASCII string",
+        "pre": {
+            "list": "bool",
+            "buf": "!=null",
+            "maskp": "!=null",
+            "nmaskbits": "int"
+        },
+        "post": {
+            "return": "int"
+        }
+    }
+},
+{
+    "kretprobe:bitmap_print_bitmask_to_buf": {
+        "description": "Prints the bitmask to the buffer.",
+        "pre": {
+            "buf": "!=null",
+            "maskp": "!=null",
+            "nmaskbits": ">=0",
+            "off": ">=0",
+            "count": ">=0"
+        }
+    }
+},
+S,
+{
+    "kretprobe:bitmap_parselist_user": {
+        "description": "Convert user buffer's list format ASCII string to bitmap.",
+        "pre": {
+            "ubuf": "!=null",
+            "ulen": ">=0",
+            "maskp": "!=null",
+            "nmaskbits": ">=0"
+        }
+    }
+},
+{
+    "kprobe:bitmap_parselist_user": {
+        "description": "Convert user buffer's list format ASCII string to bitmap.",
+        "pre": {
+            "ubuf": "!=null",
+            "ulen": ">=0",
+            "maskp": "!=null",
+            "nmaskbits": ">=0"
+        }
+    }
+},
+{
+    "kretprobe:bitmap_remap": {
+        "description": "Apply map defined by a pair of bitmaps to another bitmap",
+        "pre": {
+            "dst": "!=null",
+            "src": "!=null",
+            "old": "!=null",
+            "new": "!=null",
+            "nbits": ">=0"
+        }
+    }
+},
+{
+    "kprobe:bitmap_remap": {
+        "description": "Apply map defined by a pair of bitmaps to another bitmap",
+        "pre": {
+            "dst": "!=null",
+            "src": "!=null",
+            "old": "!=null",
+            "new": "!=null",
+            "nbits": ">=0"
+        }
+    }
+},
+{
+    "kretprobe:bitmap_bitremap": {
+        "description": "Apply map defined by a pair of bitmaps to a single bit",
+        "pre": {
+            "oldbit": "!=null",
+            "old": "!=null",
+            "new": "!=null",
+            "bits": "!=null"
+        }
+    }
+},
+{
+    "kprobe:bitmap_bitremap": {
+        "description": "Apply map defined by a pair of bitmaps to a single bit",
+        "pre": {
+            "oldbit": "!=null",
+            "old": "!=null",
+            "new": "!=null",
+            "bits": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:bitmap_find_free_region": {
+        "description": "Find a contiguous aligned mem region",
+        "pre": {
+            "bitmap": "!=null",
+            "bits": "!=null",
+            "order": "!=null"
+        }
+    }
+},
+{
+    "kprobe:bitmap_find_free_region": {
+        "description": "Find a contiguous aligned mem region",
+        "pre": {
+            "bitmap": "!=null",
+            "bits": "!=null",
+            "order": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:bitmap_release_region": {
+        "description": "Release allocated bitmap region",
+        "pre": {
+            "bitmap": "!=null",
+            "pos": "!=null",
+            "order": "!=null"
+        }
+    }
+},
+{
+    "kprobe:bitmap_release_region": {
+        "description": "Release allocated bitmap region",
+        "pre": {
+            "bitmap": "!=null",
+            "pos": "!=null",
+            "order": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:bitmap_allocate_region": {
+        "description": "Allocate (set bits in) a specified region of a bitmap.",
+        "pre": {
+            "bitmap": "!=null",
+            "pos": "!=null",
+            "order": "!=null"
+        },
+        "post": {
+            "return": "in [0, -EBUSY]"
+        }
+    }
+},
+{
+    "kprobe:bitmap_allocate_region": {
+        "description": "Allocate (set bits in) a specified region of a bitmap.",
+        "pre": {
+            "bitmap": "!=null",
+            "pos": "!=null",
+            "order": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:bitmap_copy_le": {
+        "description": "Copy a bitmap, putting the bits into little-endian order.",
+        "pre": {
+            "dst": "!=null",
+            "src": "!=null",
+            "nbits": "% BITS_PER_LONG == 0"
+        }
+    }
+},
+{
+    "kprobe:bitmap_copy_le": {
+        "description": "Copy a bitmap, putting the bits into little-endian order.",
+        "pre": {
+            "dst": "!=null",
+            "src": "!=null",
+            "nbits": "% BITS_PER_LONG == 0"
+        }
+    }
+},
+{
+    "kretprobe:bitmap_from_arr32": {
+        "description": "Copy the contents of u32 array of bits to bitmap.",
+        "pre": {
+            "bitmap": "!=null",
+            "buf": "!=null",
+            "nbits": ">=0"
+        }
+    }
+},
+{
+    "kprobe:bitmap_from_arr32": {
+        "description": "Copy the contents of u32 array of bits to bitmap.",
+        "pre": {
+            "bitmap": "!=null",
+            "buf": "!=null",
+            "nbits": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:bitmap_to_arr32": {
+        "description": "Copy the contents of bitmap to a u32 array of bits.",
+        "pre": {
+            "buf": "!=null",
+            "bitmap": "!=null",
+            "nbits": ">=0"
+        }
+    }
+},
+{
+    "kprobe:bitmap_to_arr32": {
+        "description": "Copy the contents of bitmap to a u32 array of bits.",
+        "pre": {
+            "buf": "!=null",
+            "bitmap": "!=null",
+            "nbits": ">=0"
+        }
+    }
+},
+{
+    "kretprobe:bitmap_from_arr64": {
+        "description": "Copy the contents of u64 array of bits to bitmap.",
+        "pre": {
+            "bitmap": "!=null",
+            "buf": "!=null",
+            "nbits": ">=0"
+        }
+    }
+},
+{
+    "kprobe:bitmap_from_arr64": {
+        "description": "Copy the contents of u64 array of bits to bitmap.",
+        "pre": {
+            "bitmap": "!=null",
+            "buf": "!=null",
+            "nbits": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:bitmap_to_arr64": {
+        "description": "Copy the contents of bitmap to a u64 array of bits.",
+        "pre": {
+            "buf": "!=null",
+            "bitmap": "!=null",
+            "nbits": ">=0"
+        }
+    }
+},
+{
+    "kprobe:bitmap_to_arr64": {
+        "description": "Copy the contents of bitmap to a u64 array of bits.",
+        "pre": {
+            "buf": "!=null",
+            "bitmap": "!=null",
+            "nbits": ">=0"
+        }
+    }
+},
+{
+    "kretprobe:sg_split": {
+        "description": "Split a scatterlist into several scatterlists",
+        "pre": {
+            "in": "!=null",
+            "in_mapped_nents": ">=0",
+            "skip": ">=0",
+            "nb_splits": ">0",
+            "split_sizes": "!=null",
+            "out": "!=null",
+            "out_mapped_nents": ">=0",
+            "gfp_mask": ">=0"
+        }
+    }
+},
+{
+    "kprobe:sg_split": {
+        "description": "Split a scatterlist into several scatterlists",
+        "pre": {
+            "in": "!=null",
+            "in_mapped_nents": ">=0",
+            "skip": ">=0",
+            "nb_splits": ">0",
+            "split_sizes": "!=null",
+            "out": "!=null",
+            "out_mapped_nents": ">=0",
+            "gfp_mask": ">=0"
+        }
+    }
+},
+{
+    "kretprobe:unlikely(val.t - m->s[2].t > win))": {
+        "description": "Check if the time difference between val.t and m->s[2].t is greater than win.",
+        "pre": {
+            "val.t": "!=null",
+            "m->s[2].t": "!=null",
+            "win": "!=null"
+        }
+    }
+},
+S,
+{
+    "kretprobe:alloc_cpu_rmap": {
+        "description": "Allocate CPU affinity reverse-map",
+        "pre": {
+            "size": "!=null",
+            "flags": "in [GFP_KERNEL]"
+        }
+    }
+},
+{
+    "kprobe:alloc_cpu_rmap": {
+        "description": "Allocate CPU affinity reverse-map",
+        "pre": {
+            "size": ">=0",
+            "flags": "in [GFP_KERNEL]"
+        }
+    }
+},
+{
+    "kretprobe:cpu_rmap_put": {
+        "description": "Release reference on a cpu_rmap",
+        "pre": {
+            "rmap": "!=null"
+        }
+    }
+},
+{
+    "kprobe:cpu_rmap_put": {
+        "description": "Release ref on a cpu_rmap",
+        "pre": {
+            "rmap": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:cpu_rmap_add": {
+        "description": "Add object to a rmap",
+        "pre": {
+            "rmap": "!=null",
+            "obj": "!=null"
+        },
+        "post": {
+            "return_value": "is an integer",
+            "return_value": ">= -ENOSPC"
+        }
+    }
+},
+{
+    "kprobe:cpu_rmap_add": {
+        "description": "Add object to a rmap",
+        "pre": {
+            "rmap": "!=null",
+            "obj": "!=null"
+        },
+        "post": {
+            "return": "int",
+            "return_conditions": {
+                "value": ">= -ENOSPC"
+            }
+        }
+    }
+},
+{
+    "kretprobe:cpu_rmap_update": {
+        "description": "Update CPU rmap following a change of object affinity",
+        "pre": {
+            "rmap": "!=null",
+            "index": "!=null",
+            "affinity": "!=null"
+        }
+    }
+},
+{
+    "kprobe:cpu_rmap_update": {
+        "description": "Update CPU rmap following a change of object affinity",
+        "pre": {
+            "rmap": "!=null",
+            "index": "!=null",
+            "affinity": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:free_irq_cpu_rmap": {
+        "description": "Free a CPU affinity reverse-map used for IRQs.",
+        "pre": {
+            "rmap": "!=null"
+        }
+    }
+},
+{
+    "kprobe:free_irq_cpu_rmap": {
+        "description": "Free a CPU affinity reverse-map used for IRQs.",
+        "pre": {
+            "rmap": "in [null, not null]",
+            "context": "in [process context]",
+            "irqs": "must be freed before calling this function"
+        }
+    }
+},
+{
+    "kretprobe:irq_cpu_rmap_remove": {
+        "description": "Remove an IRQ from a CPU affinity reverse-map.",
+        "pre": {
+            "rmap": "!=null",
+            "irq": "!=null"
+        }
+    }
+},
+{
+    "kprobe:irq_cpu_rmap_remove": {
+        "description": "Remove an IRQ from a CPU affinity reverse-map.",
+        "pre": {
+            "rmap": "!=null",
+            "irq": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:irq_cpu_rmap_add": {
+        "description": "Add an IRQ to a CPU affinity reverse-map",
+        "pre": {
+            "rmap": "!=null",
+            "irq": "!=null"
+        }
+    }
+},
+{
+    "kprobe:irq_cpu_rmap_add": {
+        "description": "Add an IRQ to a CPU affinity reverse-map",
+        "pre": {
+            "rmap": "!=null",
+            "irq": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:___ratelimit": {
+        "description": "Paired with WRITE_ONCE() in .proc_handler(). Changing two values separately could be inconsistent and some message could be lost. (See: net_ratelimit_state).",
+        "pre": {
+            "rs": "!=null",
+            "func": "!=null",
+            "interval": "!=null",
+            "burst": "!=null"
+        }
+    }
+},
+{
+    "kprobe:___ratelimit": {
+        "description": "Paired with WRITE_ONCE() in .proc_handler(). Changing two values separately could be inconsistent and some message could be lost. (See: net_ratelimit_state).",
+        "pre": {
+            "rs": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:string_get_size": {
+        "description": "get the size in the specified units",
+        "pre": {
+            "size": "!=null",
+            "blk_size": "!=null",
+            "units": "in [1000, 1024]",
+            "buf": "!=null",
+            "len": ">=9"
+        }
+    }
+},
+{
+    "kprobe:string_get_size": {
+        "description": "get the size in the specified units",
+        "pre": {
+            "size": "!=null",
+            "blk_size": "!=null",
+            "units": "in [1000, 1024]",
+            "buf": "!=null",
+            "len": ">=9"
+        }
+    }
+},
+{
+    "kretprobe:parse_int_array_user": {
+        "description": "Split string into a sequence of integers",
+        "pre": {
+            "from": "!=null",
+            "count": ">=0",
+            "array": "!=null"
+        }
+    }
+},
+{
+    "kprobe:parse_int_array_user": {
+        "description": "Split string into a sequence of integers",
+        "pre": {
+            "from": "!=null",
+            "count": ">=0",
+            "array": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:string_unescape": {
+        "description": "The function unquotes characters in the given string.",
+        "pre": {
+            "src": "!=null",
+            "dst": "!=null",
+            "size": ">=0",
+            "flags": ">=0",
+            "flags": "<=31"
+        }
+    }
+},
+{
+    "kprobe:string_unescape": {
+        "description": "Unquote characters in the given string.",
+        "pre": {
+            "src": "!=null",
+            "dst": "!=null",
+            "size": ">=0",
+            "flags": ">=0",
+            "flags": "in [UNESCAPE_SPACE, UNESCAPE_OCTAL, UNESCAPE_HEX, UNESCAPE_SPECIAL, UNESCAPE_ANY]"
+        },
+        "post": {
+            "return": ">=0"
+        }
+    }
+},
+{
+    "kretprobe:string_escape_mem": {
+        "description": "Quote characters in the given memory buffer",
+        "pre": {
+            "src": "!=null",
+            "isz": ">=0",
+            "dst": "!=null",
+            "osz": ">=0",
+            "flags": "unsigned int",
+            "only": "!=null"
+        }
+    }
+},
+{
+    "kprobe:string_escape_mem": {
+        "description": "Quote characters in the given memory buffer.",
+        "pre": {
+            "src": "!=null",
+            "isz": ">=0",
+            "dst": "!=null",
+            "osz": ">=0",
+            "flags": ">=0",
+            "only": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:strscpy_pad": {
+        "description": "Copy a C-string into a sized buffer",
+        "pre": {
+            "dest": "!=null",
+            "src": "!=null",
+            "count": "!=null",
+            "count": ">0"
+        }
+    }
+},
+{
+    "kprobe:strscpy_pad": {
+        "description": "Copy a C-string into a sized buffer",
+        "pre": {
+            "dest": "!=null",
+            "src": "!=null",
+            "count": "!=null",
+            "count": ">0"
+        }
+    }
+},
+{
+    "kretprobe:skip_spaces": {
+        "description": "Removes leading whitespace from @str.",
+        "pre": {
+            "str": "!=null"
+        }
+    }
+},
+{
+    "kprobe:skip_spaces": {
+        "description": "Removes leading whitespace from @str.",
+        "pre": {
+            "str": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:strim": {
+        "description": "Removes leading and trailing whitespace from the given string.",
+        "pre": {
+            "s": "!=null"
+        }
+    }
+},
+{
+    "kprobe:strim": {
+        "description": "Removes leading and trailing whitespace from the given string.",
+        "pre": {
+            "s": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:sysfs_streq": {
+        "description": "Return true if strings are equal, modulo trailing newline.",
+        "pre": {
+            "s1": "!=null",
+            "s2": "!=null"
+        }
+    }
+},
+{
+    "kprobe:sysfs_streq": {
+        "description": "Return true if strings are equal, modulo trailing newline.",
+        "pre": {
+            "s1": "!=null",
+            "s2": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:match_string": {
+        "description": "Matches given string in an array",
+        "pre": {
+            "array": "!=null",
+            "n": ">= -1",
+            "string": "!=null"
+        },
+        "post": {
+            "return": ">= -22"
+        }
+    }
+},
+{
+    "kprobe:match_string": {
+        "description": "Matches given string in an array",
+        "pre": {
+            "array": "!=null",
+            "n": ">= -1",
+            "string": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:__sysfs_match_string": {
+        "description": "Matches given string in an array",
+        "pre": {
+            "array": "!=null",
+            "n": ">= -1",
+            "str": "!=null"
+        },
+        "post": {
+            "return": ">= -EINVAL",
+            "return": "<= n",
+            "return": "!= -1"
+        }
+    }
+},
+{
+    "kprobe:__sysfs_match_string": {
+        "description": "Matches given string in an array",
+        "pre": {
+            "array": "!=null",
+            "n": ">=0",
+            "str": "!=null"
+        },
+        "post": {
+            "return": ">=-EINVAL"
+        }
+    }
+},
+{
+    "kretprobe:strreplace": {
+        "description": "Replace all occurrences of character in string.",
+        "pre": {
+            "str": "!=null",
+            "old": "!=null",
+            "new": "!=null"
+        },
+        "post": {
+            "return": "str"
+        }
+    }
+},
+{
+    "kprobe:strreplace": {
+        "description": "Replace all occurrences of character in string.",
+        "pre": {
+            "str": "!=null",
+            "old": "!=null",
+            "new": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:memcpy_and_pad": {
+        "description": "Copy one buffer to another with padding",
+        "pre": {
+            "dest": "!=null",
+            "dest_len": ">= count",
+            "src": "!=null",
+            "count": ">= 0",
+            "pad": ">= 0"
+        }
+    }
+},
+{
+    "kprobe:memcpy_and_pad": {
+        "description": "Copy one buffer to another with padding",
+        "pre": {
+            "dest": "!=null",
+            "dest_len": ">= count",
+            "src": "!=null",
+            "count": ">= 0",
+            "pad": ">= 0"
+        }
+    }
+},
+S,
+S,
+{
+    "kretprobe:kstrtoull": {
+        "description": "convert a string to an unsigned long long",
+        "pre": {
+            "s": "!=null",
+            "base": ">=0 and <=16",
+            "res": "!=null"
+        },
+        "post": {
+            "return": "in [0, -ERANGE, -EINVAL]"
+        }
+    }
+},
+{
+    "kprobe:kstrtoull": {
+        "description": "Convert a string to an unsigned long long.",
+        "pre": {
+            "s": "!=null",
+            "base": ">=0",
+            "res": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:kstrtoll": {
+        "description": "Converts a string to a long long.",
+        "pre": {
+            "s": "!=null",
+            "base": ">=0 and <=16",
+            "res": "!=null"
+        },
+        "post": {
+            "return": "in [0, -ERANGE, -EINVAL]"
+        }
+    }
+},
+{
+    "kprobe:kstrtoll": {
+        "description": "Convert a string to a long long",
+        "pre": {
+            "s": "!=null",
+            "base": ">=0 and <=16",
+            "res": "!=null"
+        },
+        "post": {
+            "return": "in [0, -ERANGE, -EINVAL]"
+        }
+    }
+},
+{
+    "kretprobe:kstrtouint": {
+        "description": "Convert a string to an unsigned int.",
+        "pre": {
+            "s": "!=null",
+            "base": ">=0 and <=16",
+            "res": "!=null"
+        },
+        "post": {
+            "return": "in [0, -ERANGE, -EINVAL]"
+        }
+    }
+},
+{
+    "kprobe:noinlineint kstrtouint": {
+        "description": "Convert a string to an unsigned int.",
+        "pre": {
+            "s": "!=null",
+            "base": ">=0 and <=16",
+            "res": "!=null"
+        },
+        "post": {
+            "return": "in [0, -ERANGE, -EINVAL]"
+        }
+    }
+},
+{
+    "kretprobe:kstrtoint": {
+        "description": "Converts a string to an integer.",
+        "pre": {
+            "s": "!=null",
+            "base": ">=0 and <=16",
+            "res": "!=null"
+        },
+        "post": {
+            "return": "in [0, -ERANGE, -EINVAL]"
+        }
+    }
+},
+{
+    "kprobe:kstrtoint": {
+        "description": "Convert a string to an int",
+        "pre": {
+            "s": "!=null",
+            "base": ">=0 and <=16",
+            "res": "!=null"
+        },
+        "post": {
+            "return": "in [0, -ERANGE, -EINVAL]"
+        }
+    }
+},
+{
+    "kretprobe:kstrtobool": {
+        "description": "Convert common user inputs into boolean values.",
+        "pre": {
+            "s": "!=null",
+            "res": "!=null"
+        },
+        "post": {
+            "return": "==0",
+            "res": "!=null"
+        }
+    }
+},
+{
+    "kprobe:kstrtobool": {
+        "description": "Convert common user inputs into boolean values.",
+        "pre": {
+            "s": "!=null",
+            "res": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:kstrtobool_from_user": {
+        "description": "Converts a string to a boolean value from user space.",
+        "pre": {
+            "s": "!=null",
+            "count": ">=0",
+            "res": "!=null"
+        },
+        "post": {
+            "return": "in [0, -EFAULT]",
+            "buf": "!=null",
+            "buf[count]": "= '\\0'",
+            "res": "is boolean"
+        }
+    }
+},
+{
+    "kprobe:kstrtobool_from_user": {
+        "description": "Converts a string from user space to a boolean value.",
+        "pre": {
+            "s": "!=null",
+            "count": ">=0",
+            "res": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:_parse_integer_fixup_radix": {
+        "description": "Convert integer string representation to an integer. If an integer doesn't fit into specified type, -E is returned. Integer starts with optional sign. kstrtou () functions do not accept sign \"-\". Radix 0 means autodetection: leading \"0x\" implies radix 16, leading \"0\" implies radix 8, otherwise radix is 10. Autodetection hints work after optional sign, but not before. If -E is returned, result is not touched.",
+        "pre": {
+            "s": "!=null",
+            "base": "!=null"
+        }
+    }
+},
+{
+    "kprobe:_parse_integer_fixup_radix": {
+        "description": "Convert integer string representation to an integer. If an integer doesn't fit into specified type, -E is returned. Integer starts with optional sign. kstrtou () functions do not accept sign \"-\". Radix 0 means autodetection: leading \"0x\" implies radix 16, leading \"0\" implies radix 8, otherwise radix is 10. Autodetection hints work after optional sign, but not before. If -E is returned, result is not touched.",
+        "pre": {
+            "s": "!=null",
+            "base": "!=null"
+        }
+    }
+},
+S,
+S,
+{
+    "kretprobe:_find_first_and_bit": {
+        "description": "Find the first bit set in the bitwise AND of addr1[idx] and addr2[idx].",
+        "pre": {
+            "addr1": "!=null",
+            "addr2": "!=null",
+            "size": "!=null"
+        }
+    }
+},
+S,
+{
+    "kretprobe:_find_first_zero_bit": {
+        "description": "Find the first zero bit in the given address range.",
+        "pre": {
+            "addr": "!=null",
+            "size": "!=null"
+        }
+    }
+},
+{
+    "kprobe:find_first_zero_bit": {
+        "description": "Find the first zero bit in the given memory range.",
+        "pre": {
+            "addr": "!=null",
+            "size": "!=null"
+        }
+    }
+},
+S,
+S,
+S,
+S,
+S,
+S,
+S,
+{
+    "kprobe:_find_next_or_bit": {
+        "pre": {
+            "nbits": "unsigned long",
+            "start": "unsigned long"
+        }
+    }
+},
+S,
+S,
+{
+    "kretprobe:if (strnlen(s, maxlen) < maxlen)return false;/* Don't dirty result unless string is valid MAC. `": {
+        "description": "Check if the string is a valid MAC address.",
+        "pre": {
+            "s": "!=null",
+            "maxlen": ">=0",
+            "mac": "!=null"
+        }
+    }
+},
+{
+    "kprobe:if (strnlen(s, maxlen) < maxlen)return false;/* Don't dirty result unless string is valid MAC. `": {
+        "description": "Check if the string is a valid MAC address.",
+        "pre": {
+            "s": "!=null",
+            "maxlen": ">=0",
+            "s[maxlen]": "==0",
+            "mac": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:fault_in_iov_iter_readable": {
+        "description": "Fault in iov iterator for reading",
+        "pre": {
+            "i": "!=null",
+            "size": ">=0"
+        }
+    }
+},
+{
+    "kprobe:fault_in_iov_iter_readable": {
+        "description": "Fault in iov iterator for reading",
+        "pre": {
+            "i": "!=null",
+            "size": ">=0"
+        }
+    }
+},
+{
+    "kretprobe:fault_in_iov_iter_writeable": {
+        "description": "Fault in iov iterator for writing",
+        "pre": {
+            "i": "!=null",
+            "size": ">=0"
+        }
+    }
+},
+{
+    "kprobe:fault_in_iov_iter_writeable": {
+        "description": "Fault in iov iterator for writing",
+        "pre": {
+            "i": "!=null",
+            "size": ">=0"
+        }
+    }
+},
+{
+    "kretprobe:iov_iter_iovec_advance": {
+        "description": "Advance the iov_iter by the specified size when it is of type iovec.",
+        "pre": {
+            "i": "!=null",
+            "size": "!=null",
+            "i->count": "!=0",
+            "i->iov_offset": ">=0",
+            "i->nr_segs": ">=0",
+            "iter_iov(i)": "!=null",
+            "i->__iov": "!=null"
+        }
+    },
+    "kretprobe:iov_iter_is_bvec": {
+        "description": "Check if the iov_iter is of type bvec.",
+        "pre": {
+            "i": "!=null"
+        }
+    }
+},
+{
+    "kprobe:iov_iter_iovec_advance": {
+        "description": "Advance the iov_iter by the specified size when using bvec.",
+        "pre": {
+            "i": "!=null",
+            "size": "!=null"
+        }
+    },
+    "kprobe:iov_iter_is_bvec": {
+        "description": "Check if the iov_iter is using bvec.",
+        "pre": {
+            "i": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:iov_iter_is_bvec": {
+        "description": "Check if iov_iter is a bvec.",
+        "pre": {
+            "i": "!=null",
+            "unroll": ">=0",
+            "unroll": "<=MAX_RW_COUNT",
+            "iov_iter_is_discard(i)": "==false",
+            "unroll": "<=i.iov_offset",
+            "iov_iter_is_xarray(i)": "==false",
+            "iter_is_ubuf(i)": "==false"
+        }
+    }
+},
+S,
+{
+    "kretprobe:iov_iter_xarray": {
+        "description": "Initialise an IO iterator to use the pages in an xarray",
+        "pre": {
+            "i": "!=null",
+            "direction": "!=null",
+            "xarray": "!=null",
+            "start": "!=null",
+            "count": "!=null"
+        }
+    }
+},
+{
+    "kprobe:iov_iter_xarray": {
+        "description": "Initialise an IO iterator to use the pages in an xarray",
+        "pre": {
+            "i": "!=null",
+            "direction": "!=null",
+            "xarray": "!=null",
+            "start": "!=null",
+            "count": "!=null"
+        }
+    }
+},
+{
+    "kretprobe:iov_iter_discard": {
+        "description": "Initialise an IO iterator that discards data",
+        "pre": {
+            "i": "!=null",
+            "direction": "in [READ]",
+            "count": ">=0"
+        }
+    }
+},
+{
+    "kprobe:iov_iter_discard": {
+        "description": "Initialise an IO iterator that discards data",
+        "pre": {
+            "i": "!=null",
+            "direction": "in [READ]",
+            "count": ">=0"
+        }
+    }
+},
+{
+    "kretprobe:iov_iter_alignment": {
+        "description": "Calculate the alignment value for the given iov_iter.",
+        "pre": {
+            "i": "!=null",
+            "i->count": ">=0",
+            "i->iov_offset": ">=0",
+            "i->nr_segs": ">=0",
+            "iter_is_ubuf(i)": "==true"
+        }
+    },
+    "kretprobe:iov_iter_alignment_iovec": {
+        "description": "Calculate the alignment value for the given iov_iter using iovec.",
+        "pre": {
+            "i": "!=null",
+            "i->count": ">=0",
+            "i->iov_offset": ">=0",
+            "i->nr_segs": ">=0",
+            "iter_is_iovec(i) || iov_iter_is_kvec(i)": "==true"
+        }
+    },
+    "kretprobe:iov_iter_alignment_bvec": {
+        "description": "Calculate the alignment value for the given iov_iter using bvec.",
+        "pre": {
+            "i": "!=null",
+            "i->count": ">=0",
+            "i->iov_offset": ">=0",
+            "i->nr_segs": ">=0",
+            "iov_iter_is_bvec(i)": "==true"
+        }
+    },
+    "kretprobe:iov_iter_alignment_xarray": {
+        "description": "Calculate the alignment value for the given iov_iter using xarray.",
+        "pre": {
+            "i": "!=null",
+            "i->count": ">=0",
+            "i->iov_offset": ">=0",
+            "i->nr_segs": ">=0",
+            "iov_iter_is_xarray(i)": "==true"
+        }
+    }
+},

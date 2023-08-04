@@ -1,8 +1,8 @@
 # https://github.com/shilch/seccomp/blob/master/extract_syscalls.sh
 from z3 import *
-import os, re
+import os, re, json
 import subprocess
-from opencopilot.z3_vector_db.z3_conditions_for_ebpf import get_onefunction
+from opencopilot.z3_vector_db.z3_conditions_for_ebpf import generate_response
 
 
 def replace_bpftrace_sassert_func_to_error(program: str):
@@ -12,38 +12,105 @@ def replace_bpftrace_sassert_func_to_error(program: str):
     return s
 
 
-def prompt(
-    context: str, program: str, line: str, linenumber: int, error: str = ""
+def bpf_prompt(
+    context: str,
+    program: str,
+    function: str,
+    linenumber: int,
+    file: str = "bpftrace_z3.json",
+    error: str = "",
 ) -> object:
     """
     prompt the current codedb and return the pre condition and post conditino json
     """
     # get format promt from
     # has db
-    json = json.load(open("../z3_vector_db/data/", "rw+"))
+    json_template = ""
+    json_ = json.load(open("../z3_vector_db/data/" + file, "r"))
+    for li in list(json_[0].keys()):
+        if li == function:
+            pass  # TODO
 
-def get_pre_condition(pre_json: object)->str:
+    prompt = (
+        f"""
+    I'm working on a project involving eBPF (Extended Berkeley Packet Filter) programs and I just got the job of context "{context}", in my coded program "{program}" line {linenumber}, {function}, can you provide some refined constraints information on this line considering the context. 
+    """
+        + f"Here's the broader constraints of this function: {json_template}"
+        if json_template != 0
+        else ""
+        + """
+    Can you generate the refined constraints in following JSON format:
+    ```json
+    {
+        "bpf_map_update_elem": {
+            "description": "Add or update the value of the entry associated to *key* in *map* with *value*.",
+            "pre": {
+                "map": "!=null",
+                "key": "!=null",
+                "value": "!=null",
+                "flags": "in [BPF_NOEXIST, BPF_EXIST, BPF_ANY]",
+                "map_type": "not in [BPF_MAP_TYPE_ARRAY, BPF_MAP_TYPE_PERCPU_ARRAY] when flags == BPF_NOEXIST"
+            },
+            "post": {
+                "return": "in [0, negative number]"
+            }
+        }
+    }
+    ```
+    """
+    )
+
+    response = generate_response(prompt)
+    code_pattern = r"```json\n(.*?)\n```"
+    json_code = re.findall(code_pattern, response, re.DOTALL)
+    if not json_code:
+        json_code = response
+
+    responses += json_code
+    print(json_code, "\n\n")
+    # refine model
+
+
+def get_pre_condition(pre_json: object) -> str:
     """
     prompt the chatgpt to rewrite the condition to c style
     """
-    
+
+
+def get_post_condition(post_json: object) -> str:
+    """
+    prompt the chatgpt to rewrite the condition to c style
+    """
+
 
 def verify_z3() -> object:
     """
     compile the result gives sat/unsat
+    sudo docker run  -d $PWD:$PWD seahorn sleep 10000000
     """
-    
+    os.system(
+        "docker exec d6c sea smt /code/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.ll -o /code/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.smt2"
+    )
+    try:
+        sat = subprocess.check_output[
+            "z3",
+            "/home/victoryang00/Documents/plos23/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.smt2",
+        ]
+        return sat == "sat"
+    except:
+        print("error in verify z3")
+        # try again?
 
 
 def compile_bpftrace_once(program: str):
     with open("/tmp/tmp.bt", "w") as f:
         f.write(program)
     try:
-        var = subprocess.check_output["sudo", "bpftrace", "-d", "/tmp/tmp.bt"]
+        var = subprocess.check_output["bpftrace", "-d", "/tmp/tmp.bt"]
         print(var)
         # parce from the normal function to result
     except Exception as error:
-        prompt(context, program, error)
+        bpf_prompt(context, program, error)
 
 
 def parse_bpftrace_program(context: str, program: str):
@@ -62,14 +129,14 @@ def parse_bpftrace_program(context: str, program: str):
             if match.startswith(line.strip()):
                 try:
                     print(line)
-                    prompt_json = prompt(context, program, line, linenumber)
+                    prompt_json = bpf_prompt(context, program, line, linenumber)
                     # TODO: passed the json in
                     program_tmp = program
                     program = program.replace(
                         match, get_pre_condition(prompt_json) + match
                     )
                     program = program.replace(
-                        match, match + get_pre_condition(prompt_json)
+                        match, match + get_post_condition(prompt_json)
                     )
 
                     program = replace_bpftrace_sassert_func_to_error(program)
@@ -95,14 +162,14 @@ def parse_libbpf_program(context: str, program: str):
     for line in program.splitlines():
         print(line)
         print("\n")
-        prompt(context, line)
+        bpf_prompt(context, line)
     with open("/tmp/tmp.bpc.c", "w") as f:
         f.write(program)
     try:
         var = subprocess.check_output["sudo", "bpftrace", "-d", "/tmp/tmp.bpf.c"]
         print(var)
     except Exception as error:
-        prompt(context, program, error)
+        bpf_prompt(context, program, error)
 
 
 # extract all the function calls
