@@ -1,23 +1,26 @@
-from typing import Any, Optional
-from langchain.evaluation import StringEvaluator
+import os
+import subprocess
 
-class PerplexityEvaluator(StringEvaluator):
-    """Evaluate the perplexity of a predicted string."""
 
-    def __init__(self, model_id: str = "gpt2"):
-        self.model_id = model_id
+def main():
+    with open('cases.txt', 'r') as file:
+        lines = file.readlines()
 
-    def _evaluate_strings(
-        self,
-        *,
-        prediction: str,
-        reference: Optional[str] = None,
-        input: Optional[str] = None,
-        **kwargs: Any,
-    ) -> dict:
-        return {"score": 1}
+    for i, line in enumerate(lines):
+        line = line.strip()  # Remove the newline character at the end
+        save_file = f"data_save/output_{i}.txt"
 
-evaluator = PerplexityEvaluator()
-eval_result = evaluator.evaluate_strings(prediction="The rains in Spain fall mainly on the plain.")
+        print(f"Running test case: {line}")
+        print(f"Output will be saved to: {save_file}")
 
-print(eval_result)
+        # Run the bpftrace.py script with the test case as input
+        process = subprocess.run(
+            ["python3", "./bpftrace.py", line, "--save_file",
+                save_file, "--model_name", "gpt-3.5-turbo-16k"],
+        )
+
+        print(f"Test case completed. Output saved to: {save_file}\n")
+
+
+if __name__ == "__main__":
+    main()

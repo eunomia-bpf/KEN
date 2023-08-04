@@ -19,7 +19,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chat_models import ChatOpenAI
 from langchain.utilities import SerpAPIWrapper
 from langchain.agents import initialize_agent
-from langchain import LLMMathChain, OpenAI, SerpAPIWrapper, SQLDatabase, SQLDatabaseChain
+from langchain import LLMMathChain, OpenAI
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chat_models import ChatOpenAI
 
@@ -117,7 +117,7 @@ class CommandResult(TypedDict):
     returncode: int
 
 
-def run_command(command: List[str], require_check: bool = True) -> CommandResult:
+def run_command(command: List[str], require_check: bool = False) -> CommandResult:
     """
     This function runs a command with a timeout.
     """
@@ -133,7 +133,11 @@ def run_command(command: List[str], require_check: bool = True) -> CommandResult
                 "returncode": -1
             }
     # Start the process
-    with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:
+    with subprocess.Popen(command,
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE,
+                          text=True,
+                          ) as process:
         stdout = ""
         stderr = ""
         try:
@@ -168,7 +172,7 @@ def run_command(command: List[str], require_check: bool = True) -> CommandResult
 
 
 RUN_PROGRAM_PROMPT: str = """
-    Runs a bpftrace program.
+    Runs a eBPF program. You should only input the eBPF program itself.
 
     If user ask to trace or profile something, 
     You need to use this tool to run eBPF programs.
@@ -180,9 +184,14 @@ RUN_PROGRAM_PROMPT: str = """
     - if error occurs, you should try to explain the error and get the examples and hook points to retry again.
     """
 
+save_file: str = "./program" + str(os.getpid()) + ".json"
 
 def bpftrace_run_program(program: str) -> str:
-    res = run_command(["sudo", "bpftrace", "-e", program])
+    res = run_command(["sudo", "timeout", "--preserve-status",
+                      "-s", "2", "3", "bpftrace", "-e", program])
+    # save the running res to a file
+    with open(save_file, "w") as f:
+        f.writelines(json.dumps(res))
     return json.dumps(res)[:1024]
 
 
@@ -215,14 +224,14 @@ def bpftrace_get_hooks(regex: str) -> str:
 
 def get_gpttrace_tools() -> List[Tool]:
     bpftrace_run_tool = Tool.from_function(bpftrace_run_program,
-                                           "run-bpftrace-program",
+                                           "run-ebpf-program",
                                            description=RUN_PROGRAM_PROMPT)
     bpftrace_probe_tool = Tool.from_function(bpftrace_get_hooks,
-                                             "get-bpftrace-hooks-with-regex",
+                                             "get-ebpf-hooks-with-regex",
                                              description=GET_HOOK_PROMPT)
     get_examples_from_db_tool = Tool.from_function(
         get_examples_from_db,
-        "get-bpftrace-examples-with-query",
+        "get-ebpf-examples-with-query",
         description=GET_EXAMPLE_PROMPT)
     tools = [
         bpftrace_probe_tool,
@@ -245,6 +254,7 @@ def setup_openai_agent(model_name: str = "gpt-3.5-turbo", temperature: float = 0
         verbose=True, memory=memory)
     return agent_chain
 
+
 def setup_react_agent(model_name: str = "gpt-3.5-turbo", temperature: float = 0) -> AgentType:
     """
     setup the agent chain and return the agent
@@ -257,6 +267,7 @@ def setup_react_agent(model_name: str = "gpt-3.5-turbo", temperature: float = 0)
         tools, llm, agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,  max_iterations=10,
         verbose=True, memory=memory)
     return agent_chain
+
 
 def main() -> None:
     """
@@ -276,20 +287,37 @@ def main() -> None:
         metavar="OPENAI_API_KEY")
     parser.add_argument('input_string', type=str,
                         help='Your question or request for a bpf program')
+    parser.add_argument('--model_name', type=str,
+                        help='model_name', default="gpt-3.5-turbo")
+    parser.add_argument('--agent_type', type=str,
+                        help='agent_type')
+    parser.add_argument('--save_file', type=str,
+                        help='save result to file', default="./result/program.res")
     args = parser.parse_args()
 
     if os.getenv('OPENAI_API_KEY', args.key) is None:
         print(
             f"Either provide your access token through `-k` or through environment variable {OPENAI_API_KEY}")
         return
+
+    save_file = args.save_file
+
+    agent_chain = None
+    if args.agent_type == "react":
+        agent_chain = setup_react_agent(model_name=args.model_name)
+    elif args.agent_type == "openai":
+        agent_chain = setup_openai_agent(model_name=args.model_name)
+    else:
+        agent_chain = setup_react_agent(model_name=args.model_name)
     if args.input_string is not None:
-        agent_chain = setup_openai_agent()
         agent_chain.run(input=args.input_string)
     else:
         parser.print_help()
 
+
 if __name__ == "__main__":
     main()
+
 
 class TestRunBpftrace(unittest.TestCase):
     def test_run_command_short_live(self):
