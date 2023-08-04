@@ -17,70 +17,52 @@ def bpf_prompt(
     program: str,
     function: str,
     linenumber: int,
-    file: str = "bpftrace_z3.json",
+    file: str = "bpftrace_z3_tmp.json",
     error: str = "",
 ) -> object:
     """
     prompt the current codedb and return the pre condition and post conditino json
     """
     # get format promt from
+
     # has db
     json_template = ""
-    json_ = json.load(open("../z3_vector_db/data/" + file, "r"))
+    json_ = json.load(open("opencopilot/z3_vector_db/data/" + file, "r"))
     for li in list(json_[0].keys()):
         if li == function:
-            pass  # TODO
+            json_template = json_[li]
 
     prompt = (
         f"""
-    I'm working on a project involving eBPF (Extended Berkeley Packet Filter) programs and I just got the job of context "{context}", in my coded program "{program}" line {linenumber}, {function}, can you provide some refined constraints information on this line considering the context. 
+    I'm working on a project involving writing {"bpftrace" if file.__contains__("bpftrace") else "libbpf"} programs and I just got the job of context "{context}", in my coded program "{program}" line {linenumber}, {function}, can you provide some refined constraints information on this line considering the context. 
     """
         + f"Here's the broader constraints of this function: {json_template}"
         if json_template != 0
         else ""
-        + """
-    Can you generate the refined constraints in following JSON format:
-    ```json
-    {
-        "bpf_map_update_elem": {
-            "description": "Add or update the value of the entry associated to *key* in *map* with *value*.",
-            "pre": {
-                "map": "!=null",
-                "key": "!=null",
-                "value": "!=null",
-                "flags": "in [BPF_NOEXIST, BPF_EXIST, BPF_ANY]",
-                "map_type": "not in [BPF_MAP_TYPE_ARRAY, BPF_MAP_TYPE_PERCPU_ARRAY] when flags == BPF_NOEXIST"
-            },
-            "post": {
-                "return": "in [0, negative number]"
-            }
-        }
-    }
+        + f"However, last time you generate wrong the function with error: {error}. "
+        if error != ""
+        else ""
+        f"""
+    Can you generate the refined constraints in following C format:
+    ```c
+      assume([a>19]);
+      {function}
+      sassert([a<399]);
     ```
+    The requirement is to put the condition to the correstponding [], and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler.
     """
     )
+    print("prompts\n", prompt)
 
     response = generate_response(prompt)
-    code_pattern = r"```json\n(.*?)\n```"
-    json_code = re.findall(code_pattern, response, re.DOTALL)
-    if not json_code:
-        json_code = response
+    print("responses", response)
+    code_pattern = r"```c\n(.*?)\n```"
+    c_code = re.findall(code_pattern, response, re.DOTALL)
+    if not c_code or c_code.__contains__("assume") or c_code.__contains__("sassert"):
+        c_code = function
 
-    responses += json_code
-    print(json_code, "\n\n")
-    # refine model
-
-
-def get_pre_condition(pre_json: object) -> str:
-    """
-    prompt the chatgpt to rewrite the condition to c style
-    """
-
-
-def get_post_condition(post_json: object) -> str:
-    """
-    prompt the chatgpt to rewrite the condition to c style
-    """
+    print(c_code, "\n\n")
+    return c_code
 
 
 def verify_z3() -> object:
@@ -102,15 +84,20 @@ def verify_z3() -> object:
         # try again?
 
 
+def get_linenumber(output_string: str):
+    return 0
+
+
 def compile_bpftrace_once(program: str):
     with open("/tmp/tmp.bt", "w") as f:
         f.write(program)
     try:
-        var = subprocess.check_output["bpftrace", "-d", "/tmp/tmp.bt"]
+        var = subprocess.check_output(["bpftrace", "-d", "/tmp/tmp.bt"])
         print(var)
         # parce from the normal function to result
+
     except Exception as error:
-        bpf_prompt(context, program, error)
+        bpf_prompt(context, program, get_linenumber(var), error=error)
 
 
 def parse_bpftrace_program(context: str, program: str):
@@ -124,29 +111,33 @@ def parse_bpftrace_program(context: str, program: str):
 
     """
     matches = re.findall(r"\w+\([^)]*\)", program)
+    
+    uprobe_match = re.findall(r"uretprobe:.+", program)
+    kprobe_match = re.findall(r"kretprobe:.+", program)
+    
     for linenumber, line in enumerate(program.splitlines()):
+        print(linenumber,line)
         for match in matches:
             if match.startswith(line.strip()):
-                try:
-                    print(line)
-                    prompt_json = bpf_prompt(context, program, line, linenumber)
-                    # TODO: passed the json in
-                    program_tmp = program
-                    program = program.replace(
-                        match, get_pre_condition(prompt_json) + match
-                    )
-                    program = program.replace(
-                        match, match + get_post_condition(prompt_json)
-                    )
+                # try:
+                print(line,"line",match)
+                if line==0:
+                    break
+                prompted_pre_post = bpf_prompt(context, program, line, linenumber)
+                program_tmp = program
+                program = program.replace(match, prompted_pre_post)
+                print("program_tmp\n", program_tmp)
+                print("program\n", program)
 
-                    program = replace_bpftrace_sassert_func_to_error(program)
-                    print(program)
-                    res = verify_z3(program)
-                    if res == False:
-                        program = program_tmp
+                program = replace_bpftrace_sassert_func_to_error(program)
+                print(program)
+                program = compile_bpftrace_once(program)
+                res = verify_z3(program)
+                if res == False:
+                    program = program_tmp
 
-                except:
-                    print("error in geting the smt")
+                # except:
+                #     print("error in geting the smt")
 
 
 def parse_libbpf_program(context: str, program: str):
@@ -173,24 +164,23 @@ def parse_libbpf_program(context: str, program: str):
 
 
 # extract all the function calls
-
 # prompt from the vectordb and gen
 
 if __name__ == "__main__":
-    context = "The following is the code Print entered bash commands from all running shells. For Linux, uses bpftrace and eBPF. This works by tracing the readline() function using a uretprobe (uprobes)."
+    context = "The following is the code Print entered bash commands from all running shells. For Linux, uses bpftrace and eBPF. This works by tracing the readline() function using a kprobes."
     program = """
 #!/usr/bin/env bpftrace
 
 BEGIN
 {
-	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
-	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+	printf("Tracing bash commands... Hit Ctrl-C to end.\\n");
+	printf("%-9s %-6s %s\\n", "TIME", "PID", "COMMAND");
 }
 
-uretprobe:/bin/bash:readline
+kretprobe:/bin/bash:readline
 {
 	time("%H:%M:%S  ");
-	printf("%-6d %s\n", pid, str(retval));
+	printf("%-6d %s\\n", pid, str(retval));
 }
 
 }"""
