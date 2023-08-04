@@ -1,14 +1,14 @@
 # OpenCopilot: A LLM empowered eBPF info collection and codegen
 
-- [ ] Stable Mapping from Natural Language to eBPF semantic
+- [ ] Stable Mapping from Natural Language to eBPF semantics
 - [ ] Context Abstraction: thread isolation and information refinement 
-- [ ] Can deal with prompt to do arbritrary jobs, like system data collection and scheduler, hardware control, etc.
+- [ ] Can deal with prompts to do arbitrary jobs, like system data collection and scheduler, hardware control, etc.
 
 ## Usage and Setup 🛠
 
 ```console
-$ python3 -m gpttrace -h
-usage: GPTtrace [-h] [-c CMD_NAME QUERY] [-v] [-k OPENAI_API_KEY]
+$ python3 -m opencopilot -h
+usage: OpenCopilot [-h] [-c CMD_NAME QUERY] [-v] [-k OPENAI_API_KEY]
                 input_string
 
 Use ChatGPT to write eBPF programs (bpftrace, etc.)
