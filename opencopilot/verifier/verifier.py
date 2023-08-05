@@ -7,6 +7,7 @@ from opencopilot.z3_vector_db.z3_conditions_for_ebpf import generate_response
 
 # prompt what should be changed
 
+
 def replace_bpftrace_sassert_func_to_error(program: str):
     pattern = r"sassert\((.+)\);"
     repl = r"if(!(\1)) {error();}"
@@ -39,6 +40,48 @@ def replace_line(program, line, content):
         return "\n".join(lines)
     else:
         return program
+
+
+def gen_explaination_prompt():
+    pass
+
+
+def get_argument_prompt(
+    function: str,
+) -> object:
+    """
+    prompt argument prompt
+    """
+    function = function.replace("kprobe:", "").replace("kretprobe", "")
+    function_def = ""
+    with open(
+        "opencopilot/z3_vector_db/data/bpf_kprobe_def_format.json",
+        "r",
+        encoding="utf-8",
+    ) as file:
+        data = json.load(file)
+        for key, value in data.items():
+            if key.__contains__(function):
+                function_def = key
+
+    prompt = (
+        f"""
+    I will assign you the job I have a function {function} like {function_def}, please provide me with the function definition and the corresponding argument to be assigned to arg0. I need the output only has the variable name without the type info. I want the result in the below text format :
+    """
+        + """
+    ```text
+    And we know the definition of {function} is {function definition}, we should put all the first argument {the first argument}'s operation as to arg0, the second argument {the second argument} be arg1, the third argument {the third argument} be arg2, {.. until the end of argument list}. You should replace the following paremeter with corresponding one.
+    ```
+    """
+    )
+    print("prompts\n", prompt)
+    response = generate_response(prompt)
+    code_pattern = r"```text\n(.*?)\n```"
+    text_code = re.findall(code_pattern, response, re.DOTALL)
+    if not text_code:
+        return ""
+    print("text code", text_code)
+    return text_code[0]
 
 
 def get_bpf_prompt(
@@ -179,8 +222,9 @@ def kprobe_prompt(
       assume([]);
       sassert([]);
     ```
-    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line {(linenumber+2)}, sassert will be inserted in the end of the function and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. And we know the definition of policy_node is  int policy_node(gfp_t gfp, struct mempolicy *policy, int nd), we should put all the first argument gfp's operation as to arg0, the second policy be arg1, the third nd be arg2
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line {(linenumber+2)}, sassert will be inserted in the end of the function and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. 
     """
+        + get_argument_prompt(function)
     )
     print("prompts\n", prompt)
 
@@ -208,10 +252,14 @@ def verify_z3(prompt_function, context, program, function, linenumber) -> object
     #     "docker exec d6c sea smt /code/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.ll -o /code/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.smt2"
     # )
     try:
-        sat = subprocess.run([
-            "z3",
-            "/home/victoryang00/Documents/plos23/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.smt2",
-        ],text=True, capture_output=True)
+        sat = subprocess.run(
+            [
+                "z3",
+                "/home/victoryang00/Documents/plos23/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.smt2",
+            ],
+            text=True,
+            capture_output=True,
+        )
         if sat.stdout.__contains__("sat"):
             return sat == "sat"
         else:
@@ -337,7 +385,7 @@ def parse_bpftrace_program(context: str, program: str):
     print(kprobe_matches)
 
     tracepoint_matches = re.findall(r"tracepoint:.+", program)
-
+    # try:
     for linenumber, line in enumerate(program.splitlines()):
         print(linenumber, line)
         if linenumber == 0 or line.strip() == "":
@@ -367,9 +415,14 @@ def parse_bpftrace_program(context: str, program: str):
                 parts = program.split("ModuleID")
 
                 substring = "; ModuleID " + parts[1].strip()
-                res = verify_z3(get_kprobe_prompt, context, substring, line, linenumber)
+                res = verify_z3(
+                    get_kprobe_prompt, context, substring, line, linenumber
+                )
                 if not res:
                     program = program_tmp
+    # except:
+    #     pass
+    return program
 
 
 def parse_libbpf_program(context: str, program: str):
@@ -382,87 +435,123 @@ def parse_libbpf_program(context: str, program: str):
     Returns:
 
     """
-    for line in program.splitlines():
-        print(line)
-        print("\n")
-        bpf_prompt(context, line)
-    with open("/tmp/tmp.bpc.c", "w") as f:
-        f.write(program)
-    try:
-        var = subprocess.check_output["sudo", "bpftrace", "-d", "/tmp/tmp.bpf.c"]
-        print(var)
-    except Exception as error:
-        bpf_prompt(context, program, error)
+    function_matches = re.findall(r"\w+\([^)]*\)", program)
+    print(function_matches)
+    print(function_matches)
+    uprobe_matches = re.findall(r"uretprobe:.+", program)
+    kprobe_matches = re.findall(r"kprobe:.+", program)
+    kretprobe_matches = re.findall(r"kretprobe:.+", program)
+    print(kprobe_matches)
+
+    tracepoint_matches = re.findall(r"tracepoint:.+", program)
+    # try:
+    for linenumber, line in enumerate(program.splitlines()):
+        print(linenumber, line)
+        if linenumber == 0 or line.strip() == "":
+            continue
+        for match in function_matches:
+            if match.startswith(line.strip()):
+                # try:
+                print(line, "line", match)
+                program_tmp = program
+                program = get_bpf_prompt(context, program, line, linenumber)
+                program = compile_bpftrace_once(
+                    bpf_prompt, context, program, line, linenumber
+                )
+                res = verify_z3(bpf_prompt, context, program, line, linenumber)
+                if not res:
+                    program = program_tmp
+                # except:
+                #     print("error in geting the smt")
+        for match in kprobe_matches:
+            if match.startswith(line.strip()):
+                program_tmp = program
+                program = get_kprobe_prompt(context, program, line, linenumber)
+                print("program\n", program)
+                program = compile_bpftrace_once(
+                    get_kprobe_prompt, context, program, line, linenumber
+                )
+                parts = program.split("ModuleID")
+
+                substring = "; ModuleID " + parts[1].strip()
+                res = verify_z3(
+                    get_kprobe_prompt, context, substring, line, linenumber
+                )
+                if not res:
+                    program = program_tmp
+    # except:
+    #     pass
+    return program
 
 
 # extract all the function calls
 # prompt from the vectordb and gen
 
 if __name__ == "__main__":
-    context = "tracing the policy_node() function to hook all the function of policy_node and add up the arg0 as nd only if the nd is 2."
-    program = """
-#!/usr/bin/env bpftrace
+#     context = "tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2."
+#     program = """
+# #!/usr/bin/env bpftrace
 
-BEGIN
-{
-	printf("Tracing bash commands... Hit Ctrl-C to end.\\n");
-	printf("%-9s %-6s %s\\n", "TIME", "PID", "COMMAND");
-}
+# BEGIN
+# {
+# 	printf("Tracing bash commands... Hit Ctrl-C to end.\\n");
+# 	printf("%-9s %-6s %s\\n", "TIME", "PID", "COMMAND");
+# }
 
-kprobe:policy_node
-{
-	@reqts[arg2] +=1;
-}
+# kprobe:__nla_parse
+# {
+# 	@reqts[arg1] +=1;
+# }
 
-END
-{
-	clear(@reqts);
-}
-"""
-    parse_bpftrace_program(context, program)
+# END
+# {
+# 	clear(@reqts);
+# }
+# """
+#     parse_bpftrace_program(context, program)
     # print(replace_bpftrace_sassert_func_to_error(program))
     # print(replace_bpftrace_with_pre_post(program, "kprobe:policy_node","assume(nd==1);","sassert(nd==1);"))
 
-#     context = "The following is the code Print entered bash commands from all running shells. For Linux, uses bpftrace and eBPF. This works by tracing the readline() function using a uretprobe (uprobes)."
-#     program = """
-# #include <vmlinux.h>
-# #include <bpf/bpf_helpers.h>
-# #include <bpf/bpf_tracing.h>
-# #include <bpf/bpf_core_read.h>
-# #include "maps.bpf.h"
+    context = "This libbpf (Berkeley Packet Filter) program tracks and increments the number of SYN segments received by IPv4 and IPv6 TCP sockets, effectively monitoring the TCP SYN backlog on the system."
+    program = """
+#include <vmlinux.h>
+#include <bpf/bpf_helpers.h>
+#include <bpf/bpf_tracing.h>
+#include <bpf/bpf_core_read.h>
+#include "maps.bpf.h"
 
-# #define BUCKET_MULTIPLIER 50
-# #define BUCKET_COUNT 20
+#define BUCKET_MULTIPLIER 50
+#define BUCKET_COUNT 20
 
-# struct {
-#     __uint(type, BPF_MAP_TYPE_HASH);
-#     __uint(max_entries, BUCKET_COUNT + 2);
-#     __type(key, u64);
-#     __type(value, u64);
-# } tcp_syn_backlog SEC(".maps");
+struct {
+    __uint(type, BPF_MAP_TYPE_HASH);
+    __uint(max_entries, BUCKET_COUNT + 2);
+    __type(key, u64);
+    __type(value, u64);
+} tcp_syn_backlog SEC(".maps");
 
-# static int do_count(u64 backlog)
-# {
-#     u64 bucket = backlog / BUCKET_MULTIPLIER;
+static int do_count(u64 backlog)
+{
+    u64 bucket = backlog / BUCKET_MULTIPLIER;
 
-#     increment_map(&tcp_syn_backlog, &bucket, 1);
-#     increment_map(&tcp_syn_backlog, &bucket, backlog);
+    increment_map(&tcp_syn_backlog, &bucket, 1);
+    increment_map(&tcp_syn_backlog, &bucket, backlog);
 
-#     return 0;
-# }
+    return 0;
+}
 
-# SEC("kprobe/tcp_v4_syn_recv_sock")
-# int BPF_KPROBE(kprobe__tcp_v4_syn_recv_sock, struct sock *sk)
-# {
-#     return do_count(BPF_CORE_READ(sk, sk_ack_backlog) / 50);
-# }
+SEC("kprobe/tcp_v4_syn_recv_sock")
+int BPF_KPROBE(kprobe__tcp_v4_syn_recv_sock, struct sock *sk)
+{
+    return do_count(BPF_CORE_READ(sk, sk_ack_backlog) / 50);
+}
 
-# SEC("kprobe/tcp_v6_syn_recv_sock")
-# int BPF_KPROBE(kprobe__tcp_v6_syn_recv_sock, struct sock *sk)
-# {
-#     return do_count(BPF_CORE_READ(sk, sk_ack_backlog) / 50);
-# }
+SEC("kprobe/tcp_v6_syn_recv_sock")
+int BPF_KPROBE(kprobe__tcp_v6_syn_recv_sock, struct sock *sk)
+{
+    return do_count(BPF_CORE_READ(sk, sk_ack_backlog) / 50);
+}
 
-# char LICENSE[] SEC("license") = "GPL";
-# """
-#     parse_libbpf_program(context, program)
+char LICENSE[] SEC("license") = "GPL";
+"""
+    parse_libbpf_program(context, program)
