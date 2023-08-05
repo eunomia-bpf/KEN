@@ -5,6 +5,8 @@ import subprocess
 from opencopilot.z3_vector_db.z3_conditions_for_ebpf import generate_response
 
 
+# prompt what should be changed
+
 def replace_bpftrace_sassert_func_to_error(program: str):
     pattern = r"sassert\((.+)\);"
     repl = r"if(!(\1)) {error();}"
@@ -28,57 +30,33 @@ def replace_bpftrace_with_pre_post(program: str, function: str, pre: str, post: 
     return s
 
 
-# def bpf_prompt(
-#     context: str,
-#     program: str,
-#     function: str,
-#     linenumber: int,
-#     file: str = "bpftrace_z3_tmp.json",
-#     error: str = "",
-# ) -> object:
-#     """
-#     prompt the current codedb and return the pre condition and post conditino json
-#     """
-#     # get format promt from
+def replace_line(program, line, content):
+    lines = program.splitlines()
+    if line <= len(lines):
+        lines[
+            line - 1
+        ] = content  # -1 because list indices start at 0, but we're treating lines as starting at 1
+        return "\n".join(lines)
+    else:
+        return program
 
-#     # has db
-#     json_template = ""
-#     json_ = json.load(open("opencopilot/z3_vector_db/data/" + file, "r"))
-#     for li in list(json_[0].keys()):
-#         if li == function:
-#             json_template = json_[li]
 
-#     prompt = (
-#         f"""
-#     I'm working on a project involving writing {"bpftrace" if file.__contains__("bpftrace") else "libbpf"} programs and I just got the job of context "{context}", in my coded program "{program}" line {linenumber}, {function}, can you provide some refined constraints information on this line considering the context.
-#     """
-#         + f"Here's the broader constraints of this function: {json_template}"
-#         if json_template != 0
-#         else ""
-#         + f"However, last time you generate wrong the function with error: {error}. "
-#         if error != ""
-#         else ""
-#         f"""
-#     Can you generate the refined constraints in following C format:
-#     ```c
-#       assume([a>19]);
-#       {function}
-#       sassert([a<399]);
-#     ```
-#     The requirement is to put the condition to the correstponding [], and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler.
-#     """
-#     )
-#     print("prompts\n", prompt)
+def get_bpf_prompt(
+    context: str,
+    program: str,
+    line: str,
+    linenumber: int,
+    file: str = "bpftrace_z3_tmp.json",
+    error="",
+) -> object:
+    """
+    prompt the current codedb and return the pre condition and post conditino json
+    """
+    prompted_pre_post = bpf_prompt(context, program, line, linenumber, file, error)
+    program = program.replace(line.strip(), prompted_pre_post)
 
-#     response = generate_response(prompt)
-#     print("responses", response)
-#     code_pattern = r"```c\n(.*?)\n```"
-#     c_code = re.findall(code_pattern, response, re.DOTALL)
-#     if not c_code or c_code.__contains__("assume") or c_code.__contains__("sassert"):
-#         c_code = function
-
-#     print(c_code, "\n\n")
-#     return c_code
+    program = replace_bpftrace_sassert_func_to_error(program)
+    return program
 
 
 def bpf_prompt(
@@ -134,6 +112,33 @@ def bpf_prompt(
     return c_code.replace(";\n", ";")
 
 
+def get_kprobe_prompt(
+    context: str,
+    program: str,
+    line: str,
+    linenumber: int,
+    file: str = "bpftrace_z3_tmp.json",
+    error="",
+) -> object:
+    """
+    prompt the current codedb and return the pre condition and post conditino json
+    """
+    prompted_pre_post = kprobe_prompt(
+        context, program, line, linenumber, file=file, error=error
+    )
+    prompted_pre = prompted_pre_post.splitlines()[0]
+    try:
+        prompted_post = prompted_pre_post.splitlines()[1]
+    except:
+        prompted_post = ""
+    program = replace_bpftrace_with_pre_post(
+        program, line.strip(), prompted_pre, prompted_post
+    )
+
+    program = replace_bpftrace_sassert_func_to_error(program)
+    return program
+
+
 def kprobe_prompt(
     context: str,
     program: str,
@@ -174,7 +179,7 @@ def kprobe_prompt(
       assume([]);
       sassert([]);
     ```
-    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line {(linenumber+2)}, sassert will be inserted in the end of the function and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler.
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line {(linenumber+2)}, sassert will be inserted in the end of the function and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. And we know the definition of policy_node is  int policy_node(gfp_t gfp, struct mempolicy *policy, int nd), we should put all the first argument gfp's operation as to arg0, the second policy be arg1, the third nd be arg2
     """
     )
     print("prompts\n", prompt)
@@ -199,15 +204,15 @@ def verify_z3(prompt_function, context, program, function, linenumber) -> object
     """
     with open("opencopilot/ebpf_vector_db/libbpf/build/tmp.ll", "w") as f:
         f.write(program)
-    os.system(
-        "docker exec d6c sea smt /code/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.ll -o /code/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.smt2"
-    )
+    # os.system(
+    #     "docker exec d6c sea smt /code/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.ll -o /code/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.smt2"
+    # )
     try:
-        sat = subprocess.check_output[
+        sat = subprocess.run([
             "z3",
             "/home/victoryang00/Documents/plos23/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.smt2",
-        ]
-        if sat.__contains__("sat"):
+        ],text=True, capture_output=True)
+        if sat.stdout.__contains__("sat"):
             return sat == "sat"
         else:
             for i in range(3):  # retry 3 times
@@ -228,24 +233,37 @@ def get_linenumber(output_string: str):
 def compile_bpftrace_once(prompt_function, context, program, line, linenumber):
     with open("/tmp/tmp.bt", "w") as f:
         f.write(program)
-    try:
-        var = subprocess.check_output(
-            [
-                "sudo",
-                "/home/victoryang00/Documents/plos23/bpftrace/build/src/bpftrace",
-                "-d",
-                "/tmp/tmp.bt",
-            ]
+    # try:
+    var = subprocess.run(
+        [
+            "sudo",
+            "/home/victoryang00/Documents/plos23/bpftrace/build/src/bpftrace",
+            "-d",
+            "/tmp/tmp.bt",
+        ],
+        text=True,
+        capture_output=True,
+    )
+    # print(var)
+    # parce from the normal function to result
+    if var.returncode != 0:
+        return compile_bpftrace_once(
+            prompt_function,
+            context,
+            prompt_function(
+                context,
+                program,
+                line,
+                linenumber,
+                error="nd is the first argument which should be arg0",
+            ),
+            line,
+            linenumber,
         )
-        print(var)
-        # parce from the normal function to result
-        if var.__contains__("ERROR:"):
-            program = prompt_function(context, program, line, linenumber,var)
-            compile_bpftrace_once(prompt_function, context, program, line, linenumber)
-        else:
-            return var
-    except Exception as error:
-        pass
+    else:
+        return var.stdout
+    # except Exception as error:
+    #     pass
 
 
 def parse_bpftrace_program(context: str, program: str):
@@ -328,42 +346,29 @@ def parse_bpftrace_program(context: str, program: str):
             if match.startswith(line.strip()):
                 # try:
                 print(line, "line", match)
-
-                prompted_pre_post = bpf_prompt(context, program, line, linenumber)
                 program_tmp = program
-                program = program.replace(match, prompted_pre_post)
-                print("program_tmp\n", program_tmp)
-                print("program\n", program)
-
-                program = replace_bpftrace_sassert_func_to_error(program)
-                print(program)
-                program = compile_bpftrace_once(bpf_prompt, context, program, line, linenumber)
+                program = get_bpf_prompt(context, program, line, linenumber)
+                program = compile_bpftrace_once(
+                    bpf_prompt, context, program, line, linenumber
+                )
                 res = verify_z3(bpf_prompt, context, program, line, linenumber)
-                if res == False:
+                if not res:
                     program = program_tmp
-
                 # except:
                 #     print("error in geting the smt")
         for match in kprobe_matches:
             if match.startswith(line.strip()):
-                prompted_pre_post = kprobe_prompt(context, program, line, linenumber)
-                prompted_pre = prompted_pre_post.splitlines()[0]
-                prompted_post = prompted_pre_post.splitlines()[1]
                 program_tmp = program
-                program = replace_bpftrace_with_pre_post(
-                    program, match, prompted_pre, prompted_post
-                )
-                print("program_tmp\n", program_tmp)
+                program = get_kprobe_prompt(context, program, line, linenumber)
                 print("program\n", program)
-
-                program = replace_bpftrace_sassert_func_to_error(program)
-                print(program)
-                program = compile_bpftrace_once(kprobe_prompt, context, program, line, linenumber)
+                program = compile_bpftrace_once(
+                    get_kprobe_prompt, context, program, line, linenumber
+                )
                 parts = program.split("ModuleID")
 
-                substring = "ModuleID " + parts[1].strip()
-                res = verify_z3(kprobe_prompt, context, substring,line, linenumber)
-                if res == False:
+                substring = "; ModuleID " + parts[1].strip()
+                res = verify_z3(get_kprobe_prompt, context, substring, line, linenumber)
+                if not res:
                     program = program_tmp
 
 
@@ -406,7 +411,7 @@ BEGIN
 
 kprobe:policy_node
 {
-	@reqts[arg0] +=1;
+	@reqts[arg2] +=1;
 }
 
 END
