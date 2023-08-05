@@ -5630,6 +5630,18 @@
                 "extack": "!=null"
             }
         },
+        "kretprobe:policy_node": {
+            "description": "The policy node is for giving the hint for memory to be allocate on numa local or numa remote",
+            "pre": {
+                "nd": "in [1 2]"
+            }
+        },
+        "kprobe:policy_node": {
+            "description": "The policy node is for giving the hint for memory to be allocate on numa local or numa remote",
+            "pre": {
+                "nd": "in [1 2]"
+            }
+        },
         "kretprobe:nla_find": {
             "description": "Find a specific attribute in a stream of attributes",
             "pre": {

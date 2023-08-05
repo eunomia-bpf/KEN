@@ -6,10 +6,79 @@ from opencopilot.z3_vector_db.z3_conditions_for_ebpf import generate_response
 
 
 def replace_bpftrace_sassert_func_to_error(program: str):
-    pattern = r"sassert\((\w+)\)"
+    pattern = r"sassert\((.+)\);"
     repl = r"if(!(\1)) {error();}"
     s = re.sub(pattern, repl, program)
     return s
+
+
+def replace_bpftrace_with_pre_post(program: str, function: str, pre: str, post: str):
+    pattern = re.compile(function + r"((.*\n)*)\{((.*\n)+)\}")
+    # try:
+    temp = re.search(pattern, program)
+    temp = temp.group().split("}")[0] + "}"
+    print("tmp", temp)
+    temp_program = program.split(temp)
+    repl = function + r"\1{" + pre + r"\3" + post + r"}"
+    s = re.sub(pattern, repl, temp)
+    s = temp_program[0] + s + temp_program[1]
+    # except:
+    #     return program
+
+    return s
+
+
+# def bpf_prompt(
+#     context: str,
+#     program: str,
+#     function: str,
+#     linenumber: int,
+#     file: str = "bpftrace_z3_tmp.json",
+#     error: str = "",
+# ) -> object:
+#     """
+#     prompt the current codedb and return the pre condition and post conditino json
+#     """
+#     # get format promt from
+
+#     # has db
+#     json_template = ""
+#     json_ = json.load(open("opencopilot/z3_vector_db/data/" + file, "r"))
+#     for li in list(json_[0].keys()):
+#         if li == function:
+#             json_template = json_[li]
+
+#     prompt = (
+#         f"""
+#     I'm working on a project involving writing {"bpftrace" if file.__contains__("bpftrace") else "libbpf"} programs and I just got the job of context "{context}", in my coded program "{program}" line {linenumber}, {function}, can you provide some refined constraints information on this line considering the context.
+#     """
+#         + f"Here's the broader constraints of this function: {json_template}"
+#         if json_template != 0
+#         else ""
+#         + f"However, last time you generate wrong the function with error: {error}. "
+#         if error != ""
+#         else ""
+#         f"""
+#     Can you generate the refined constraints in following C format:
+#     ```c
+#       assume([a>19]);
+#       {function}
+#       sassert([a<399]);
+#     ```
+#     The requirement is to put the condition to the correstponding [], and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler.
+#     """
+#     )
+#     print("prompts\n", prompt)
+
+#     response = generate_response(prompt)
+#     print("responses", response)
+#     code_pattern = r"```c\n(.*?)\n```"
+#     c_code = re.findall(code_pattern, response, re.DOTALL)
+#     if not c_code or c_code.__contains__("assume") or c_code.__contains__("sassert"):
+#         c_code = function
+
+#     print(c_code, "\n\n")
+#     return c_code
 
 
 def bpf_prompt(
@@ -62,14 +131,74 @@ def bpf_prompt(
         c_code = function
 
     print(c_code, "\n\n")
+    return c_code.replace(";\n", ";")
+
+
+def kprobe_prompt(
+    context: str,
+    program: str,
+    function: str,
+    linenumber: int,
+    file: str = "bpftrace_z3_tmp.json",
+    error: str = "",
+) -> object:
+    """
+    prompt the current codedb and return the pre condition and post conditino json
+    """
+    # get format promt from
+
+    # has db
+    json_template = ""
+    json_ = json.load(open("opencopilot/z3_vector_db/data/" + file, "r"))
+    for li in list(json_[0].keys()):
+        if li == function:
+            json_template = json_[0][li]
+    program_name = "bpftrace" if file.__contains__("bpftrace") else "libbpf"
+    prompt = (
+        f"""
+    I'm working on a project involving writing {program_name} programs and I just got the job of {context}, in my coded program "{program}" line {linenumber}, {function}, I need to verify based on the context of what I ask, can you provide some refined constraints information on this line considering the context. 
+    """
+        + (
+            f"Here's the broader constraints of this function: {json_template['description']} with pre condition {', '.join(map(lambda kv: f'{kv[0]} should be {kv[1]}', json_template['pre'].items()))}"
+            if json_template != ""
+            else ""
+        )
+        + (
+            f"However, last time you generate wrong the function with error: {error}. "
+            if error != ""
+            else ""
+        )
+        + f"""
+    You should generate the refined constraints in following C format:
+    ```c
+      assume([]);
+      sassert([]);
+    ```
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line {(linenumber+2)}, sassert will be inserted in the end of the function and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler.
+    """
+    )
+    print("prompts\n", prompt)
+
+    response = generate_response(prompt)
+    print("responses", response)
+    code_pattern = r"```c\n(.*?)\n```"
+    c_code = re.findall(code_pattern, response, re.DOTALL)
+    if not c_code or c_code.__contains__("assume") or c_code.__contains__("sassert"):
+        c_code = ""
+    else:
+        c_code = c_code[0]
+
+    print(c_code, "\n\n")
     return c_code
 
 
-def verify_z3() -> object:
+def verify_z3(prompt_function, context, program, function, linenumber) -> object:
     """
     compile the result gives sat/unsat
     sudo docker run  -d $PWD:$PWD seahorn sleep 10000000
     """
+    with open("opencopilot/ebpf_vector_db/libbpf/build/tmp.ll", "w") as f:
+        f.write(program)
     os.system(
         "docker exec d6c sea smt /code/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.ll -o /code/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.smt2"
     )
@@ -78,9 +207,17 @@ def verify_z3() -> object:
             "z3",
             "/home/victoryang00/Documents/plos23/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.smt2",
         ]
-        return sat == "sat"
+        if sat.__contains__("sat"):
+            return sat == "sat"
+        else:
+            for i in range(3):  # retry 3 times
+                program = prompt_function(
+                    context, program, function, linenumber, "z3 error:" + sat
+                )
+                verify_z3(prompt_function, context, program, function, linenumber)
     except:
         print("error in verify z3")
+
         # try again?
 
 
@@ -88,16 +225,27 @@ def get_linenumber(output_string: str):
     return 0
 
 
-def compile_bpftrace_once(program: str):
+def compile_bpftrace_once(prompt_function, context, program, line, linenumber):
     with open("/tmp/tmp.bt", "w") as f:
         f.write(program)
     try:
-        var = subprocess.check_output(["bpftrace", "-d", "/tmp/tmp.bt"])
+        var = subprocess.check_output(
+            [
+                "sudo",
+                "/home/victoryang00/Documents/plos23/bpftrace/build/src/bpftrace",
+                "-d",
+                "/tmp/tmp.bt",
+            ]
+        )
         print(var)
         # parce from the normal function to result
-
+        if var.__contains__("ERROR:"):
+            program = prompt_function(context, program, line, linenumber,var)
+            compile_bpftrace_once(prompt_function, context, program, line, linenumber)
+        else:
+            return var
     except Exception as error:
-        bpf_prompt(context, program, get_linenumber(var), error=error)
+        pass
 
 
 def parse_bpftrace_program(context: str, program: str):
@@ -108,21 +256,79 @@ def parse_bpftrace_program(context: str, program: str):
         program:
 
     Returns:
+        executed results
 
     """
-    matches = re.findall(r"\w+\([^)]*\)", program)
-    
-    uprobe_match = re.findall(r"uretprobe:.+", program)
-    kprobe_match = re.findall(r"kretprobe:.+", program)
-    
+    # currently only support kprobe and user defined function
+    function_filter = [
+        "avg",
+        "buf",
+        "cat",
+        "cgroupid",
+        "clear",
+        "count",
+        "delete",
+        "exit",
+        "hist",
+        "join",
+        "kaddr",
+        "kptr",
+        "ksym",
+        "lhist",
+        "macaddr",
+        "max",
+        "min",
+        "ntop",
+        "override",
+        "print",
+        "printf",
+        "cgroup_path",
+        "reg",
+        "signal",
+        "stats",
+        "str",
+        "strerror",
+        "strftime",
+        "strncmp",
+        "strcontains",
+        "sum",
+        "system",
+        "time",
+        "uaddr",
+        "uptr",
+        "usym",
+        "zero",
+        "path",
+        "unwatch",
+        "bswap",
+        "skboutput",
+        "pton",
+        "debugf",
+        "assume",
+        "error",
+    ]
+    function_matches = re.findall(r"\w+\([^)]*\)", program)
+    print(function_matches)
+    function_matches = [
+        s for s in function_matches if not any(subs in s for subs in function_filter)
+    ]
+    print(function_matches)
+    uprobe_matches = re.findall(r"uretprobe:.+", program)
+    kprobe_matches = re.findall(r"kprobe:.+", program)
+    kretprobe_matches = re.findall(r"kretprobe:.+", program)
+    print(kprobe_matches)
+
+    tracepoint_matches = re.findall(r"tracepoint:.+", program)
+
     for linenumber, line in enumerate(program.splitlines()):
-        print(linenumber,line)
-        for match in matches:
+        print(linenumber, line)
+        if linenumber == 0 or line.strip() == "":
+            continue
+        for match in function_matches:
             if match.startswith(line.strip()):
                 # try:
-                print(line,"line",match)
-                if line==0:
-                    break
+                print(line, "line", match)
+
                 prompted_pre_post = bpf_prompt(context, program, line, linenumber)
                 program_tmp = program
                 program = program.replace(match, prompted_pre_post)
@@ -131,13 +337,34 @@ def parse_bpftrace_program(context: str, program: str):
 
                 program = replace_bpftrace_sassert_func_to_error(program)
                 print(program)
-                program = compile_bpftrace_once(program)
-                res = verify_z3(program)
+                program = compile_bpftrace_once(bpf_prompt, context, program, line, linenumber)
+                res = verify_z3(bpf_prompt, context, program, line, linenumber)
                 if res == False:
                     program = program_tmp
 
                 # except:
                 #     print("error in geting the smt")
+        for match in kprobe_matches:
+            if match.startswith(line.strip()):
+                prompted_pre_post = kprobe_prompt(context, program, line, linenumber)
+                prompted_pre = prompted_pre_post.splitlines()[0]
+                prompted_post = prompted_pre_post.splitlines()[1]
+                program_tmp = program
+                program = replace_bpftrace_with_pre_post(
+                    program, match, prompted_pre, prompted_post
+                )
+                print("program_tmp\n", program_tmp)
+                print("program\n", program)
+
+                program = replace_bpftrace_sassert_func_to_error(program)
+                print(program)
+                program = compile_bpftrace_once(kprobe_prompt, context, program, line, linenumber)
+                parts = program.split("ModuleID")
+
+                substring = "ModuleID " + parts[1].strip()
+                res = verify_z3(kprobe_prompt, context, substring,line, linenumber)
+                if res == False:
+                    program = program_tmp
 
 
 def parse_libbpf_program(context: str, program: str):
@@ -167,7 +394,7 @@ def parse_libbpf_program(context: str, program: str):
 # prompt from the vectordb and gen
 
 if __name__ == "__main__":
-    context = "The following is the code Print entered bash commands from all running shells. For Linux, uses bpftrace and eBPF. This works by tracing the readline() function using a kprobes."
+    context = "tracing the policy_node() function to hook all the function of policy_node and add up the arg0 as nd only if the nd is 2."
     program = """
 #!/usr/bin/env bpftrace
 
@@ -177,14 +404,19 @@ BEGIN
 	printf("%-9s %-6s %s\\n", "TIME", "PID", "COMMAND");
 }
 
-kretprobe:/bin/bash:readline
+kprobe:policy_node
 {
-	time("%H:%M:%S  ");
-	printf("%-6d %s\\n", pid, str(retval));
+	@reqts[arg0] +=1;
 }
 
-}"""
+END
+{
+	clear(@reqts);
+}
+"""
     parse_bpftrace_program(context, program)
+    # print(replace_bpftrace_sassert_func_to_error(program))
+    # print(replace_bpftrace_with_pre_post(program, "kprobe:policy_node","assume(nd==1);","sassert(nd==1);"))
 
 #     context = "The following is the code Print entered bash commands from all running shells. For Linux, uses bpftrace and eBPF. This works by tracing the readline() function using a uretprobe (uprobes)."
 #     program = """
