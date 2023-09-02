@@ -3,6 +3,8 @@ const path = require('path');
 const Store = require('electron-store');
 const store = new Store();
 const prompt = require('electron-prompt');
+const defaultUrl = 'http://0.0.0.0:8000';
+// const defaultUrl = 'https://chat.openai.com/chat/';
 
 /* ============= DEV ============= */
 /* Hot reload on code change ? * /

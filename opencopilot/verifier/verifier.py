@@ -89,7 +89,7 @@ def get_bpf_prompt(
     program: str,
     line: str,
     linenumber: int,
-    file: str = "bpftrace_z3_tmp.json",
+    file: str = "bpftrace_z3.json",
     error="",
 ) -> object:
     """
@@ -107,7 +107,7 @@ def bpf_prompt(
     program: str,
     function: str,
     linenumber: int,
-    file: str = "bpftrace_z3_tmp.json",
+    file: str = "bpftrace_z3.json",
     error: str = "",
 ) -> object:
     """
@@ -160,7 +160,7 @@ def get_kprobe_prompt(
     program: str,
     line: str,
     linenumber: int,
-    file: str = "bpftrace_z3_tmp.json",
+    file: str = "bpftrace_z3.json",
     error="",
 ) -> object:
     """
@@ -187,7 +187,7 @@ def kprobe_prompt(
     program: str,
     function: str,
     linenumber: int,
-    file: str = "bpftrace_z3_tmp.json",
+    file: str = "bpftrace_z3.json",
     error: str = "",
 ) -> object:
     """
@@ -222,7 +222,7 @@ def kprobe_prompt(
       assume([]);
       sassert([]);
     ```
-    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line {(linenumber+2)}, sassert will be inserted in the end of the function and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. 
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line {(linenumber+2)}, sassert will be inserted in the end of the function {function} and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. You only need to provide the pre condition in one line and post condition in one line if there are multiple of them you should use & to connect them.
     """
         + get_argument_prompt(function)
     )
@@ -244,18 +244,17 @@ def kprobe_prompt(
 def verify_z3(prompt_function, context, program, function, linenumber) -> object:
     """
     compile the result gives sat/unsat
-    sudo docker run  -d $PWD:$PWD seahorn sleep 10000000
     """
-    with open("opencopilot/ebpf_vector_db/libbpf/build/tmp.ll", "w") as f:
+    with open("/tmp/tmp.ll", "w") as f:
         f.write(program)
-    # os.system(
-    #     "docker exec d6c sea smt /code/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.ll -o /code/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.smt2"
-    # )
+    os.system(
+        "opencopilot/z3_vector_db/seahorn/bin/sea smt /tmp/tmp.ll -o /tmp/tmp.smt2"
+    )
     try:
         sat = subprocess.run(
             [
                 "z3",
-                "/home/victoryang00/Documents/plos23/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/build/tmp.smt2",
+                "/tmp/tmp.smt2",
             ],
             text=True,
             capture_output=True,
@@ -285,7 +284,7 @@ def compile_bpftrace_once(prompt_function, context, program, line, linenumber):
     var = subprocess.run(
         [
             "sudo",
-            "/home/victoryang00/Documents/plos23/bpftrace/build/src/bpftrace",
+            "opencopilot/z3_vector_db/bpftrace/bpftrace",
             "-d",
             "/tmp/tmp.bt",
         ],
@@ -486,32 +485,32 @@ def parse_libbpf_program(context: str, program: str):
 
 # extract all the function calls
 # prompt from the vectordb and gen
+def test_bpftrace_verifier():
+    context = "tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2."
+    program = """
+#!/usr/bin/env bpftrace
 
-if __name__ == "__main__":
-#     context = "tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2."
-#     program = """
-# #!/usr/bin/env bpftrace
+BEGIN
+{
+	printf("Tracing bash commands... Hit Ctrl-C to end.\\n");
+	printf("%-9s %-6s %s\\n", "TIME", "PID", "COMMAND");
+}
 
-# BEGIN
-# {
-# 	printf("Tracing bash commands... Hit Ctrl-C to end.\\n");
-# 	printf("%-9s %-6s %s\\n", "TIME", "PID", "COMMAND");
-# }
+kprobe:__nla_parse
+{
+	@reqts[arg1] +=1;
+}
 
-# kprobe:__nla_parse
-# {
-# 	@reqts[arg1] +=1;
-# }
+END
+{
+	clear(@reqts);
+}
+"""
+    parse_bpftrace_program(context, program)
+    print(replace_bpftrace_sassert_func_to_error(program))
+    print(replace_bpftrace_with_pre_post(program, "kprobe:policy_node","assume(nd==1);","sassert(nd==1);"))
 
-# END
-# {
-# 	clear(@reqts);
-# }
-# """
-#     parse_bpftrace_program(context, program)
-    # print(replace_bpftrace_sassert_func_to_error(program))
-    # print(replace_bpftrace_with_pre_post(program, "kprobe:policy_node","assume(nd==1);","sassert(nd==1);"))
-
+def test_libbpf_verifer():
     context = "This libbpf (Berkeley Packet Filter) program tracks and increments the number of SYN segments received by IPv4 and IPv6 TCP sockets, effectively monitoring the TCP SYN backlog on the system."
     program = """
 #include <vmlinux.h>
@@ -555,3 +554,8 @@ int BPF_KPROBE(kprobe__tcp_v6_syn_recv_sock, struct sock *sk)
 char LICENSE[] SEC("license") = "GPL";
 """
     parse_libbpf_program(context, program)
+
+
+if __name__ == "__main__":
+    test_bpftrace_verifier()
+    # test_libbpf_verifer()

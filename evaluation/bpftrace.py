@@ -21,7 +21,6 @@ from langchain.utilities import SerpAPIWrapper
 from langchain.agents import initialize_agent
 from langchain import LLMMathChain, OpenAI
 from langchain.callbacks.base import BaseCallbackHandler
-from langchain.chat_models import ChatOpenAI
 
 
 class MyCustomHandler(BaseCallbackHandler):
@@ -306,6 +305,8 @@ def main() -> None:
         agent_chain = setup_react_agent(model_name=args.model_name)
     elif args.agent_type == "openai":
         agent_chain = setup_openai_agent(model_name=args.model_name)
+    elif args.agent_type == "codellama":
+        agent_chain = setup_codellama_agent(model_name=args.model_name)
     else:
         agent_chain = setup_react_agent(model_name=args.model_name)
     if args.input_string is not None:

@@ -7,3 +7,8 @@ __pycache__
 gpttrace/__pycache__
 gpttrace/utils/__pycache__
 evaluation/__pycache__
+node_modules
+.vscode
+bcc
+opencopilot.egg-info
+opencopilot-*

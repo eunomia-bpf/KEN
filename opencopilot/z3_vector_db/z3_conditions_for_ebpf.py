@@ -81,9 +81,9 @@ def bpftrace_prompt(statement, doc, is_return:True):
     """
     return prompt + info
 
-def generate_response(PROMPT):
+def generate_response(PROMPT, model_name="gpt-4", llm_backend="openai"):
     """
-    Generates a response using the OpenAI GPT-3.5 language model.
+    Generates a response using the passed in language model.
 
     Parameters:
         PROMPT (str): The input prompt for the language model.
@@ -91,10 +91,14 @@ def generate_response(PROMPT):
     Returns:
         str: The generated response from the language model.
     """
-
-    llm = ChatOpenAI(model_name="gpt-3.5-turbo-16k", temperature=0)
-    agent_chain = ConversationChain(llm=llm, verbose=False, memory=ConversationBufferMemory())
-    response = agent_chain.predict(input=PROMPT)
+    if llm_backend=="openai":
+        llm = ChatOpenAI(model_name=model_name, temperature=0)
+        agent_chain = ConversationChain(llm=llm, verbose=False, memory=ConversationBufferMemory())
+        response = agent_chain.predict(input=PROMPT)
+    elif llm_backend=="wizard":
+        llm = ChatWizard(model_name=model_name, temperature=0)
+        agent_chain = ConversationChain(llm=llm, verbose=False, memory=ConversationBufferMemory())
+        response = agent_chain.predict(input=PROMPT)
     return response
 
 def generate_libbpf_once():

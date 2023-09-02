@@ -18,7 +18,7 @@ def parse_requirements(file_name: str) -> List[str]:
 
 setuptools.setup(
     name="opencopilot",
-    packages=["opencopilot"],
+    packages=find_packages(),
     version="0.1.0",
     author=["yunwei"],
     author_email=["yunwei356@gmail.com"],
@@ -28,10 +28,6 @@ setuptools.setup(
     install_requires=parse_requirements("requirements.txt"),
     url="https://github.com/SlugLab/OpenCopilot",
     license="https://opensource.org/license/mit/",
-    python_requires=">=3.10",
-    entry_points={
-        "console_scripts": [
-            "dbgpt_server=pilot.server:webserver",
-        ],
-    },
+    python_requires=">=3.8",
+    zip_safe=False
 )
