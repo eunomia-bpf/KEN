@@ -1,8 +1,8 @@
 # OpenCopilot: A LLM empowered eBPF info collection and codegen
 
-- [X] Stable Mapping from Natural Language to eBPF semantics
-- [X] Context Abstraction: thread isolation and information refinement 
-- [X] Can deal with prompts to do arbitrary jobs, like system data collection and scheduler, hardware control, etc.
+- Stable Mapping from Natural Language to eBPF semantics
+- Context Abstraction: thread isolation and information refinement 
+- Can deal with prompts to do arbitrary jobs, like system data collection and scheduler, hardware control, etc.
 
 ## Usage and Setup 🛠
 
