@@ -1,0 +1,40 @@
+Monitors the rate of specific hardware interrupts and logs the interrupt sources
+Traces process forking events and logs the parent and child process IDs and command names.
+Monitors the rate of memory allocations in the kernel and print histogram of the allocation sizes.
+Traces process resource limits (e.g., memory, file descriptors) and logs when limits are exceeded.
+Traces process signals and logs the signal names and process IDs affected.
+Monitors the rate of system call errors (e.g., ENOENT, EACCES) for specific processes
+Captures TCP SYN packets and logs the source and destination IP addresses and ports
+monitors the rate of system calls made by specific user-space processes and identifies heavily used system calls
+Monitors the rate of syscall by second globally
+traces socket operations and logs the socket types and process IDs involved.
+traces file read and write events and calculates the I/O size distribution for each file.
+traces file read and write events and summarizes the Read bytes by process.
+tracks the creation and deletion of network namespaces.
+Print files opened events by process
+Count LLC cache misses by process name
+Count page faults events by process
+Print entered bash commands system wide and the exit code
+Trace directory entry cache (dcache) lookups by process
+Trace md flush events with pid and process name
+Print CPU scheduler run queue latency as a histogram
+Summarizes CPU scheduler run queue length as a histogram
+List new thread creation with pid and thread identifies
+Display the exit_reason and its statistics of each vm exit in kvm
+Trace mount and umount syscalls system-wide and print with pid
+Trace bpf jit compile events
+Trace block device I/O with PID and latency
+Trace btrfs operations system-wide
+Trace security capability checks events
+Trace compact zone events with PID and latency
+Trace and report long atomic critical sections in the kernel
+Trace signals issued by the kill() syscall system-wide
+Traces kernel mutex lock events and display locks statistics.
+Trace System V shared memory syscalls and display the size of the shared memory segment
+Summarizes Kernel SLAB/SLUB memory cache allocation rate top
+Trace sync() syscall and print the caller pid
+Trace TCP round trip time (RTT) and print the sender and receiver IP addresses and ports
+Summarize ZFS operation latency distribution as a histogram
+Counts swapins by process, to show which process is affected by swapping
+traces the kernel function performing active TCP connections(eg, via a connect() syscall; accept() are passive connections).
+traces XFS reads, writes, opens, and fsyncs, and summarizes their latency as a power-of-2 histogram.
