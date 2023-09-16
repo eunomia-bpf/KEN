@@ -80,13 +80,12 @@ GET_EXAMPLE_PROMPT: str = """
     The return example is more complex examples, for top 4 results.
     """
 
-
-def get_examples_from_db(query: str) -> str:
+def get_top_n_example_from_vec_db(query: str, n: int) -> str:
     embeddings = OpenAIEmbeddings()
     # Check if the vector database files exist
     if not (os.path.exists("./data_save/vector_db.faiss") and os.path.exists("./data_save/vector_db.pkl")):
         loader = JSONLoader(
-            file_path='../examples/bpftrace/examples.json',
+            file_path='../dataset/bpftrace/examples.json',
             jq_schema='.data[].content',
             json_lines=True
         )
@@ -100,13 +99,14 @@ def get_examples_from_db(query: str) -> str:
 
     results = db.search(query, search_type='similarity')
     results = [result.page_content for result in results]
-    return simple_examples + "\n".join(results[:3])
+    return "\n".join(results[:n])
 
+def get_full_examples_with_vec_db(query: str) -> str:
+    return simple_examples + get_top_n_example_from_vec_db(query, 2)
 
 def construct_bpftrace_examples(text: str) -> str:
-    examples = get_examples_from_db(text)
+    examples = get_full_examples_with_vec_db(text)
     return examples
-
 
 class CommandResult(TypedDict):
     command: str
@@ -223,14 +223,14 @@ def get_gpttrace_tools() -> List[Tool]:
     bpftrace_probe_tool = Tool.from_function(bpftrace_get_hooks,
                                              "get-ebpf-hooks-with-regex",
                                              description=GET_HOOK_PROMPT)
-    get_examples_from_db_tool = Tool.from_function(
-        get_examples_from_db,
+    get_full_examples_with_vec_db_tool = Tool.from_function(
+        get_full_examples_with_vec_db,
         "get-ebpf-examples-with-query",
         description=GET_EXAMPLE_PROMPT)
     tools = [
         bpftrace_probe_tool,
         bpftrace_run_tool,
-        get_examples_from_db_tool,
+        get_full_examples_with_vec_db_tool,
     ]
     return tools
 
@@ -329,7 +329,7 @@ class TestRunBpftrace(unittest.TestCase):
         self.assertEqual(result["returncode"], 0)
 
     def test_get_examples(self):
-        res = get_examples_from_db(
+        res = get_full_examples_with_vec_db(
             "Trace allocations and display each individual allocator function call")
         print(res)
         self.assertTrue(res)

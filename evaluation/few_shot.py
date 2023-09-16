@@ -24,7 +24,7 @@ message_prompt = HumanMessagePromptTemplate(
 prompt_template = ChatPromptTemplate.from_messages([message_prompt])
 
 # If we pass in a model explicitly, we need to make sure it supports the OpenAI function-calling API.
-llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+llm = ChatOpenAI(model="gpt-4", temperature=0)
 
 def run_bpftrace_prog_with_func_call_define(prog: str) -> str:
 	"""Runs a bpftrace program. You should only input the eBPF program itself.
@@ -35,6 +35,7 @@ def run_bpftrace_prog_with_func_call_define(prog: str) -> str:
 	return f"{prog}"
 
 def run_bpftrace_prog_with_function_call(input: str) -> str:
+	print("input prompt: ", input, "\n")
 	chain = create_openai_fn_chain([run_bpftrace_prog_with_func_call_define], llm, prompt_template, verbose=False)
 	res = chain.run(
 		input
@@ -77,6 +78,58 @@ Write a bpftrace program that traces or profile the following user request:
 
 Use a tool provided to execute your bpftrace program.
 You should only write the bpftrace program itself.
+"""
+	return run_bpftrace_prog_with_function_call(prompt)
+
+def run_few_shot_with_vector_db_bpftrace(user_request: str) -> str:
+	examples = gpttrace.simple_examples
+	complex_examples = gpttrace.get_top_n_example_from_vec_db(user_request, 2)
+	prompt = f"""
+Write a bpftrace program that traces or profile the following user request:
+
+### User Request
+
+{user_request}
+
+### Examples
+
+Here are some simple examples to help you get started with bpftrace:
+
+{examples}
+
+Here are some complex examples may be related to your user request:
+
+{complex_examples}
+
+You can refer to the above examples to write your own bpftrace program to help user with:
+
+{user_request}
+
+Use a tool provided to execute your bpftrace program.
+You should only write the bpftrace program itself. 
+"""
+	return run_bpftrace_prog_with_function_call(prompt)
+
+
+def run_vector_db_bpftrace(user_request: str) -> str:
+	complex_examples = gpttrace.get_top_n_example_from_vec_db(user_request, 2)
+	prompt = f"""
+Write a bpftrace program that traces or profile the following user request:
+
+### User Request
+
+{user_request}
+
+Here are some complex examples may be related to your user request:
+
+{complex_examples}
+
+You can refer to the above examples to write your own bpftrace program to help user with:
+
+{user_request}
+
+Use a tool provided to execute your bpftrace program.
+You should only write the bpftrace program itself. 
 """
 	return run_bpftrace_prog_with_function_call(prompt)
 

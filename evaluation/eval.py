@@ -2,12 +2,13 @@ import os
 import subprocess
 import few_shot
 import json
+from typing import Callable
 
-def main():
+
+def test_with_test_cases(func: Callable[[str], str], save_file: str):
     with open('test_cases.txt', 'r') as file:
         lines = file.readlines()
 
-    save_file = f"output.json"
     passed_test_count = 0
     total_test_count = len(lines)
 
@@ -18,7 +19,7 @@ def main():
         print(f"Output will be saved to: {save_file}")
 
         # Run the bpftrace.py script with the test case as input
-        res = few_shot.run_few_shot_bpftrace(line)
+        res = func(line)
         data = json.loads(res)
         print(data)
         if data["returncode"] == 0:
@@ -29,5 +30,16 @@ def main():
         print(f"Test case completed. Output saved to: {save_file}\n")
         print(f"Passed {passed_test_count} out of {total_test_count} test cases so far.\n")
 
+save_file = f"output.json"
+
+def test_few_shot():
+    test_with_test_cases(few_shot.run_few_shot_bpftrace, save_file)
+    
+def test_zero_shot():
+    test_with_test_cases(few_shot.run_zero_shot_bpftrace, save_file)
+
+def test_vector_db():
+    test_with_test_cases(few_shot.run_few_shot_with_vector_db_bpftrace, save_file)
+
 if __name__ == "__main__":
-    main()
+    test_vector_db()
