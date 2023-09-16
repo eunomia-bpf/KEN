@@ -1,3 +1,4 @@
 langchain==0.0.244
 z3-solver==4.12.2
 jq==1.4.1
+openai

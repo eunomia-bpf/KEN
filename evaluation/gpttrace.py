@@ -67,7 +67,6 @@ Below are some simple examples of bpftrace usage:
 # Files opened, for processes in the root cgroup-v2
 'tracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s\n", str(args->filename)); }'
 
-Some more complex examples:
 """
 
 GET_EXAMPLE_PROMPT: str = """
@@ -183,15 +182,12 @@ RUN_PROGRAM_PROMPT: str = """
     - if error occurs, you should try to explain the error and get the examples and hook points to retry again.
     """
 
-save_file: str = "result/program-" + str(os.getpid()) + ".json"
+global_save_file: str = "result/program-" + str(os.getpid()) + ".json"
 
 def bpftrace_run_program(program: str) -> str:
     res = run_command(["sudo", "timeout", "--preserve-status",
                       "-s", "2", "20", "bpftrace", "-e", program])
-    with open(save_file, "a") as f:
-        f.write(json.dumps(res))
-    return json.dumps(res)[:1024]
-
+    return json.dumps(res)
 
 GET_HOOK_PROMPT: str = """
     Gets the useable hooks from bpftrace. 
