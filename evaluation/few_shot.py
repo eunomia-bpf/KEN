@@ -44,7 +44,7 @@ def run_bpftrace_prog_with_function_call(input: str) -> str:
 	# read a.bt
 	res = gpttrace.bpftrace_run_program(prog)
 	print(res)
-	return json.dumps(res)
+	return res
 
 def run_few_shot_bpftrace(user_request: str) -> str:
 	examples = gpttrace.simple_examples
@@ -63,7 +63,7 @@ You can refer to the above examples to write your own bpftrace program. Use a to
 provided to execute your bpftrace program.
 You should only write the bpftrace program itself.
 """
-	run_bpftrace_prog_with_function_call(prompt)
+	return run_bpftrace_prog_with_function_call(prompt)
 
 def run_zero_shot_bpftrace(user_request: str) -> str:
 	prompt = f"""
@@ -78,8 +78,7 @@ Write a bpftrace program that traces or profile the following user request:
 Use a tool provided to execute your bpftrace program.
 You should only write the bpftrace program itself.
 """
-	run_bpftrace_prog_with_function_call(prompt)
-
+	return run_bpftrace_prog_with_function_call(prompt)
 
 if __name__ == "__main__":
 	run_few_shot_bpftrace("traces file read and write events and summarizes the Read bytes by process.")
