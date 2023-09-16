@@ -30,5 +30,12 @@ date: 9.16
 
 seleted top 2 elements from vector db
 
-## vector db with gpt 3.5 test with 40 prompts
+## few shot and vector db with gpt 4.0 test with 40 prompts
 
+date: 9.16
+
+- "returncode": 0, count 18
+- "returncode": 1, count 19
+- "returncode": 255, count 3
+
+seleted top 2 elements from vector db

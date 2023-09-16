@@ -12,3 +12,12 @@ use retry and pre-search for hook points:
 
 1. 
 
+## run evaluation
+
+```sh
+python3 eval.py > vec_db_record.txt
+```
+
+## results
+
+see records/README.md
