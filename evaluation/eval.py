@@ -13,22 +13,26 @@ def test_with_test_cases(func: Callable[[str], str], save_file: str):
     total_test_count = len(lines)
 
     for i, line in enumerate(lines):
-        line = line.strip()  # Remove the newline character at the end
+        try:
+            line = line.strip()  # Remove the newline character at the end
 
-        print(f"Running test case: {line}")
-        print(f"Output will be saved to: {save_file}")
+            print(f"Running test case {i}: {line}")
+            print(f"Output will be saved to: {save_file}")
 
-        # Run the bpftrace.py script with the test case as input
-        res = func(line)
-        data = json.loads(res)
-        print(data)
-        if data["returncode"] == 0:
-            passed_test_count += 1
-        # save the output to a file
-        with open(save_file, "a") as f:
-            f.write(res)
-        print(f"Test case completed. Output saved to: {save_file}\n")
-        print(f"Passed {passed_test_count} out of {total_test_count} test cases so far.\n")
+            # Run the bpftrace.py script with the test case as input
+            res = func(line)
+            data = json.loads(res)
+            print(data)
+            if data["returncode"] == 0:
+                passed_test_count += 1
+            # save the output to a file
+            with open(save_file, "a") as f:
+                f.write(res)
+            print(f"Test case completed. Output saved to: {save_file}\n")
+            print(f"Passed {passed_test_count} out of {total_test_count} test cases so far.\n")
+        except e:
+            with open(save_file, "a") as f:
+                f.write(json.dumps({"error": str(e)}))
 
 save_file = f"output.json"
 
@@ -38,8 +42,12 @@ def test_few_shot():
 def test_zero_shot():
     test_with_test_cases(few_shot.run_zero_shot_bpftrace, save_file)
 
-def test_vector_db():
+def test_vector_db_with_examples():
     test_with_test_cases(few_shot.run_few_shot_with_vector_db_bpftrace, save_file)
+
+def test_vector_db():
+    test_with_test_cases(few_shot.run_vector_db_bpftrace, save_file)
+
 
 if __name__ == "__main__":
     test_vector_db()
