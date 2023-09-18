@@ -25,7 +25,7 @@ message_prompt = HumanMessagePromptTemplate(
 prompt_template = ChatPromptTemplate.from_messages([message_prompt])
 
 # If we pass in a model explicitly, we need to make sure it supports the OpenAI function-calling API.
-llm = ChatOpenAI(model="gpt-3.5-turbo-16k", temperature=0)
+llm = ChatOpenAI(model="gpt-4", temperature=0)
 
 def run_bpftrace_prog_with_func_call_define(prog: str) -> str:
 	"""Runs a bpftrace program. You should only input the eBPF program itself.

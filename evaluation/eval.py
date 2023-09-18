@@ -4,6 +4,9 @@ import chain
 import json
 from typing import Callable
 
+# flags for continuing from a specific test case
+starts_from = 0
+
 def test_with_test_cases(func: Callable[[str], str], save_file: str):
     with open('test_cases.txt', 'r') as file:
         lines = file.readlines()
@@ -12,6 +15,8 @@ def test_with_test_cases(func: Callable[[str], str], save_file: str):
     total_test_count = len(lines)
 
     for i, line in enumerate(lines):
+        if i < starts_from:
+            continue
         try:
             line = line.strip()  # Remove the newline character at the end
 
@@ -33,24 +38,28 @@ def test_with_test_cases(func: Callable[[str], str], save_file: str):
             with open(save_file, "a") as f:
                 f.write(json.dumps({"error": str(e)}))
 
-save_file = f"output.json"
-
 def test_few_shot():
+    save_file = f"few_shot.json"
     test_with_test_cases(chain.run_few_shot_bpftrace, save_file)
     
 def test_zero_shot():
+    save_file = f"zero_shot.json"
     test_with_test_cases(chain.run_zero_shot_bpftrace, save_file)
 
 def test_vector_db_with_examples():
+    save_file = f"vector_db_with_example.json"
     test_with_test_cases(chain.run_few_shot_with_vector_db_bpftrace, save_file)
 
 def test_vector_db():
+    save_file = f"vector_db.json"
     test_with_test_cases(chain.run_vector_db_bpftrace, save_file)
 
 def test_few_shot_3trails():
+    save_file = f"few_shot_3trails.json"
     test_with_test_cases(chain.run_few_shot_3trails, save_file)
 
 def test_vector_db_with_examples_3trails():
+    save_file = f"vec_db_with_examples_3trails.json"
     test_with_test_cases(chain.run_vector_db_with_examples_3trails, save_file)
 
 if __name__ == "__main__":
