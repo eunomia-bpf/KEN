@@ -63,4 +63,4 @@ def test_vector_db_with_examples_3trails():
     test_with_test_cases(chain.run_vector_db_with_examples_3trails, save_file)
 
 if __name__ == "__main__":
-    test_vector_db_with_examples_3trails()
+    test_few_shot_3trails()

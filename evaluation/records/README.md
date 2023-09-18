@@ -88,3 +88,23 @@ date: 9.18
 - "error": 1
 
 false positive: 37 40
+
+## vec db with 3 trails for 3.5
+
+date: 9.18
+
+- "returncode": 0, count 27
+- "returncode": 1, count 11
+- "returncode": 255, count 2
+
+false positive: 2 4 11 37
+
+## vec db with 3 trails for 4.0
+
+date: 9.18
+
+- "returncode": 0, count 28
+- "returncode": 1, count 10
+- "returncode": 255, count 2
+
+false positive: 37 40
