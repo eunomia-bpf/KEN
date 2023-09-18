@@ -149,9 +149,13 @@ def run_3trails(prompt, func: Callable[[str], str]):
 			print("retry left: ", count)
 			print("error ", error)
 			err_prompt = f"""
-Run the bpftrace program with the following error and ouput:
+Run the bpftrace program：
 
-{res}
+{data["command"]}
+
+with the following error and ouput:
+
+{error}
 
 This is your trail {3 - count + 1} out of 3 trails.
 Please retry generating the bpftrace program for: {prompt}

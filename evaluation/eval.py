@@ -29,7 +29,7 @@ def test_with_test_cases(func: Callable[[str], str], save_file: str):
                 f.write(res)
             print(f"Test case completed. Output saved to: {save_file}\n")
             print(f"Passed {passed_test_count} out of {total_test_count} test cases so far.\n")
-        except e:
+        except Exception as e:
             with open(save_file, "a") as f:
                 f.write(json.dumps({"error": str(e)}))
 
