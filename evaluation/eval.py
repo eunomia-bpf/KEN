@@ -1,9 +1,8 @@
 import os
 import subprocess
-import few_shot
+import chain
 import json
 from typing import Callable
-
 
 def test_with_test_cases(func: Callable[[str], str], save_file: str):
     with open('test_cases.txt', 'r') as file:
@@ -37,17 +36,22 @@ def test_with_test_cases(func: Callable[[str], str], save_file: str):
 save_file = f"output.json"
 
 def test_few_shot():
-    test_with_test_cases(few_shot.run_few_shot_bpftrace, save_file)
+    test_with_test_cases(chain.run_few_shot_bpftrace, save_file)
     
 def test_zero_shot():
-    test_with_test_cases(few_shot.run_zero_shot_bpftrace, save_file)
+    test_with_test_cases(chain.run_zero_shot_bpftrace, save_file)
 
 def test_vector_db_with_examples():
-    test_with_test_cases(few_shot.run_few_shot_with_vector_db_bpftrace, save_file)
+    test_with_test_cases(chain.run_few_shot_with_vector_db_bpftrace, save_file)
 
 def test_vector_db():
-    test_with_test_cases(few_shot.run_vector_db_bpftrace, save_file)
+    test_with_test_cases(chain.run_vector_db_bpftrace, save_file)
 
+def test_few_shot_3trails():
+    test_with_test_cases(chain.run_few_shot_3trails, save_file)
+
+def test_vector_db_with_examples_3trails():
+    test_with_test_cases(chain.run_vector_db_with_examples_3trails, save_file)
 
 if __name__ == "__main__":
-    test_vector_db()
+    test_vector_db_with_examples_3trails()

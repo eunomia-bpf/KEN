@@ -1,6 +1,7 @@
 import gpttrace
 import json
 from typing import Optional
+from typing import Callable
 
 from langchain.chains.openai_functions import (
     create_openai_fn_chain,
@@ -24,7 +25,7 @@ message_prompt = HumanMessagePromptTemplate(
 prompt_template = ChatPromptTemplate.from_messages([message_prompt])
 
 # If we pass in a model explicitly, we need to make sure it supports the OpenAI function-calling API.
-llm = ChatOpenAI(model="gpt-4", temperature=0)
+llm = ChatOpenAI(model="gpt-3.5-turbo-16k", temperature=0)
 
 def run_bpftrace_prog_with_func_call_define(prog: str) -> str:
 	"""Runs a bpftrace program. You should only input the eBPF program itself.
@@ -45,7 +46,9 @@ def run_bpftrace_prog_with_function_call(input: str) -> str:
 	# read a.bt
 	res = gpttrace.bpftrace_run_program(prog)
 	print(res)
-	return res
+	data = json.loads(res)
+	data["prompt"] = input
+	return json.dumps(data)
 
 def run_few_shot_bpftrace(user_request: str) -> str:
 	examples = gpttrace.simple_examples
@@ -133,5 +136,38 @@ You should only write the bpftrace program itself.
 """
 	return run_bpftrace_prog_with_function_call(prompt)
 
+def run_3trails(prompt, func: Callable[[str], str]):
+	count = 3
+	res = func(prompt)
+	while(count > 0):
+		data = json.loads(res)
+		print(data)
+		if data["returncode"] == 0:
+			return res
+		else:
+			error = data["stderr"]
+			print("retry left: ", count)
+			print("error ", error)
+			err_prompt = f"""
+Run the bpftrace program with the following error and ouput:
+
+{res}
+
+This is your trail {3 - count + 1} out of 3 trails.
+Please retry generating the bpftrace program for: {prompt}
+"""
+			old_prompt = data["prompt"]
+			full_prompt = data["prompt"] + err_prompt
+			print("full prompt: ", full_prompt)
+			res = run_bpftrace_prog_with_function_call(full_prompt)
+			count = count - 1
+	return res
+
+def run_few_shot_3trails(user_request: str) -> str:
+	return run_3trails(user_request, run_few_shot_bpftrace)
+
+def run_vector_db_with_examples_3trails(user_request: str) -> str:
+	return run_3trails(user_request, run_few_shot_with_vector_db_bpftrace)
+
 if __name__ == "__main__":
-	run_few_shot_bpftrace("traces file read and write events and summarizes the Read bytes by process.")
+	run_few_shot_3trails("monitor the fan rate in kernel.")
