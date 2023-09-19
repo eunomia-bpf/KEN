@@ -1,0 +1,721 @@
+['printf("Tracing bash commands... Hit Ctrl-C to end.\\n")', 'printf("%-9s %-6s %s\\n", "TIME", "PID", "COMMAND")', 'clear(@reqts)']
+[]
+['kprobe:__nla_parse']
+0 
+1 #!/usr/bin/env bpftrace
+2 
+3 BEGIN
+4 {
+5 	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
+6 	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+7 }
+8 
+9 kprobe:__nla_parse
+prompts
+ 
+    I will assign you the job I have a function __nla_parse like int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), please provide me with the function definition and the corresponding argument to be assigned to arg0. I need the output only has the variable name without the type info. I want the result in the below text format :
+    
+    ```text
+    And we know the definition of {function} is {function definition}, we should put all the first argument {the first argument}'s operation as to arg0, the second argument {the second argument} be arg1, the third argument {the third argument} be arg2, {.. until the end of argument list}. You should replace the following paremeter with corresponding one.
+    ```
+    
+text code ["And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one."]
+prompts
+ 
+    I'm working on a project involving writing bpftrace programs and I just got the job of tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2., in my coded program "
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+}
+
+kprobe:__nla_parse
+{
+	@reqts[arg1] +=1;
+}
+
+END
+{
+	clear(@reqts);
+}
+" line 9, kprobe:__nla_parse, I need to verify based on the context of what I ask, can you provide some refined constraints information on this line considering the context. 
+    Here's the broader constraints of this function: Parse a stream of attributes into a tb buffer with pre condition tb should be !=null, maxtype should be >=0, head should be !=null, len should be >=0, policy should be !=null, validate should be >=0, extack should be !=null
+    You should generate the refined constraints in following C format:
+    ```c
+      assume([]);
+      sassert([]);
+    ```
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line 11, sassert will be inserted in the end of the function kprobe:__nla_parse and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. You only need to provide the pre condition in one line and post condition in one line if there are multiple of them you should use & to connect them.
+    And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one.
+responses Based on the broader constraints you provided and the definition of the __nla_parse function, the refined constraints in C format would look like this:
+
+```c
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2);
+```
+
+In the `assume` line, we are ensuring that all the preconditions are met. We are checking that none of the arguments are NULL (where applicable) and that the integer arguments are greater than or equal to 0. 
+
+In the `sassert` line, we are asserting that the maxtype (arg1) is equal to 2. This is based on your requirement to hook all the functions of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2. 
+
+Please replace the `assume` line at line 11 and the `sassert` line at the end of the function `kprobe:__nla_parse` in your bpftrace program.
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2); 
+
+
+tmp kprobe:__nla_parse
+{
+	@reqts[arg1] +=1;
+}
+program
+ 
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+}
+
+kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}}
+
+END
+{
+	clear(@reqts);
+}
+
+prompts
+ 
+    I will assign you the job I have a function __nla_parse like int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), please provide me with the function definition and the corresponding argument to be assigned to arg0. I need the output only has the variable name without the type info. I want the result in the below text format :
+    
+    ```text
+    And we know the definition of {function} is {function definition}, we should put all the first argument {the first argument}'s operation as to arg0, the second argument {the second argument} be arg1, the third argument {the third argument} be arg2, {.. until the end of argument list}. You should replace the following paremeter with corresponding one.
+    ```
+    
+text code ["And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one."]
+prompts
+ 
+    I'm working on a project involving writing bpftrace programs and I just got the job of tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2., in my coded program "
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+}
+
+kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}}
+
+END
+{
+	clear(@reqts);
+}
+" line 9, kprobe:__nla_parse, I need to verify based on the context of what I ask, can you provide some refined constraints information on this line considering the context. 
+    Here's the broader constraints of this function: Parse a stream of attributes into a tb buffer with pre condition tb should be !=null, maxtype should be >=0, head should be !=null, len should be >=0, policy should be !=null, validate should be >=0, extack should be !=nullHowever, last time you generate wrong the function with error: nd is the first argument which should be arg0. 
+    You should generate the refined constraints in following C format:
+    ```c
+      assume([]);
+      sassert([]);
+    ```
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line 11, sassert will be inserted in the end of the function kprobe:__nla_parse and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. You only need to provide the pre condition in one line and post condition in one line if there are multiple of them you should use & to connect them.
+    And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one.
+responses Based on your description, the refined constraints for the function `__nla_parse()` in C format would be:
+
+```c
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg0 != NULL & arg1 == 2 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+```
+
+In the `assume` line, we are ensuring that all the arguments are meeting the preconditions you mentioned. In the `sassert` line, we are asserting that the `maxtype` (arg1) is 2, which is the post condition you specified, while also ensuring that all other arguments still meet their preconditions.
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg0 != NULL & arg1 == 2 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL); 
+
+
+tmp kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}
+prompts
+ 
+    I will assign you the job I have a function __nla_parse like int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), please provide me with the function definition and the corresponding argument to be assigned to arg0. I need the output only has the variable name without the type info. I want the result in the below text format :
+    
+    ```text
+    And we know the definition of {function} is {function definition}, we should put all the first argument {the first argument}'s operation as to arg0, the second argument {the second argument} be arg1, the third argument {the third argument} be arg2, {.. until the end of argument list}. You should replace the following paremeter with corresponding one.
+    ```
+    
+text code ["And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one."]
+prompts
+ 
+    I'm working on a project involving writing bpftrace programs and I just got the job of tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2., in my coded program "
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+}
+
+kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}}
+
+END
+{
+	clear(@reqts);
+}
+" line 9, kprobe:__nla_parse, I need to verify based on the context of what I ask, can you provide some refined constraints information on this line considering the context. 
+    Here's the broader constraints of this function: Parse a stream of attributes into a tb buffer with pre condition tb should be !=null, maxtype should be >=0, head should be !=null, len should be >=0, policy should be !=null, validate should be >=0, extack should be !=nullHowever, last time you generate wrong the function with error: nd is the first argument which should be arg0. 
+    You should generate the refined constraints in following C format:
+    ```c
+      assume([]);
+      sassert([]);
+    ```
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line 11, sassert will be inserted in the end of the function kprobe:__nla_parse and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. You only need to provide the pre condition in one line and post condition in one line if there are multiple of them you should use & to connect them.
+    And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one.
+responses Based on the context and the constraints you provided, the refined constraints for the function `__nla_parse()` in the bpftrace program can be written as follows:
+
+```c
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg0 != NULL & arg1 == 2 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+```
+
+In the `assume` line, we are ensuring that all the arguments are meeting the preconditions you mentioned. In the `sassert` line, we are asserting that the `maxtype` (arg1) is 2, along with the other preconditions. This should be inserted at the end of the `kprobe:__nla_parse` function. 
+
+Please replace the `assume` and `sassert` lines in your bpftrace program accordingly.
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg0 != NULL & arg1 == 2 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL); 
+
+
+tmp kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}
+prompts
+ 
+    I will assign you the job I have a function __nla_parse like int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), please provide me with the function definition and the corresponding argument to be assigned to arg0. I need the output only has the variable name without the type info. I want the result in the below text format :
+    
+    ```text
+    And we know the definition of {function} is {function definition}, we should put all the first argument {the first argument}'s operation as to arg0, the second argument {the second argument} be arg1, the third argument {the third argument} be arg2, {.. until the end of argument list}. You should replace the following paremeter with corresponding one.
+    ```
+    
+text code ["And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with the corresponding one."]
+prompts
+ 
+    I'm working on a project involving writing bpftrace programs and I just got the job of tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2., in my coded program "
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+}
+
+kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}}
+
+END
+{
+	clear(@reqts);
+}
+" line 9, kprobe:__nla_parse, I need to verify based on the context of what I ask, can you provide some refined constraints information on this line considering the context. 
+    Here's the broader constraints of this function: Parse a stream of attributes into a tb buffer with pre condition tb should be !=null, maxtype should be >=0, head should be !=null, len should be >=0, policy should be !=null, validate should be >=0, extack should be !=nullHowever, last time you generate wrong the function with error: nd is the first argument which should be arg0. 
+    You should generate the refined constraints in following C format:
+    ```c
+      assume([]);
+      sassert([]);
+    ```
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line 11, sassert will be inserted in the end of the function kprobe:__nla_parse and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. You only need to provide the pre condition in one line and post condition in one line if there are multiple of them you should use & to connect them.
+    And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with the corresponding one.
+responses Based on your provided context and the constraints of the __nla_parse function, the refined constraints in C format would look like this:
+
+```c
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2);
+```
+
+In the `assume` line, we are ensuring that all the arguments are meeting their preconditions. For `arg0`, `arg2`, `arg4`, and `arg6`, we are checking that they are not NULL. For `arg1`, `arg3`, and `arg5`, we are checking that they are greater than or equal to 0.
+
+In the `sassert` line, we are asserting that `arg1` (which corresponds to `maxtype` in the function definition) is equal to 2. This is the post condition you mentioned, where you want to hook all the functions of __nla_parse and add up the `arg1` as `maxtype` only if the `maxtype` is 2. 
+
+Please replace `arg0` to `arg6` with the corresponding parameters in your bpftrace program.
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2); 
+
+
+tmp kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}
+prompts
+ 
+    I will assign you the job I have a function __nla_parse like int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), please provide me with the function definition and the corresponding argument to be assigned to arg0. I need the output only has the variable name without the type info. I want the result in the below text format :
+    
+    ```text
+    And we know the definition of {function} is {function definition}, we should put all the first argument {the first argument}'s operation as to arg0, the second argument {the second argument} be arg1, the third argument {the third argument} be arg2, {.. until the end of argument list}. You should replace the following paremeter with corresponding one.
+    ```
+    
+text code ["And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one."]
+prompts
+ 
+    I'm working on a project involving writing bpftrace programs and I just got the job of tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2., in my coded program "
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+}
+
+kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}}
+
+END
+{
+	clear(@reqts);
+}
+" line 9, kprobe:__nla_parse, I need to verify based on the context of what I ask, can you provide some refined constraints information on this line considering the context. 
+    Here's the broader constraints of this function: Parse a stream of attributes into a tb buffer with pre condition tb should be !=null, maxtype should be >=0, head should be !=null, len should be >=0, policy should be !=null, validate should be >=0, extack should be !=nullHowever, last time you generate wrong the function with error: nd is the first argument which should be arg0. 
+    You should generate the refined constraints in following C format:
+    ```c
+      assume([]);
+      sassert([]);
+    ```
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line 11, sassert will be inserted in the end of the function kprobe:__nla_parse and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. You only need to provide the pre condition in one line and post condition in one line if there are multiple of them you should use & to connect them.
+    And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one.
+responses Based on the context and the constraints you provided, the refined constraints for the function `__nla_parse` in C format would look like this:
+
+```c
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2);
+```
+
+In the `assume` line, we are ensuring that all the arguments are valid according to the preconditions you provided. Specifically, we are checking that `tb` (arg0), `head` (arg2), `policy` (arg4), and `extack` (arg6) are not NULL, and that `maxtype` (arg1), `len` (arg3), and `validate` (arg5) are greater than or equal to 0.
+
+In the `sassert` line, we are asserting that `maxtype` (arg1) is equal to 2, as per your requirement. This is the postcondition that will be checked at the end of the function `kprobe:__nla_parse`.
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2); 
+
+
+tmp kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}
+prompts
+ 
+    I will assign you the job I have a function __nla_parse like int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), please provide me with the function definition and the corresponding argument to be assigned to arg0. I need the output only has the variable name without the type info. I want the result in the below text format :
+    
+    ```text
+    And we know the definition of {function} is {function definition}, we should put all the first argument {the first argument}'s operation as to arg0, the second argument {the second argument} be arg1, the third argument {the third argument} be arg2, {.. until the end of argument list}. You should replace the following paremeter with corresponding one.
+    ```
+    
+text code ["And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one."]
+prompts
+ 
+    I'm working on a project involving writing bpftrace programs and I just got the job of tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2., in my coded program "
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+}
+
+kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}}
+
+END
+{
+	clear(@reqts);
+}
+" line 9, kprobe:__nla_parse, I need to verify based on the context of what I ask, can you provide some refined constraints information on this line considering the context. 
+    Here's the broader constraints of this function: Parse a stream of attributes into a tb buffer with pre condition tb should be !=null, maxtype should be >=0, head should be !=null, len should be >=0, policy should be !=null, validate should be >=0, extack should be !=nullHowever, last time you generate wrong the function with error: nd is the first argument which should be arg0. 
+    You should generate the refined constraints in following C format:
+    ```c
+      assume([]);
+      sassert([]);
+    ```
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line 11, sassert will be inserted in the end of the function kprobe:__nla_parse and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. You only need to provide the pre condition in one line and post condition in one line if there are multiple of them you should use & to connect them.
+    And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one.
+responses Based on your requirements and the broader constraints of the __nla_parse() function, the refined constraints in C format would look like this:
+
+```c
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg0 != NULL & arg1 == 2 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+```
+
+In the `assume` line, we are ensuring that all the arguments are not NULL and that the integer arguments are greater than or equal to 0. This is the precondition that needs to be satisfied before the function is executed.
+
+In the `sassert` line, we are asserting that all the arguments are not NULL, that the integer arguments are greater than or equal to 0, and that the maxtype (arg1) is equal to 2. This is the postcondition that needs to be satisfied after the function is executed.
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg0 != NULL & arg1 == 2 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL); 
+
+
+tmp kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}
+prompts
+ 
+    I will assign you the job I have a function __nla_parse like int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), please provide me with the function definition and the corresponding argument to be assigned to arg0. I need the output only has the variable name without the type info. I want the result in the below text format :
+    
+    ```text
+    And we know the definition of {function} is {function definition}, we should put all the first argument {the first argument}'s operation as to arg0, the second argument {the second argument} be arg1, the third argument {the third argument} be arg2, {.. until the end of argument list}. You should replace the following paremeter with corresponding one.
+    ```
+    
+text code ["And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one."]
+prompts
+ 
+    I'm working on a project involving writing bpftrace programs and I just got the job of tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2., in my coded program "
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+}
+
+kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}}
+
+END
+{
+	clear(@reqts);
+}
+" line 9, kprobe:__nla_parse, I need to verify based on the context of what I ask, can you provide some refined constraints information on this line considering the context. 
+    Here's the broader constraints of this function: Parse a stream of attributes into a tb buffer with pre condition tb should be !=null, maxtype should be >=0, head should be !=null, len should be >=0, policy should be !=null, validate should be >=0, extack should be !=nullHowever, last time you generate wrong the function with error: nd is the first argument which should be arg0. 
+    You should generate the refined constraints in following C format:
+    ```c
+      assume([]);
+      sassert([]);
+    ```
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line 11, sassert will be inserted in the end of the function kprobe:__nla_parse and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. You only need to provide the pre condition in one line and post condition in one line if there are multiple of them you should use & to connect them.
+    And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one.
+responses Based on your description, the refined constraints for the function `__nla_parse()` in C format would be:
+
+```c
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg0 != NULL & arg1 == 2 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+```
+
+In the `assume` line, we are checking that all the arguments are not null and that `arg1`, `arg3`, `arg5` are greater than or equal to 0, which are the preconditions you provided. 
+
+In the `sassert` line, we are asserting the same conditions as in the `assume` line, but with an additional condition that `arg1` (which corresponds to `maxtype`) should be equal to 2. This is the postcondition you specified. 
+
+Please replace `arg0` to `arg6` with the corresponding parameters in your actual code.
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg0 != NULL & arg1 == 2 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL); 
+
+
+tmp kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}
+prompts
+ 
+    I will assign you the job I have a function __nla_parse like int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), please provide me with the function definition and the corresponding argument to be assigned to arg0. I need the output only has the variable name without the type info. I want the result in the below text format :
+    
+    ```text
+    And we know the definition of {function} is {function definition}, we should put all the first argument {the first argument}'s operation as to arg0, the second argument {the second argument} be arg1, the third argument {the third argument} be arg2, {.. until the end of argument list}. You should replace the following paremeter with corresponding one.
+    ```
+    
+text code ["And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with the corresponding one."]
+prompts
+ 
+    I'm working on a project involving writing bpftrace programs and I just got the job of tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2., in my coded program "
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+}
+
+kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}}
+
+END
+{
+	clear(@reqts);
+}
+" line 9, kprobe:__nla_parse, I need to verify based on the context of what I ask, can you provide some refined constraints information on this line considering the context. 
+    Here's the broader constraints of this function: Parse a stream of attributes into a tb buffer with pre condition tb should be !=null, maxtype should be >=0, head should be !=null, len should be >=0, policy should be !=null, validate should be >=0, extack should be !=nullHowever, last time you generate wrong the function with error: nd is the first argument which should be arg0. 
+    You should generate the refined constraints in following C format:
+    ```c
+      assume([]);
+      sassert([]);
+    ```
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line 11, sassert will be inserted in the end of the function kprobe:__nla_parse and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. You only need to provide the pre condition in one line and post condition in one line if there are multiple of them you should use & to connect them.
+    And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with the corresponding one.
+responses Based on the context and the constraints you provided, the refined constraints for the function `__nla_parse()` in C format would be:
+
+```c
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2);
+```
+
+In the `assume` line, we are ensuring that all the arguments are valid according to the constraints you provided. In the `sassert` line, we are asserting that the `maxtype` (which corresponds to `arg1`) is equal to 2. This should be inserted at the end of the function `kprobe:__nla_parse`. 
+
+Please replace `arg0` with `tb`, `arg1` with `maxtype`, `arg2` with `head`, `arg3` with `len`, `arg4` with `policy`, `arg5` with `validate`, and `arg6` with `extack` in your bpftrace program.
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2); 
+
+
+tmp kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}
+prompts
+ 
+    I will assign you the job I have a function __nla_parse like int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), please provide me with the function definition and the corresponding argument to be assigned to arg0. I need the output only has the variable name without the type info. I want the result in the below text format :
+    
+    ```text
+    And we know the definition of {function} is {function definition}, we should put all the first argument {the first argument}'s operation as to arg0, the second argument {the second argument} be arg1, the third argument {the third argument} be arg2, {.. until the end of argument list}. You should replace the following paremeter with corresponding one.
+    ```
+    
+text code ["And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one."]
+prompts
+ 
+    I'm working on a project involving writing bpftrace programs and I just got the job of tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2., in my coded program "
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+}
+
+kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}}
+
+END
+{
+	clear(@reqts);
+}
+" line 9, kprobe:__nla_parse, I need to verify based on the context of what I ask, can you provide some refined constraints information on this line considering the context. 
+    Here's the broader constraints of this function: Parse a stream of attributes into a tb buffer with pre condition tb should be !=null, maxtype should be >=0, head should be !=null, len should be >=0, policy should be !=null, validate should be >=0, extack should be !=nullHowever, last time you generate wrong the function with error: nd is the first argument which should be arg0. 
+    You should generate the refined constraints in following C format:
+    ```c
+      assume([]);
+      sassert([]);
+    ```
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line 11, sassert will be inserted in the end of the function kprobe:__nla_parse and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. You only need to provide the pre condition in one line and post condition in one line if there are multiple of them you should use & to connect them.
+    And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one.
+responses Based on the context and the constraints you provided, the refined constraints for the function `__nla_parse()` in C format would be:
+
+```c
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2);
+```
+
+In the `assume` line, we are ensuring that all the arguments are valid according to the constraints you provided. Specifically, we are checking that `arg0`, `arg2`, `arg4`, and `arg6` are not NULL, and `arg1`, `arg3`, and `arg5` are greater than or equal to 0.
+
+In the `sassert` line, we are asserting that `arg1` (which corresponds to `maxtype` in the function definition) is equal to 2. This is based on your requirement to hook all the functions of `__nla_parse` and add up the `arg1` as `maxtype` only if the `maxtype` is 2.
+
+Please replace `arg0` to `arg6` with the corresponding parameters in your bpftrace program.
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2); 
+
+
+tmp kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}
+prompts
+ 
+    I will assign you the job I have a function __nla_parse like int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), please provide me with the function definition and the corresponding argument to be assigned to arg0. I need the output only has the variable name without the type info. I want the result in the below text format :
+    
+    ```text
+    And we know the definition of {function} is {function definition}, we should put all the first argument {the first argument}'s operation as to arg0, the second argument {the second argument} be arg1, the third argument {the third argument} be arg2, {.. until the end of argument list}. You should replace the following paremeter with corresponding one.
+    ```
+    
+text code ["And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one."]
+prompts
+ 
+    I'm working on a project involving writing bpftrace programs and I just got the job of tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2., in my coded program "
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+}
+
+kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}}
+
+END
+{
+	clear(@reqts);
+}
+" line 9, kprobe:__nla_parse, I need to verify based on the context of what I ask, can you provide some refined constraints information on this line considering the context. 
+    Here's the broader constraints of this function: Parse a stream of attributes into a tb buffer with pre condition tb should be !=null, maxtype should be >=0, head should be !=null, len should be >=0, policy should be !=null, validate should be >=0, extack should be !=nullHowever, last time you generate wrong the function with error: nd is the first argument which should be arg0. 
+    You should generate the refined constraints in following C format:
+    ```c
+      assume([]);
+      sassert([]);
+    ```
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line 11, sassert will be inserted in the end of the function kprobe:__nla_parse and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. You only need to provide the pre condition in one line and post condition in one line if there are multiple of them you should use & to connect them.
+    And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one.
+responses Based on the context and the broader constraints of the function __nla_parse(), the refined constraints in C format would be:
+
+```c
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2);
+```
+
+In the `assume` line, we are ensuring that all the arguments are not null and that the integer arguments are greater than or equal to 0. This is the precondition that needs to be satisfied before the function is executed.
+
+In the `sassert` line, we are asserting that the maxtype (arg1) is equal to 2. This is the postcondition that needs to be satisfied after the function is executed. If this condition is not met, the function will return an error.
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2); 
+
+
+tmp kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}
+prompts
+ 
+    I will assign you the job I have a function __nla_parse like int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), please provide me with the function definition and the corresponding argument to be assigned to arg0. I need the output only has the variable name without the type info. I want the result in the below text format :
+    
+    ```text
+    And we know the definition of {function} is {function definition}, we should put all the first argument {the first argument}'s operation as to arg0, the second argument {the second argument} be arg1, the third argument {the third argument} be arg2, {.. until the end of argument list}. You should replace the following paremeter with corresponding one.
+    ```
+    
+text code ["And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one."]
+prompts
+ 
+    I'm working on a project involving writing bpftrace programs and I just got the job of tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2., in my coded program "
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+}
+
+kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}}
+
+END
+{
+	clear(@reqts);
+}
+" line 9, kprobe:__nla_parse, I need to verify based on the context of what I ask, can you provide some refined constraints information on this line considering the context. 
+    Here's the broader constraints of this function: Parse a stream of attributes into a tb buffer with pre condition tb should be !=null, maxtype should be >=0, head should be !=null, len should be >=0, policy should be !=null, validate should be >=0, extack should be !=nullHowever, last time you generate wrong the function with error: nd is the first argument which should be arg0. 
+    You should generate the refined constraints in following C format:
+    ```c
+      assume([]);
+      sassert([]);
+    ```
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line 11, sassert will be inserted in the end of the function kprobe:__nla_parse and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. You only need to provide the pre condition in one line and post condition in one line if there are multiple of them you should use & to connect them.
+    And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one.
+responses Based on your description and the function definition, the refined constraints for the `kprobe:__nla_parse` function in C format would be:
+
+```c
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2);
+```
+
+In the `assume` line, we are ensuring that all the arguments are valid according to the preconditions you provided. Specifically, we are checking that `arg0` (tb), `arg2` (head), `arg4` (policy), and `arg6` (extack) are not NULL, and that `arg1` (maxtype), `arg3` (len), and `arg5` (validate) are greater than or equal to 0.
+
+In the `sassert` line, we are asserting that `arg1` (maxtype) is equal to 2, as per your requirement. This will be checked at the end of the function execution. If `arg1` is not equal to 2, the program will terminate with an error.
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2); 
+
+
+tmp kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}
+prompts
+ 
+    I will assign you the job I have a function __nla_parse like int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), please provide me with the function definition and the corresponding argument to be assigned to arg0. I need the output only has the variable name without the type info. I want the result in the below text format :
+    
+    ```text
+    And we know the definition of {function} is {function definition}, we should put all the first argument {the first argument}'s operation as to arg0, the second argument {the second argument} be arg1, the third argument {the third argument} be arg2, {.. until the end of argument list}. You should replace the following paremeter with corresponding one.
+    ```
+    
+text code ["And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one."]
+prompts
+ 
+    I'm working on a project involving writing bpftrace programs and I just got the job of tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2., in my coded program "
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+	printf("Tracing bash commands... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %s\n", "TIME", "PID", "COMMAND");
+}
+
+kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}}
+
+END
+{
+	clear(@reqts);
+}
+" line 9, kprobe:__nla_parse, I need to verify based on the context of what I ask, can you provide some refined constraints information on this line considering the context. 
+    Here's the broader constraints of this function: Parse a stream of attributes into a tb buffer with pre condition tb should be !=null, maxtype should be >=0, head should be !=null, len should be >=0, policy should be !=null, validate should be >=0, extack should be !=nullHowever, last time you generate wrong the function with error: nd is the first argument which should be arg0. 
+    You should generate the refined constraints in following C format:
+    ```c
+      assume([]);
+      sassert([]);
+    ```
+    The requirement is to put the pre condition to the correstponding [] which assume will be inserted in line 11, sassert will be inserted in the end of the function kprobe:__nla_parse and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler. You only need to provide the pre condition in one line and post condition in one line if there are multiple of them you should use & to connect them.
+    And we know the definition of __nla_parse is int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), we should put all the first argument tb's operation as to arg0, the second argument maxtype be arg1, the third argument head be arg2, the fourth argument len be arg3, the fifth argument policy be arg4, the sixth argument validate be arg5, and the seventh argument extack be arg6. You should replace the following parameter with corresponding one.
+responses Based on your provided context and the broader constraints of the function, the refined constraints for the `kprobe:__nla_parse` line in your bpftrace program could be written in the following way:
+
+```c
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2);
+```
+
+In the `assume` line, we are ensuring that all the arguments are meeting the preconditions. Specifically, we are checking that `arg0` (tb), `arg2` (head), `arg4` (policy), and `arg6` (extack) are not NULL, and `arg1` (maxtype), `arg3` (len), and `arg5` (validate) are greater than or equal to 0.
+
+In the `sassert` line, we are asserting that `arg1` (maxtype) is equal to 2, as per your requirement. This will be the post condition for the function `kprobe:__nla_parse`. 
+
+Please replace the `arg0`, `arg1`, `arg2`, `arg3`, `arg4`, `arg5`, and `arg6` with the corresponding parameters in your actual program.
+assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+sassert(arg1 == 2); 
+
+
+tmp kprobe:__nla_parse
+{assume(arg0 != NULL & arg1 >= 0 & arg2 != NULL & arg3 >= 0 & arg4 != NULL & arg5 >= 0 & arg6 != NULL);
+	@reqts[arg1] +=1;
+if(!(arg1 == 2)) {error();}
+prompts
+ 
+    I will assign you the job I have a function __nla_parse like int __nla_parse(struct nlattr **tb, int maxtype,const struct nlattr *head, int len,const struct nla_policy *policy, unsigned int validate,struct netlink_ext_ack *extack), please provide me with the function definition and the corresponding argument to be assigned to arg0. I need the output only has the variable name without the type info. I want the result in the below text format :
+    
+    ```text
+    And we know the definition of {function} is {function definition}, we should put all the first argument {the first argument}'s operation as to arg0, the second argument {the second argument} be arg1, the third argument {the third argument} be arg2, {.. until the end of argument list}. You should replace the following paremeter with corresponding one.
+    ```
+    

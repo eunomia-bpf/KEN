@@ -57,7 +57,7 @@ def run_code_llama(question: str) -> str:
 	llm.model_kwargs = {
 		"temperature": 0.7,
 		"repetition_penalty": 1.2,
-		"max_new_tokens": 1024,
+		"max_new_tokens": 4090,
 		"top_p": 0.9,
 	}
 
