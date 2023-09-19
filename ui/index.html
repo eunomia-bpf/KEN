@@ -29,30 +29,18 @@
   </head>
   <body>
 
-<h1>CS131 PA: Test suite</h1>
+<h1>OpenCopilot</h1>
 
 <select id="p1">
-    <option value="r" selected>Reference Parser</option>
+    <option value="a" selected>CodeLLama</option>
+    <option value="b" selected>GPT4</option>
+    <option value="c" selected>WizardLM</option>
+    <option value="d" selected>ExLLamma</option>
 </select>
 
-<button id='parseButton' class='compile-button'>Parse Syntax</button>
+<button id='parseButton' class='compile-button'>Prompt</button>
 
-<br />
-
-<select id="p2">
-    <option value="r" selected>Reference Semantic Analysis</option>
-</select>
-
-<button id='staticCheckButton' class='compile-button'>Run Static Checks</button>
-
-<br />
-
-<select id="p3">
-    <option value="r" selected>Reference Code Generator</option>
-</select>
-
-<button id='compileButton' class='compile-button'>Compile to RISC-V</button>
-
+<link rel="icon" type="image/png" href="/OpenCopilot.png">
 
 <pre class="example"></pre>
 
@@ -62,8 +50,6 @@
 
     function makeEditor(example) {
         var parseButton = $("#parseButton");
-        var staticCheckButton = $("#staticCheckButton");
-        var compileButton = $("#compileButton");
         var editor = ace.edit(example, {
             theme: "ace/theme/ambiance",
             mode: "ace/mode/python",
@@ -102,17 +88,6 @@
             clearMarkers();
             var code = editor.getValue();
             var p1 = parse ? $("#p1").val() : "";
-            var p2 = check ? $("#p2").val() : "";
-            var p3 = codegen ? $("#p3").val() : "";
-            if (codegen) {
-                var resultWindow = window.open('venus.html?v=0.2.4' , '_blank');
-                if (resultWindow == null) {
-                    console.error("Could not open new window...");
-                    return; // Cannot show result
-                }
-                resultWindow.onload = () => resultWindow.codeMirror.setValue("# Compiling... Please be patient. This can take a few seconds.\n" +
-                    "# (The first compilation takes the longest)");
-            }
             
             $.ajax({
                 url: compileService, 
