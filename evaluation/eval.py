@@ -108,4 +108,4 @@ def test_vector_db_with_examples_3trails_with_feedback():
     )
 
 if __name__ == "__main__":
-    test_vector_db_with_examples_3trails()
+    test_vector_db_with_examples_3trails_with_feedback()
