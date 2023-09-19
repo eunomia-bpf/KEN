@@ -187,7 +187,7 @@ def kprobe_prompt(
 
     # has db
     json_template = ""
-    json_ = json.load(open("opencopilot/z3_vector_db/data/" + file, "r"))
+    json_ = json.load(open("z3_vector_db/data/" + file, "r"))
     for li in list(json_[0].keys()):
         if li == function:
             json_template = json_[0][li]

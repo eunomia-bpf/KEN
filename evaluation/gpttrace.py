@@ -2,8 +2,6 @@ from langchain.tools import StructuredTool
 import subprocess
 import json
 import unittest
-import threading
-import signal
 import argparse
 
 from typing import List, TypedDict
@@ -22,6 +20,7 @@ from langchain.agents import initialize_agent
 from langchain import LLMMathChain, OpenAI
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.llms import CTransformers
+
 
 class MyCustomHandler(BaseCallbackHandler):
     def on_llm_new_token(self, token: str, **kwargs) -> None:
@@ -80,14 +79,18 @@ GET_EXAMPLE_PROMPT: str = """
     The return example is more complex examples, for top 4 results.
     """
 
+
 def get_top_n_example_from_vec_db(query: str, n: int) -> str:
     embeddings = OpenAIEmbeddings()
     # Check if the vector database files exist
-    if not (os.path.exists("./data_save/vector_db.faiss") and os.path.exists("./data_save/vector_db.pkl")):
+    if not (
+        os.path.exists("./data_save/vector_db.faiss")
+        and os.path.exists("./data_save/vector_db.pkl")
+    ):
         loader = JSONLoader(
-            file_path='../dataset/bpftrace/examples.json',
-            jq_schema='.data[].content',
-            json_lines=True
+            file_path="../dataset/bpftrace/examples.json",
+            jq_schema=".data[].content",
+            json_lines=True,
         )
         documents = loader.load()
         db = FAISS.from_documents(documents, embeddings)
@@ -95,18 +98,22 @@ def get_top_n_example_from_vec_db(query: str, n: int) -> str:
     else:
         # Load an existing FAISS vector store
         db = FAISS.load_local(
-            "./data_save", index_name="vector_db", embeddings=embeddings)
+            "./data_save", index_name="vector_db", embeddings=embeddings
+        )
 
-    results = db.search(query, search_type='similarity')
+    results = db.search(query, search_type="similarity")
     results = [result.page_content for result in results]
     return "\n".join(results[:n])
+
 
 def get_full_examples_with_vec_db(query: str) -> str:
     return simple_examples + get_top_n_example_from_vec_db(query, 2)
 
+
 def construct_bpftrace_examples(text: str) -> str:
     examples = get_full_examples_with_vec_db(text)
     return examples
+
 
 class CommandResult(TypedDict):
     command: str
@@ -119,23 +126,24 @@ def run_command(command: List[str], require_check: bool = False) -> CommandResul
     """
     This function runs a command with a timeout.
     """
-    print("The bpf program to run is: " + ' '.join(command))
+    print("The bpf program to run is: " + " ".join(command))
     if require_check:
         user_input = input("Enter 'y' to proceed, and hit Ctrl C to stop: ")
-        if user_input.lower() != 'y':
+        if user_input.lower() != "y":
             print("Aborting...")
             return {
-                "command": ' '.join(command),
+                "command": " ".join(command),
                 "stdout": "",
                 "stderr": "User not permit execute the program",
-                "returncode": -1
+                "returncode": -1,
             }
     # Start the process
-    with subprocess.Popen(command,
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE,
-                          text=True,
-                          ) as process:
+    with subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    ) as process:
         stdout = ""
         stderr = ""
         try:
@@ -144,7 +152,7 @@ def run_command(command: List[str], require_check: bool = False) -> CommandResul
                 # Only try to read output if the process is still running
                 if process.stdout.readable():
                     line = process.stdout.read()
-                    print(line, end='')
+                    print(line, end="")
                     stdout += line
             # Wait for the process to finish and get the output
             last_stdout, last_stderr = process.communicate()
@@ -162,10 +170,10 @@ def run_command(command: List[str], require_check: bool = False) -> CommandResul
                 stderr += process.stderr.read()
                 print(stderr)
             return {
-                "command": ' '.join(command),
+                "command": " ".join(command),
                 "stdout": stdout,
                 "stderr": stderr,
-                "returncode": process.returncode
+                "returncode": process.returncode,
             }
 
 
@@ -184,10 +192,23 @@ RUN_PROGRAM_PROMPT: str = """
 
 global_save_file: str = "result/program-" + str(os.getpid()) + ".json"
 
+
 def bpftrace_run_program(program: str) -> str:
-    res = run_command(["sudo", "timeout", "--preserve-status",
-                      "-s", "2", "20", "bpftrace", "-e", program])
+    res = run_command(
+        [
+            "sudo",
+            "timeout",
+            "--preserve-status",
+            "-s",
+            "2",
+            "20",
+            "bpftrace",
+            "-e",
+            program,
+        ]
+    )
     return json.dumps(res)
+
 
 GET_HOOK_PROMPT: str = """
     Gets the useable hooks from bpftrace. 
@@ -217,16 +238,17 @@ def bpftrace_get_hooks(regex: str) -> str:
 
 
 def get_gpttrace_tools() -> List[Tool]:
-    bpftrace_run_tool = Tool.from_function(bpftrace_run_program,
-                                           "run-ebpf-program",
-                                           description=RUN_PROGRAM_PROMPT)
-    bpftrace_probe_tool = Tool.from_function(bpftrace_get_hooks,
-                                             "get-ebpf-hooks-with-regex",
-                                             description=GET_HOOK_PROMPT)
+    bpftrace_run_tool = Tool.from_function(
+        bpftrace_run_program, "run-ebpf-program", description=RUN_PROGRAM_PROMPT
+    )
+    bpftrace_probe_tool = Tool.from_function(
+        bpftrace_get_hooks, "get-ebpf-hooks-with-regex", description=GET_HOOK_PROMPT
+    )
     get_full_examples_with_vec_db_tool = Tool.from_function(
         get_full_examples_with_vec_db,
         "get-ebpf-examples-with-query",
-        description=GET_EXAMPLE_PROMPT)
+        description=GET_EXAMPLE_PROMPT,
+    )
     tools = [
         bpftrace_probe_tool,
         bpftrace_run_tool,
@@ -235,46 +257,68 @@ def get_gpttrace_tools() -> List[Tool]:
     return tools
 
 
-def setup_openai_agent(model_name: str = "gpt-3.5-turbo", temperature: float = 0) -> AgentType:
+def setup_openai_agent(
+    model_name: str = "gpt-3.5-turbo", temperature: float = 0
+) -> AgentType:
     """
     setup the agent chain and return the agent
     """
     tools = get_gpttrace_tools()
-    llm = ChatOpenAI(
-        temperature=0, model_name=model_name)
+    llm = ChatOpenAI(temperature=0, model_name=model_name)
     memory = ConversationBufferMemory(memory_key="chat_history")
     agent_chain = initialize_agent(
-        tools, llm, agent=AgentType.OPENAI_MULTI_FUNCTIONS,  max_iterations=10,
-        verbose=True, memory=memory)
+        tools,
+        llm,
+        agent=AgentType.OPENAI_MULTI_FUNCTIONS,
+        max_iterations=10,
+        verbose=True,
+        memory=memory,
+    )
     return agent_chain
 
 
-def setup_react_agent(model_name: str = "gpt-3.5-turbo", temperature: float = 0) -> AgentType:
+def setup_react_agent(
+    model_name: str = "gpt-3.5-turbo", temperature: float = 0
+) -> AgentType:
     """
     setup the agent chain and return the agent
     """
     tools = get_gpttrace_tools()
-    llm = ChatOpenAI(
-        temperature=0, model_name=model_name)
+    llm = ChatOpenAI(temperature=0, model_name=model_name)
     memory = ConversationBufferMemory(memory_key="chat_history")
     agent_chain = initialize_agent(
-        tools, llm, agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,  max_iterations=10,
-        verbose=True, memory=memory)
+        tools,
+        llm,
+        agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+        max_iterations=10,
+        verbose=True,
+        memory=memory,
+    )
     return agent_chain
 
-def setup_codellama_agent(model_name: str = "gpt-3.5-turbo", temperature: float = 0) -> AgentType:
+
+def setup_codellama_agent(
+    model_name: str = "gpt-3.5-turbo", temperature: float = 0
+) -> AgentType:
     tools = get_gpttrace_tools()
     # Download the required model in the https://huggingface.co/TheBloke/CodeLlama-7B-Python-GGUF#provided-files
     # and place it in the models folder.
-    llm = CTransformers(model='./models/codellama-7b-python.Q5_K_M.gguf',   
-                    model_type='llama',
-                    config={'max_new_tokens': 256,
-                            'temperature': temperature})
+    llm = CTransformers(
+        model="./models/codellama-7b-python.Q5_K_M.gguf",
+        model_type="llama",
+        config={"max_new_tokens": 256, "temperature": temperature},
+    )
     memory = ConversationBufferMemory(memory_key="chat_history")
     agent_chain = initialize_agent(
-        tools, llm, agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,  max_iterations=10,
-        verbose=True, memory=memory)
+        tools,
+        llm,
+        agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+        max_iterations=10,
+        verbose=True,
+        memory=memory,
+    )
     return agent_chain
+
 
 def main() -> None:
     """
@@ -285,26 +329,33 @@ def main() -> None:
         description="Use ChatGPT to write eBPF programs (bpftrace, etc.)",
     )
     parser.add_argument(
-        "-v", "--verbose",
-        help="Show more details",
-        action="store_true")
+        "-v", "--verbose", help="Show more details", action="store_true"
+    )
     parser.add_argument(
-        "-k", "--key",
+        "-k",
+        "--key",
         help="Openai api key, see `https://platform.openai.com/docs/quickstart/add-your-api-key` or passed through `OPENAI_API_KEY`",
-        metavar="OPENAI_API_KEY")
-    parser.add_argument('input_string', type=str,
-                        help='Your question or request for a bpf program')
-    parser.add_argument('--model_name', type=str,
-                        help='model_name', default="gpt-3.5-turbo")
-    parser.add_argument('--agent_type', type=str,
-                        help='agent_type')
-    parser.add_argument('--save_file', type=str,
-                        help='save result to file', default="./result/program.res")
+        metavar="OPENAI_API_KEY",
+    )
+    parser.add_argument(
+        "input_string", type=str, help="Your question or request for a bpf program"
+    )
+    parser.add_argument(
+        "--model_name", type=str, help="model_name", default="gpt-3.5-turbo"
+    )
+    parser.add_argument("--agent_type", type=str, help="agent_type")
+    parser.add_argument(
+        "--save_file",
+        type=str,
+        help="save result to file",
+        default="./result/program.res",
+    )
     args = parser.parse_args()
 
-    if os.getenv('OPENAI_API_KEY', args.key) is None:
+    if os.getenv("OPENAI_API_KEY", args.key) is None:
         print(
-            "Either provide your access token through `-k` or through environment variable `OPENAI_API_KEY`")
+            "Either provide your access token through `-k` or through environment variable `OPENAI_API_KEY`"
+        )
         return
 
     agent_chain = None
@@ -321,8 +372,10 @@ def main() -> None:
     else:
         parser.print_help()
 
+
 if __name__ == "__main__":
     main()
+
 
 class TestRunBpftrace(unittest.TestCase):
     def test_run_command_short_live(self):
@@ -341,6 +394,7 @@ class TestRunBpftrace(unittest.TestCase):
 
     def test_get_examples(self):
         res = get_full_examples_with_vec_db(
-            "Trace allocations and display each individual allocator function call")
+            "Trace allocations and display each individual allocator function call"
+        )
         print(res)
         self.assertTrue(res)
