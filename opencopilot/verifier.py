@@ -47,7 +47,7 @@ def get_argument_prompt(
     function = function.replace("kprobe:", "").replace("kretprobe", "")
     function_def = ""
     with open(
-        "opencopilot/z3_vector_db/data/bpf_kprobe_def_format.json",
+        "z3_vector_db/data/bpf_kprobe_def_format.json",
         "r",
         encoding="utf-8",
     ) as file:

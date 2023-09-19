@@ -2,7 +2,7 @@ import gpttrace
 import json
 from typing import Optional
 from typing import Callable
-
+from langchain.llms import HuggingFaceHub
 from langchain.chains.openai_functions import (
     create_openai_fn_chain,
     create_structured_output_chain,
@@ -213,4 +213,4 @@ def run_vector_db_with_examples_3trails_human_feedback(user_request: str, hints:
 	return run_3trails_with_human_feedback(user_request, hints, run_few_shot_with_vector_db_bpftrace)
 
 if __name__ == "__main__":
-	run_few_shot_3trails("monitor the fan rate in kernel.")
+	run_few_shot_bpftrace("monitor the fan rate in kernel.")

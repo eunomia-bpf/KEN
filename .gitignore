@@ -13,3 +13,4 @@ bcc
 opencopilot.egg-info
 opencopilot-*
 venv
+huggingface_hub

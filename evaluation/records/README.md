@@ -82,12 +82,11 @@ false positive: 4 5 11 15 18 30 37
 
 date: 9.18
 
-- "returncode": 0, count 20
-- "returncode": 1, count 16
-- "returncode": 255, count 3
-- "error": 1
+- "returncode": 0, count 27
+- "returncode": 1, count 9
+- "returncode": 255, count 4
 
-false positive: 37 40
+false positive: 13 19 33
 
 ## vec db with 3 trails for 3.5
 
@@ -108,3 +107,15 @@ date: 9.18
 - "returncode": 255, count 2
 
 false positive: 37 40
+
+## few shot with 3 trails and human feed back for 4.0
+
+date: 9.18
+
+- "returncode": 0, count 31
+- "returncode": 1, count 6
+- "returncode": 255, count 3
+- "error": 1
+
+false positive: 13 34
+
