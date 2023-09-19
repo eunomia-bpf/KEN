@@ -1,7 +1,7 @@
 import json
 import re
 from typing import Callable, Optional
-
+import time
 import gpttrace
 from langchain.chains import LLMChain
 from langchain.chains.openai_functions import create_openai_fn_chain
@@ -73,14 +73,17 @@ def run_code_llama(question: str) -> str:
 	return extract_code_blocks(res)
 
 def run_bpftrace_prog_with_function_call(input: str) -> str:
-    print("input prompt: ", input, "\n")
-    # read a.bt
-    prog = run_gpt(input)
-    res = gpttrace.bpftrace_run_program(prog)
-    print(res)
-    data = json.loads(res)
-    data["prompt"] = input
-    return json.dumps(data)
+	print("input prompt: ", input, "\n")
+	# read a.bt
+	# prog = run_gpt(input)
+	# Sleep for 5 seconds
+	time.sleep(2)
+	prog = run_code_llama(input)
+	res = gpttrace.bpftrace_run_program(prog)
+	print(res)
+	data = json.loads(res)
+	data["prompt"] = input
+	return json.dumps(data)
 
 
 def run_few_shot_bpftrace(user_request: str) -> str:
@@ -261,4 +264,4 @@ def run_vector_db_with_examples_3trails_human_feedback(
 
 
 if __name__ == "__main__":
-    run_few_shot_bpftrace("monitor the fan rate in kernel.")
+    run_few_shot_bpftrace("Trace bpf jit compile events.")

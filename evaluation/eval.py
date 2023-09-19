@@ -4,7 +4,6 @@ import chain
 import json
 from typing import Callable
 
-
 def test_with_test_cases_and_feedback(
     func: Callable[[str, str], str], save_file: str, starts_from: int = 0
 ):
@@ -36,7 +35,7 @@ def test_with_test_cases_and_feedback(
                 passed_test_count += 1
             # save the output to a file
             with open(save_file, "a") as f:
-                f.write(res)
+                f.write(res + "\n")
             print(f"Test case completed. Output saved to: {save_file}\n")
             print(
                 f"Passed {passed_test_count} out of {total_test_count} test cases so far.\n"
@@ -44,7 +43,6 @@ def test_with_test_cases_and_feedback(
         except Exception as e:
             with open(save_file, "a") as f:
                 f.write(json.dumps({"error": str(e)}))
-
 
 def test_with_test_cases(
     func: Callable[[str], str], save_file: str, starts_from: int = 0
@@ -72,7 +70,7 @@ def test_with_test_cases(
                 passed_test_count += 1
             # save the output to a file
             with open(save_file, "a") as f:
-                f.write(res)
+                f.write(res + "\n")
             print(f"Test case completed. Output saved to: {save_file}\n")
             print(
                 f"Passed {passed_test_count} out of {total_test_count} test cases so far.\n"
@@ -81,31 +79,17 @@ def test_with_test_cases(
             with open(save_file, "a") as f:
                 f.write(json.dumps({"error": str(e)}))
 
-
 def test_few_shot():
     save_file = f"few_shot.json"
     test_with_test_cases(chain.run_few_shot_bpftrace, save_file)
-
-
-def test_zero_shot():
-    save_file = f"zero_shot.json"
-    test_with_test_cases(chain.run_zero_shot_bpftrace, save_file)
-
 
 def test_vector_db_with_examples():
     save_file = f"vector_db_with_example.json"
     test_with_test_cases(chain.run_few_shot_with_vector_db_bpftrace, save_file)
 
-
-def test_vector_db():
-    save_file = f"vector_db.json"
-    test_with_test_cases(chain.run_vector_db_bpftrace, save_file)
-
-
 def test_few_shot_3trails():
     save_file = f"few_shot_3trails.json"
     test_with_test_cases(chain.run_few_shot_3trails, save_file)
-
 
 def test_vector_db_with_examples_3trails():
     save_file = f"vec_db_with_examples_3trails.json"
@@ -125,4 +109,4 @@ def test_vector_db_with_examples_3trails_with_feedback():
     )
 
 if __name__ == "__main__":
-    test_vector_db_with_examples_3trails_with_feedback()
+    test_vector_db_with_examples()

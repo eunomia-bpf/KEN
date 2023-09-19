@@ -26,7 +26,6 @@ class MyCustomHandler(BaseCallbackHandler):
     def on_llm_new_token(self, token: str, **kwargs) -> None:
         print(f"{token}")
 
-
 simple_examples = """
 Below are some simple examples of bpftrace usage:
 
@@ -78,7 +77,6 @@ GET_EXAMPLE_PROMPT: str = """
 
     The return example is more complex examples, for top 4 results.
     """
-
 
 def get_top_n_example_from_vec_db(query: str, n: int) -> str:
     embeddings = OpenAIEmbeddings()
