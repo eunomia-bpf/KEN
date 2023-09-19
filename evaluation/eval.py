@@ -5,7 +5,7 @@ import json
 from typing import Callable
 
 def test_with_test_cases_and_feedback(
-    func: Callable[[str, str], str], save_file: str, starts_from: int = 39
+    func: Callable[[str, str], str], save_file: str, starts_from: int = 0
 ):
     with open("test_cases.txt", "r") as file:
         lines = file.readlines()
@@ -108,4 +108,4 @@ def test_vector_db_with_examples_3trails_with_feedback():
     )
 
 if __name__ == "__main__":
-    test_few_shot_3trails_with_feedback()
+    test_vector_db_with_examples_3trails()

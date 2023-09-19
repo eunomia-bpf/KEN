@@ -53,11 +53,14 @@ def extract_code_blocks(text: str) -> str:
     return res.replace("bpftrace -e", "").strip().strip("'")
 
 def run_code_llama(question: str) -> str:
+	if len(question) >= 5 * 3000:
+		print("question too long, truncating to 5 * 3000 chars")
+		question = question[:5 * 3000]
 	llm = DeepInfra(model_id="codellama/CodeLlama-34b-Instruct-hf")
 	llm.model_kwargs = {
 		"temperature": 0.7,
 		"repetition_penalty": 1.2,
-		"max_new_tokens": 4090,
+		"max_new_tokens": 2048,
 		"top_p": 0.9,
 	}
 

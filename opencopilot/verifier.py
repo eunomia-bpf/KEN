@@ -473,7 +473,9 @@ def parse_libbpf_program(context: str, program: str):
 # extract all the function calls
 # prompt from the vectordb and gen
 def test_bpftrace_verifier():
-    context = "tracing the __nla_parse() function to hook all the function of __nla_parse and add up the arg1 as maxtype only if the maxtype is 2."
+    context = """
+tracing the __nla_parse() function to hook all the function of __nla_parse,
+and add up the arg1 as maxtype only if the maxtype is 2."""
     program = """
 #!/usr/bin/env bpftrace
 
