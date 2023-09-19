@@ -21,7 +21,7 @@ from langchain.utilities import SerpAPIWrapper
 from langchain.agents import initialize_agent
 from langchain import LLMMathChain, OpenAI
 from langchain.callbacks.base import BaseCallbackHandler
-
+from langchain.llms import CTransformers
 
 class MyCustomHandler(BaseCallbackHandler):
     def on_llm_new_token(self, token: str, **kwargs) -> None:
@@ -262,6 +262,19 @@ def setup_react_agent(model_name: str = "gpt-3.5-turbo", temperature: float = 0)
         verbose=True, memory=memory)
     return agent_chain
 
+def setup_codellama_agent(model_name: str = "gpt-3.5-turbo", temperature: float = 0) -> AgentType:
+    tools = get_gpttrace_tools()
+    # Download the required model in the https://huggingface.co/TheBloke/CodeLlama-7B-Python-GGUF#provided-files
+    # and place it in the models folder.
+    llm = CTransformers(model='./models/codellama-7b-python.Q5_K_M.gguf',   
+                    model_type='llama',
+                    config={'max_new_tokens': 256,
+                            'temperature': temperature})
+    memory = ConversationBufferMemory(memory_key="chat_history")
+    agent_chain = initialize_agent(
+        tools, llm, agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,  max_iterations=10,
+        verbose=True, memory=memory)
+    return agent_chain
 
 def main() -> None:
     """
@@ -291,10 +304,8 @@ def main() -> None:
 
     if os.getenv('OPENAI_API_KEY', args.key) is None:
         print(
-            f"Either provide your access token through `-k` or through environment variable {OPENAI_API_KEY}")
+            "Either provide your access token through `-k` or through environment variable `OPENAI_API_KEY`")
         return
-
-    save_file = args.save_file
 
     agent_chain = None
     if args.agent_type == "react":
@@ -323,8 +334,8 @@ class TestRunBpftrace(unittest.TestCase):
         self.assertEqual(result["command"], "ls -l")
         self.assertEqual(result["returncode"], 0)
 
-    def test_bpftrace_get_probes(self):
-        result = bpftrace_get_probes("*sleep*")
+    def test_bpftrace_get_hooks(self):
+        result = bpftrace_get_hooks("*sleep*")
         print(result)
         self.assertEqual(result["returncode"], 0)
 
