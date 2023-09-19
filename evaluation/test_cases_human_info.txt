@@ -1,0 +1,40 @@
+tracepoint:irq:irq_handler_entry - Attach to IRQ handler and log relevant IRQs.
+tracepoint:sched:sched_process_fork - Log parent and child process IDs and command names on process fork.
+kprobe:__kmalloc - Attach to memory allocation function and log size for histogram.
+kprobe:do_prlimit, tracepoint:syscalls:sys_enter_setrlimit, tracepoint:syscalls:sys_exit_setrlimit - Log when processes change or exceed resource limits.
+tracepoint:signal:signal_deliver - Log signal name and affected process IDs.
+tracepoint:raw_syscalls:sys_exit - Monitor syscall errors for specific processes.
+kprobe:tcp_v4_syn_recv_sock kprobe:tcp_v6_syn_recv_sock - Capture TCP SYN packets and log IPs and ports.
+tracepoint:raw_syscalls:sys_enter - Monitor syscalls from user-space processes.
+tracepoint:raw_syscalls:sys_enter - Monitor global syscalls per second, use interval:s:1 to handle seconds
+tracepoint:syscalls:sys_enter_socket, kprobe:syscall__recvmsg, kprobe:syscall__sendmsg, and other syscall tracepoints or kprobe functions - Log socket operations and related process IDs.
+tracepoint:syscalls:sys_enter_openat, tracepoint:syscalls:sys_enter_read, tracepoint:syscalls:sys_enter_write - Calculate I/O size distribution for files.
+tracepoint:syscalls:sys_enter_read - Summarize read bytes by process.
+kprobe:net_namespace - Monitor network namespace creation and deletion.
+tracepoint:syscalls:sys_enter_open, tracepoint:syscalls:sys_enter_openat - Log files opened by processes.
+hardware:*cache*: - Count LLC cache misses by process.
+tracepoint:exceptions:page_fault_user or tracepoint:exceptions:page_fault_kernel - Count page fault events by process.
+uretprobe:/bin/bash:readline - Log bash commands and exit codes.
+kprobe:d_lookup - Trace directory entry cache lookups by process.
+kprobe:md_flush_request - Trace md flush events with associated process details.
+tracepoint:sched:sched_switch - Log CPU scheduler run queue latency.
+tracepoint:sched:sched_switch - Summarize CPU scheduler run queue lengths.
+uprobe:libpthread:pthread_create, uprobe:libc:pthread_create - Log new thread creation details， like pid, tid, comm, etc.
+hardware:*kvm_exit* or software:*kvm_exit* - Display each vm exit in KVM.
+tracepoint:syscalls:sys_enter_mount, tracepoint:syscalls:sys_exit_umount2 - Trace mount and umount system-wide.
+kprobe:bpf_int_jit_compile - Trace bpf JIT compilation events.
+kprobe:__blk_account_io_done or others with blk_account, blk etc... - Trace block device I/O with associated process and latency details.
+kprobe:btrfs_file_write_iter or kprobe:generic_file_read_iter, or others related to them - Trace various btrfs operations system-wide.
+kprobe:cap_capable - Trace security capability check events.
+kprobe:compact_zone or tracepoint:compaction:* related events - Trace zone compaction events.
+kprobe:preempt_schedule_irq or others - Trace long atomic sections in kernel.
+tracepoint:syscalls:sys_enter_kill - Trace signals from the kill() syscall.
+kprobe:mutex_lock and kprobe:mutex_unlock - Trace kernel mutex locks and provide statistics.
+tracepoint:syscalls:sys_enter_shmget and shmctl, shmdt, shmat - Trace System V shared memory calls and display size.
+kprobe:kmem_cache_alloc, kprobe:__slab_free, kprobe:___slab_alloc - Summarize kernel SLAB/SLUB cache allocations.
+tracepoint:syscalls:sys_enter_sync - Trace sync() syscall and print the caller process.
+kprobe:tcp_rcv_established - Trace TCP RTT and print sender/receiver details.
+zfs hooks starts with zpl_* - Summarize ZFS operation latencies.
+kprobe:swap_readpage or others with swap - Count swap-ins by process.
+kprobe:tcp_v4_connect - Trace active TCP connections via the connect() syscall.
+kprobe:xfs_file_read, kprobe:xfs_file_write, kprobe:xfs_file_open, kprobe:xfs_file_fsync - Summarize XFS operation latencies.

@@ -1,6 +1,6 @@
 # evaluation for OpenCopilot
 
-## baseline
+## evaluation cases
 
 use llm and vector data base examples to generate eBPF programs:
 
@@ -17,6 +17,11 @@ use retry for hook points:
 ```sh
 python3 eval.py
 ```
+
+## test cases
+
+- test_cases.txt: test cases for evaluation, one case per line
+- test_cases_human_info.txt: additional information for each test case, provided by human and can be used for retry
 
 ## results
 

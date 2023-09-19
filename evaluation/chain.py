@@ -167,11 +167,50 @@ Please retry generating the bpftrace program for: {prompt}
 			count = count - 1
 	return res
 
+def run_3trails_with_human_feedback(prompt: str, hints: str, func: Callable[[str], str]):
+	count = 3
+	res = func(prompt)
+	while(count > 0):
+		data = json.loads(res)
+		print(data)
+		if data["returncode"] == 0:
+			return res
+		else:
+			error = data["stderr"]
+			print("retry left: ", count)
+			print("error ", error)
+			err_prompt = f"""
+Run the bpftrace program：
+
+{data["command"]}
+
+with the following error and ouput:
+
+{error}
+
+This is your trail {3 - count + 1} out of 3 trails.
+Please retry generating the bpftrace program for: {prompt}
+Here is some hints for you to help you write the bpftrace program: 
+{hints}
+"""
+			old_prompt = data["prompt"]
+			full_prompt = data["prompt"] + err_prompt
+			print("full prompt: ", full_prompt)
+			res = run_bpftrace_prog_with_function_call(full_prompt)
+			count = count - 1
+	return res
+
 def run_few_shot_3trails(user_request: str) -> str:
 	return run_3trails(user_request, run_few_shot_bpftrace)
 
+def run_few_shot_3trails_human_feedback(user_request: str, hints: str) -> str:
+	return run_3trails_with_human_feedback(user_request, hints, run_few_shot_bpftrace)
+
 def run_vector_db_with_examples_3trails(user_request: str) -> str:
 	return run_3trails(user_request, run_few_shot_with_vector_db_bpftrace)
+
+def run_vector_db_with_examples_3trails_human_feedback(user_request: str, hints: str) -> str:
+	return run_3trails_with_human_feedback(user_request, hints, run_few_shot_with_vector_db_bpftrace)
 
 if __name__ == "__main__":
 	run_few_shot_3trails("monitor the fan rate in kernel.")

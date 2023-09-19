@@ -28,8 +28,6 @@ def extract_content_to_json(input_filename, output_filename):
         with open(output_filename, mode='w', encoding='utf-8') as js:
             js.write(json_output)
 
-
-
 if __name__ == "__main__":
     input_filename = "opencopilot/z3_vector_db/data/bpf_helper_defs.h"
     output_filename = "opencopilot/z3_vector_db/data/bpf_helper_defs_format.json"
