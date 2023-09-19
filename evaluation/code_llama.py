@@ -7,7 +7,7 @@ Write a bpftrace program that traces or profile the following user request:
 
 ### User Request
 
-monitor the fan rate in kernel.
+Monitors the rate of specific hardware interrupts and logs the interrupt sources
 
 ### Examples
 
@@ -58,7 +58,9 @@ Below are some simple examples of bpftrace usage:
 
 You can refer to the above examples to write your own bpftrace program. Use a tool 
 provided to execute your bpftrace program.
-You should only write the bpftrace program itself.
+You should only write the bpftrace program itself. No explain and no instructions.
+
+bpftrace program: 
 """
 
 template = """{question}
@@ -68,7 +70,7 @@ prompt = PromptTemplate(template=template, input_variables=["question"])
 
 repo_id = "codellama/CodeLlama-13b-hf"
 llm = HuggingFaceHub(
-    repo_id=repo_id, model_kwargs={"temperature": 0.5}
+    repo_id=repo_id, model_kwargs={"temperature": 0.5, "max_length":200}
 )
 llm_chain = LLMChain(prompt=prompt, llm=llm)
 

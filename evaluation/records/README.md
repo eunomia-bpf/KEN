@@ -115,7 +115,15 @@ date: 9.18
 - "returncode": 0, count 31
 - "returncode": 1, count 6
 - "returncode": 255, count 3
-- "error": 1
 
 false positive: 13 34
 
+## vec db with 3 trails and human feed back for 4.0
+
+date: 9.18
+
+- "returncode": 0, count 30
+- "returncode": 1, count 8
+- "returncode": 255, count 2
+
+false positive: 27
