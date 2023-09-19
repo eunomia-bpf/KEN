@@ -4,18 +4,18 @@
 
 use llm and vector data base examples to generate eBPF programs:
 
-1. zero shot
-2. few shot with basic eBPF examples
-3. few shot with vector database
+1. few shot with basic eBPF examples
+2. few shot with vector database
 
-use retry and pre-search for hook points:
+use retry for hook points:
 
-1. 
+1. few shot with basic eBPF examples with 3 retries
+2. few shot with vector database with 3 retries
 
 ## run evaluation
 
 ```sh
-python3 eval.py > vec_db_record.txt
+python3 eval.py
 ```
 
 ## results
