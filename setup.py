@@ -26,7 +26,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=parse_requirements("requirements.txt"),
-    url="https://github.com/SlugLab/OpenCopilot",
+    url="https://github.com/eunomia-bpf/OpenCopilot",
     license="https://opensource.org/license/mit/",
     python_requires=">=3.8",
     zip_safe=False

@@ -16,11 +16,12 @@ def replace_bpftrace_sassert_func_to_error(program: str):
 
 
 def replace_bpftrace_with_pre_post(program: str, function: str, pre: str, post: str):
+    # fix me: support more cases
     pattern = re.compile(function + r"((.*\n)*)\{((.*\n)+)\}")
     # try:
     temp = re.search(pattern, program)
     if temp == None:
-        return ""
+        return program
     temp = temp.group().split("}")[0] + "}"
     print("tmp", temp)
     temp_program = program.split(temp)
@@ -170,7 +171,8 @@ def get_kprobe_prompt(
     prompted_pre = prompted_pre_post.splitlines()[0]
     try:
         prompted_post = prompted_pre_post.splitlines()[1]
-    except:
+    except Exception as e:
+        print(str(e))
         prompted_post = ""
     program = replace_bpftrace_with_pre_post(
         program, line.strip(), prompted_pre, prompted_post
@@ -238,9 +240,11 @@ def kprobe_prompt(
     return c_code
 
 
-def verify_z3(prompt_function, context, program, function, linenumber) -> object:
+def verify_z3(program) -> str:
     """
     compile the result gives sat/unsat
+
+    return error string or empty str.
     """
     print("\nstart verify with z3: \n")
     with open("/tmp/tmp.ll", "w") as f:
@@ -256,17 +260,12 @@ def verify_z3(prompt_function, context, program, function, linenumber) -> object
             capture_output=True,
         )
         if sat.stdout.__contains__("sat"):
-            return sat == "sat"
+            return ""
         else:
-            for i in range(3):  # retry 3 times
-                program = prompt_function(
-                    context, program, function, linenumber, "z3 error:" + sat
-                )
-                verify_z3(prompt_function, context, program, function, linenumber)
-    except:
+            return f"stdout: {sat.stdout}\nstderr: {sat.stderr}\n"
+    except Exception as e:
         print("error in verify z3")
-
-        # try again?
+        return str(e)
 
 
 def get_linenumber(output_string: str):
@@ -290,22 +289,45 @@ def compile_bpftrace_for_llvm(program: str):
     return var
 
 
-def retry_generate_bpftrace_program(program: str, error: str) -> str:
+def retry_generate_bpftrace_program_for_compile(program: str, error: str) -> str:
     retry_prompt = f"""
 The bpftrace program below:
 
 {program}
 
-has compile error, please fix it with no modification of it's behavior.
+has compile error, please fix it without change it's behavior
+or remove assume statement. only do mininium modification if required.
 
 {error}
+
+We are going to use smt tools to verify the code, so please
+REMEMBER to keep the assume or assert statement to make sure it can be verified.
+If assume statement exists, do not change it to if or other statements.
 """
+    print("\nretry_generate_bpftrace_program_for_compile: \n", retry_prompt)
     response = run_gpt_for_bpftrace_func(retry_prompt, "gpt-4")
     return response
 
 
-def compile_bpftrace_with_retry(context, program, line, linenumber, retry_depth=3):
-    print("compile_bpftrace_once")
+def retry_generate_bpftrace_program_for_sat(context: str, program: str, error: str) -> str:
+    retry_prompt = f"""
+The bpftrace program below is use to {context}
+
+{program}
+
+has sat error. if the error is related to the program itself, please fix it.
+
+{error}
+
+use function to run the bpftrace program without any assume or assert statments.
+"""
+    print("\nretry_generate_bpftrace_program_for_sat\n", retry_prompt)
+    response = run_gpt_for_bpftrace_func(retry_prompt, "gpt-4")
+    return response
+
+
+def compile_bpftrace_with_retry(context, program, retry_depth=3):
+    print("compile_bpftrace_with_retry")
     var = compile_bpftrace_for_llvm(program)
     # print(var)
     # parce from the normal function to result
@@ -314,18 +336,16 @@ def compile_bpftrace_with_retry(context, program, line, linenumber, retry_depth=
         print("\nretry left: ", retry_depth)
         if retry_depth <= 0:
             print("\nfailed to compile bpftrace program with retry.\n")
-            return ""
-        program = retry_generate_bpftrace_program(program, var.stderr)
+            return "", program
+        program = retry_generate_bpftrace_program_for_compile(program, var.stderr)
         print("\nregenerated program:\n", program)
         return compile_bpftrace_with_retry(
             context,
             program,
-            line,
-            linenumber,
             retry_depth - 1,
         )
     else:
-        return var.stdout
+        return var.stdout, program
 
 
 def parse_bpftrace_program(context: str, program: str):
@@ -399,10 +419,11 @@ def parse_bpftrace_program(context: str, program: str):
     print(kprobe_matches)
 
     tracepoint_matches = re.findall(r"tracepoint:.+", program)
+    program_lines = program.splitlines()
     # try:
-    for linenumber, line in enumerate(program.splitlines()):
+    for linenumber, line in enumerate(program_lines):
         print(linenumber, line)
-        if linenumber == 0 or line.strip() == "":
+        if line.strip() == "":
             continue
         for match in function_matches:
             if match.startswith(line.strip()):
@@ -410,11 +431,14 @@ def parse_bpftrace_program(context: str, program: str):
                 print(line, "line", match)
                 program_tmp = program
                 program = get_bpf_prompt(context, program, line, linenumber)
-                program = compile_bpftrace_with_retry(
-                    context, program, line, linenumber
+                program_ll, _ = compile_bpftrace_with_retry(
+                    context, program
                 )
-                res = verify_z3(bpf_prompt, context, program, line, linenumber)
-                if not res:
+                res = verify_z3(program_ll)
+                # regenerate the program if contains error:
+                if res != "":
+                    program = retry_generate_bpftrace_program_for_sat(context, program_tmp, res)
+                else:
                     program = program_tmp
                 # except:
                 #     print("error in geting the smt")
@@ -423,15 +447,18 @@ def parse_bpftrace_program(context: str, program: str):
                 program_tmp = program
                 program = get_kprobe_prompt(context, program, line, linenumber)
                 print("\nkprobe_matches, after get_kprobe_prompt program:\n", program)
-                program = compile_bpftrace_with_retry(
-                    context, program, line, linenumber
+                program_ll, _ = compile_bpftrace_with_retry(
+                    context, program
                 )
-                parts = program.split("ModuleID")
+                parts = program_ll.split("ModuleID")
                 if len(parts) <= 1:
                     continue
                 substring = "; ModuleID " + parts[1].strip()
-                res = verify_z3(get_kprobe_prompt, context, substring, line, linenumber)
-                if not res:
+                res = verify_z3(substring)
+                # regenerate the program if contains error:
+                if res != "":
+                    program = retry_generate_bpftrace_program_for_sat(context, program_tmp, res)
+                else:
                     program = program_tmp
     # except:
     #     pass
@@ -468,27 +495,31 @@ def parse_libbpf_program(context: str, program: str):
                 print(line, "line", match)
                 program_tmp = program
                 program = get_bpf_prompt(context, program, line, linenumber)
-                program = compile_bpftrace_with_retry(
-                    context, program, line, linenumber
+                program_ll, _ = compile_bpftrace_with_retry(
+                    context, program
                 )
-                res = verify_z3(bpf_prompt, context, program, line, linenumber)
-                if not res:
+                res = verify_z3(program_ll)
+                # regenerate the program if contains error:
+                if res != "":
+                    program = retry_generate_bpftrace_program_for_sat(context, program_tmp, res)
+                else:
+                    # restore the original program
                     program = program_tmp
-                # except:
-                #     print("error in geting the smt")
         for match in kprobe_matches:
             if match.startswith(line.strip()):
                 program_tmp = program
                 program = get_kprobe_prompt(context, program, line, linenumber)
                 print("program\n", program)
-                program = compile_bpftrace_with_retry(
-                    context, program, line, linenumber
+                program_ll, _ = compile_bpftrace_with_retry(
+                    context, program
                 )
-                parts = program.split("ModuleID")
-
+                parts = program_ll.split("ModuleID")
                 substring = "; ModuleID " + parts[1].strip()
-                res = verify_z3(get_kprobe_prompt, context, substring, line, linenumber)
-                if not res:
+                res = verify_z3(substring)
+                # regenerate the program if contains error:
+                if res != "":
+                    program = retry_generate_bpftrace_program_for_sat(context, program_tmp, res)
+                else:
                     program = program_tmp
     # except:
     #     pass
@@ -498,11 +529,13 @@ def parse_libbpf_program(context: str, program: str):
 # extract all the function calls
 # prompt from the vectordb and gen
 def run_bpftrace_verifier(context: str, program: str) -> str:
-    parse_bpftrace_program(context, program)
-    print(replace_bpftrace_sassert_func_to_error(program))
-    res = replace_bpftrace_with_pre_post(
-        program, "kprobe:policy_node", "assume(nd==1);", "sassert(nd==1);"
-    )
+    # make sure the program can be compile by bpftrace.
+    # retry 3 times to generate correct program
+    _, program = compile_bpftrace_with_retry(context, program)
+    # run the verifier to modify the program
+    res = parse_bpftrace_program(context, program)
+    if not res:
+        return program
     return res
 
 
