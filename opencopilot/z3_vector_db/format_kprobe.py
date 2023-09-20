@@ -69,6 +69,6 @@ def extract_content_to_json(input_folder, output_filename):
 
 
 if __name__ == "__main__":
-    input_folder = "opencopilot/z3_vector_db/data/linux"
-    output_filename = "opencopilot/z3_vector_db/data/bpf_kprobe_def_format.json"
+    input_folder = "z3_vector_db/data/linux"
+    output_filename = "z3_vector_db/data/bpf_kprobe_def_format.json"
     extract_content_to_json(input_folder, output_filename)

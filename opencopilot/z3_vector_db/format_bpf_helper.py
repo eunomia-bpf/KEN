@@ -29,6 +29,6 @@ def extract_content_to_json(input_filename, output_filename):
             js.write(json_output)
 
 if __name__ == "__main__":
-    input_filename = "opencopilot/z3_vector_db/data/bpf_helper_defs.h"
-    output_filename = "opencopilot/z3_vector_db/data/bpf_helper_defs_format.json"
+    input_filename = "z3_vector_db/data/bpf_helper_defs.h"
+    output_filename = "z3_vector_db/data/bpf_helper_defs_format.json"
     extract_content_to_json(input_filename, output_filename)

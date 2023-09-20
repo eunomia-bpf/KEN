@@ -109,7 +109,7 @@ def generate_libbpf_once():
         None
     """
     responses = []
-    with open("opencopilot/z3_vector_db/data/bpf_helper_defs_format.json", 'r', encoding='utf-8') as file:
+    with open("z3_vector_db/data/bpf_helper_defs_format.json", 'r', encoding='utf-8') as file:
         data = json.load(file)
         for key, value in data.items():
 
@@ -124,7 +124,7 @@ def generate_libbpf_once():
             responses += json_code
             print(json_code, '\n\n')
 
-            with open("opencopilot/z3_vector_db/data/libbpf_z3.json", 'a+', encoding='utf-8') as file:
+            with open("z3_vector_db/data/libbpf_z3.json", 'a+', encoding='utf-8') as file:
                 file.write(json_code[0] + ",\n")
 
 def generate_bpftrace_once():
@@ -134,10 +134,10 @@ def generate_bpftrace_once():
     Returns:
         None
     """
-    with open("opencopilot/z3_vector_db/data/bpftrace_z3.json", 'w', encoding='utf-8') as file:
+    with open("z3_vector_db/data/bpftrace_z3.json", 'w', encoding='utf-8') as file:
         file.write("[")
     responses = []
-    with open("opencopilot/z3_vector_db/data/bpf_kprobe_def_format.json", 'r', encoding='utf-8') as file:
+    with open("z3_vector_db/data/bpf_kprobe_def_format.json", 'r', encoding='utf-8') as file:
         data = json.load(file)
         for key, value in data.items():
             # kretprobe
@@ -152,7 +152,7 @@ def generate_bpftrace_once():
             responses += json_code
             print(json_code, '\n\n')
 
-            with open("opencopilot/z3_vector_db/data/bpftrace_z3.json", 'a+', encoding='utf-8') as file:
+            with open("z3_vector_db/data/bpftrace_z3.json", 'a+', encoding='utf-8') as file:
                 file.write(json_code[0] + ",\n")
             # kprobe
             prompt = bpftrace_prompt(key, value,False)
@@ -165,9 +165,9 @@ def generate_bpftrace_once():
             responses += json_code
             print(json_code, '\n\n')
 
-            with open("opencopilot/z3_vector_db/data/bpftrace_z3.json", 'a+', encoding='utf-8') as file:
+            with open("z3_vector_db/data/bpftrace_z3.json", 'a+', encoding='utf-8') as file:
                 file.write(json_code[0] + ",\n")
-    with open("opencopilot/z3_vector_db/data/bpftrace_z3.json", 'a+', encoding='utf-8') as file:
+    with open("z3_vector_db/data/bpftrace_z3.json", 'a+', encoding='utf-8') as file:
         file.write("]")
 
 def get_onefunction(content):

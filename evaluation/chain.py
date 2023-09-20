@@ -23,17 +23,21 @@ message_prompt = HumanMessagePromptTemplate(
 )
 prompt_template = ChatPromptTemplate.from_messages([message_prompt])
 
+model = "gpt-4"  # can be "code-llama" or "gpt-3.5-turbo" or "gpt-3.5-turbo-16k"
+
+
 def run_bpftrace_prog_with_func_call_define(prog: str) -> str:
     """Runs a bpftrace program. You should only input the eBPF program itself.
 
     Args:
-            prog: The bpftrace program to run.
+                    prog: The bpftrace program to run.
     """
     return f"{prog}"
 
-def run_gpt(input: str) -> str:
+
+def run_gpt(input: str, model_name: str) -> str:
     # If we pass in a model explicitly, we need to make sure it supports the OpenAI function-calling API.
-    llm = ChatOpenAI(model="gpt-4", temperature=0)
+    llm = ChatOpenAI(model=model_name, temperature=0)
     chain = create_openai_fn_chain(
         [run_bpftrace_prog_with_func_call_define], llm, prompt_template, verbose=False
     )
@@ -41,6 +45,7 @@ def run_gpt(input: str) -> str:
     print(res)
     prog = res["prog"]
     return prog
+
 
 def extract_code_blocks(text: str) -> str:
     # Check if triple backticks exist in the text
@@ -52,41 +57,53 @@ def extract_code_blocks(text: str) -> str:
     res = "\n".join(matches)
     return res.replace("bpftrace -e", "").strip().strip("'")
 
-def run_code_llama(question: str) -> str:
-	if len(question) >= 5 * 3000:
-		print("question too long, truncating to 5 * 3000 chars")
-		question = question[:5 * 3000]
-	llm = DeepInfra(model_id="codellama/CodeLlama-34b-Instruct-hf")
-	llm.model_kwargs = {
-		"temperature": 0.7,
-		"repetition_penalty": 1.2,
-		"max_new_tokens": 2048,
-		"top_p": 0.9,
-	}
 
-	template = """<s>[INST] <<SYS>>
+def run_code_llama(question: str) -> str:
+    if len(question) >= 5 * 3000:
+        print("question too long, truncating to 5 * 3000 chars")
+        question = question[: 5 * 3000]
+    llm = DeepInfra(model_id="codellama/CodeLlama-34b-Instruct-hf")
+    llm.model_kwargs = {
+        "temperature": 0.7,
+        "repetition_penalty": 1.2,
+        "max_new_tokens": 2048,
+        "top_p": 0.9,
+    }
+
+    template = """<s>[INST] <<SYS>>
 	You should only write the bpftrace program itself. 
 	No explain and no instructions. No words other than bpftrace program.
 	<</SYS>> {question} [/INST]
 	"""
 
-	prompt = PromptTemplate(template=template, input_variables=["question"])
-	llm_chain = LLMChain(prompt=prompt, llm=llm)
-	res = llm_chain.run(question)
-	return extract_code_blocks(res)
+    prompt = PromptTemplate(template=template, input_variables=["question"])
+    llm_chain = LLMChain(prompt=prompt, llm=llm)
+    res = llm_chain.run(question)
+    return extract_code_blocks(res)
+
 
 def run_bpftrace_prog_with_function_call(input: str) -> str:
-	print("input prompt: ", input, "\n")
-	# read a.bt
-	# prog = run_gpt(input)
-	# Sleep for 5 seconds
-	time.sleep(2)
-	prog = run_code_llama(input)
-	res = gpttrace.bpftrace_run_program(prog)
-	print(res)
-	data = json.loads(res)
-	data["prompt"] = input
-	return json.dumps(data)
+    print("input prompt: ", input, "\n")
+    # read a.bt
+    prog = ""
+    # Sleep for 5 seconds
+    time.sleep(2)
+    if model == "gpt-4":
+        prog = run_gpt(input, "gpt-4")
+    elif model == "gpt-3.5-turbo":
+        prog = run_gpt(input, "gpt-3.5-turbo")
+    elif model == "code-llama":
+        prog = run_code_llama(input)
+    elif model == "gpt-3.5-turbo-16k":
+        prog = run_gpt(input, "gpt-3.5-turbo-16k")
+    else:
+        print("invalid model name")
+        exit(1)
+    res = gpttrace.bpftrace_run_program(prog)
+    print(res)
+    data = json.loads(res)
+    data["prompt"] = input
+    return json.dumps(data)
 
 
 def run_few_shot_bpftrace(user_request: str) -> str:

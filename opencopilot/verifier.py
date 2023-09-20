@@ -15,6 +15,8 @@ def replace_bpftrace_with_pre_post(program: str, function: str, pre: str, post: 
     pattern = re.compile(function + r"((.*\n)*)\{((.*\n)+)\}")
     # try:
     temp = re.search(pattern, program)
+    if temp == None:
+        return ""
     temp = temp.group().split("}")[0] + "}"
     print("tmp", temp)
     temp_program = program.split(temp)
@@ -107,7 +109,7 @@ def bpf_prompt(
 
     # has db
     json_template = ""
-    json_ = json.load(open("opencopilot/z3_vector_db/data/" + file, "r"))
+    json_ = json.load(open("z3_vector_db/data/" + file, "r"))
     for li in list(json_[0].keys()):
         if li == function:
             json_template = json_[li]
@@ -143,7 +145,6 @@ def bpf_prompt(
 
     print(c_code, "\n\n")
     return c_code.replace(";\n", ";")
-
 
 def get_kprobe_prompt(
     context: str,
@@ -235,10 +236,11 @@ def verify_z3(prompt_function, context, program, function, linenumber) -> object
     """
     compile the result gives sat/unsat
     """
+    print("\nstart verify with z3: \n")
     with open("/tmp/tmp.ll", "w") as f:
         f.write(program)
     os.system(
-        "opencopilot/z3_vector_db/seahorn/bin/sea smt /tmp/tmp.ll -o /tmp/tmp.smt2"
+        "z3_vector_db/seahorn/bin/sea smt /tmp/tmp.ll -o /tmp/tmp.smt2"
     )
     try:
         sat = subprocess.run(
@@ -266,15 +268,15 @@ def verify_z3(prompt_function, context, program, function, linenumber) -> object
 def get_linenumber(output_string: str):
     return 0
 
-
-def compile_bpftrace_once(prompt_function, context, program, line, linenumber):
+def compile_bpftrace_with_retry(prompt_function, context, program, line, linenumber, retry_depth=3):
+    print("compile_bpftrace_once")
     with open("/tmp/tmp.bt", "w") as f:
         f.write(program)
     # try:
     var = subprocess.run(
         [
             "sudo",
-            "opencopilot/z3_vector_db/bpftrace/bpftrace",
+            "z3_vector_db/bpftrace/bpftrace",
             "-d",
             "/tmp/tmp.bt",
         ],
@@ -284,7 +286,11 @@ def compile_bpftrace_once(prompt_function, context, program, line, linenumber):
     # print(var)
     # parce from the normal function to result
     if var.returncode != 0:
-        return compile_bpftrace_once(
+        print("\nvar.stderr: ", var.stderr)
+        print("\nretry left: ", retry_depth)
+        if retry_depth <= 0:
+            return ""
+        return compile_bpftrace_with_retry(
             prompt_function,
             context,
             prompt_function(
@@ -292,10 +298,11 @@ def compile_bpftrace_once(prompt_function, context, program, line, linenumber):
                 program,
                 line,
                 linenumber,
-                error="nd is the first argument which should be arg0",
+                error=var.stderr,
             ),
             line,
             linenumber,
+            retry_depth - 1,
         )
     else:
         return var.stdout
@@ -384,7 +391,7 @@ def parse_bpftrace_program(context: str, program: str):
                 print(line, "line", match)
                 program_tmp = program
                 program = get_bpf_prompt(context, program, line, linenumber)
-                program = compile_bpftrace_once(
+                program = compile_bpftrace_with_retry(
                     bpf_prompt, context, program, line, linenumber
                 )
                 res = verify_z3(bpf_prompt, context, program, line, linenumber)
@@ -396,12 +403,13 @@ def parse_bpftrace_program(context: str, program: str):
             if match.startswith(line.strip()):
                 program_tmp = program
                 program = get_kprobe_prompt(context, program, line, linenumber)
-                print("program\n", program)
-                program = compile_bpftrace_once(
+                print("\nkprobe_matches, after get_kprobe_prompt program:\n", program)
+                program = compile_bpftrace_with_retry(
                     get_kprobe_prompt, context, program, line, linenumber
                 )
                 parts = program.split("ModuleID")
-
+                if len(parts) <= 1:
+                    continue
                 substring = "; ModuleID " + parts[1].strip()
                 res = verify_z3(
                     get_kprobe_prompt, context, substring, line, linenumber
@@ -442,7 +450,7 @@ def parse_libbpf_program(context: str, program: str):
                 print(line, "line", match)
                 program_tmp = program
                 program = get_bpf_prompt(context, program, line, linenumber)
-                program = compile_bpftrace_once(
+                program = compile_bpftrace_with_retry(
                     bpf_prompt, context, program, line, linenumber
                 )
                 res = verify_z3(bpf_prompt, context, program, line, linenumber)
@@ -455,7 +463,7 @@ def parse_libbpf_program(context: str, program: str):
                 program_tmp = program
                 program = get_kprobe_prompt(context, program, line, linenumber)
                 print("program\n", program)
-                program = compile_bpftrace_once(
+                program = compile_bpftrace_with_retry(
                     get_kprobe_prompt, context, program, line, linenumber
                 )
                 parts = program.split("ModuleID")
