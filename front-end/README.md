@@ -1,34 +1,20 @@
-# Bpftrace Program Generation
+## how to use
 
-Transforming natural language into a bpftrace program. See [bpftrace](https://github.com/iovisor/bpftrace) for more detail about bpftrace program.
-
-![Bpftrace Program Generation](./public/gpt2bpftrace.png)
-
-## Use with Website
-
-You can visit [https://function-call-generate.vercel.app/](https://function-call-generate.vercel.app/) to use this tool online.
-
-Paste the natural language command to the left text box, then copy the corresponding gpt program generated in the right text box to a local file, such as `gpt-bpftrace.bt` file, and then you can easily use the command in the following way:
-```console
-$sudo bpftrace gpt-bpftrace.bt
+### Start the service program
+```shell
+cd ./evaluation
+python ./index.py
 ```
 
-## Running Locally
+This will start the service program http://127.0.0.1:4000. To use this service, you need to pass four parameters: user_query, bpfType, model, and apiKey. The backend service will return the program corresponding to `user_query`.
 
-**1. Clone Repo**
+Currently, `index.py` contains the relevant processing code for GPT-3.5 and GPT-4, with the code for other models to be completed later.
 
-```bash
-git clone https://github.com/eunomia-bpf/GPT2Bpftrace.git
-```
-
-**2. Install Dependencies**
-
-```bash
-npm i
-```
-
-**3. Run App**
-
-```bash
+### Launch the front-end web page
+```shell
+cd ./front-end
+npm install # executes on first run
 npm run dev
 ```
+
+This will start the service http://127.0.0.1:3000. You can select the desired model on the frontend and input program description information. The frontend will pass the parameters to the backend and return the processing results.
