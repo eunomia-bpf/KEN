@@ -1,4 +1,5 @@
 # https://github.com/shilch/seccomp/blob/master/extract_syscalls.sh
+from typing import TypedDict
 from z3 import *
 import os, re, json
 import subprocess
@@ -302,6 +303,7 @@ has compile error, please fix it with no modification of it's behavior.
     response = run_gpt_for_bpftrace_func(retry_prompt, "gpt-4")
     return response
 
+
 def compile_bpftrace_with_retry(context, program, line, linenumber, retry_depth=3):
     print("compile_bpftrace_once")
     var = compile_bpftrace_for_llvm(program)
@@ -324,6 +326,7 @@ def compile_bpftrace_with_retry(context, program, line, linenumber, retry_depth=
         )
     else:
         return var.stdout
+
 
 def parse_bpftrace_program(context: str, program: str):
     """
@@ -479,7 +482,7 @@ def parse_libbpf_program(context: str, program: str):
                 program = get_kprobe_prompt(context, program, line, linenumber)
                 print("program\n", program)
                 program = compile_bpftrace_with_retry(
-                     context, program, line, linenumber
+                    context, program, line, linenumber
                 )
                 parts = program.split("ModuleID")
 
@@ -494,36 +497,13 @@ def parse_libbpf_program(context: str, program: str):
 
 # extract all the function calls
 # prompt from the vectordb and gen
-def test_bpftrace_verifier():
-    context = """
-tracing the __nla_parse() function to hook all the function of __nla_parse,
-and add up the arg1 as maxtype only if the maxtype is 2."""
-    program = """
-#!/usr/bin/env bpftrace
-
-BEGIN
-{
-	printf("Tracing bash commands... Hit Ctrl-C to end.\\n");
-	printf("%-9s %-6s %s\\n", "TIME", "PID", "COMMAND");
-}
-
-kprobe:__nla_parse
-{
-	@reqts[arg1] +=1;
-}
-
-END
-{
-	clear(@reqts);
-}
-"""
+def run_bpftrace_verifier(context: str, program: str) -> str:
     parse_bpftrace_program(context, program)
     print(replace_bpftrace_sassert_func_to_error(program))
-    print(
-        replace_bpftrace_with_pre_post(
-            program, "kprobe:policy_node", "assume(nd==1);", "sassert(nd==1);"
-        )
+    res = replace_bpftrace_with_pre_post(
+        program, "kprobe:policy_node", "assume(nd==1);", "sassert(nd==1);"
     )
+    return res
 
 
 def test_libbpf_verifer():
@@ -572,6 +552,21 @@ char LICENSE[] SEC("license") = "GPL";
     parse_libbpf_program(context, program)
 
 
+class CommandResult(TypedDict):
+    command: str
+    stdout: str
+    stderr: str
+    returncode: int
+
+
 if __name__ == "__main__":
-    test_bpftrace_verifier()
+    context = ""
+    program = ""
+    with open("program.bt", "r") as file:
+        program = file.read()
+    with open("context.txt", "r") as file:
+        context = file.read()
+    res = run_bpftrace_verifier(context, program)
+    with open("result.bt", "w") as file:
+        file.write(res)
     # test_libbpf_verifer()

@@ -45,7 +45,7 @@ def test_with_test_cases_and_feedback(
                 f.write(json.dumps({"error": str(e)}))
 
 def test_with_test_cases(
-    func: Callable[[str], str], save_file: str, starts_from: int = 28
+    func: Callable[[str], str], save_file: str, starts_from: int = 0
 ):
     with open("test_cases.txt", "r") as file:
         lines = file.readlines()
@@ -107,5 +107,9 @@ def test_vector_db_with_examples_3trails_with_feedback():
         chain.run_vector_db_with_examples_3trails_human_feedback, save_file
     )
 
+def test_few_shot_with_vector_db_and_smt_bpftrace_3trails():
+    save_file = f"vec_db_with_examples_3trails_and_smt.json"
+    test_with_test_cases(chain.run_few_shot_with_vector_db_and_smt_bpftrace_3trails, save_file)
+
 if __name__ == "__main__":
-    test_vector_db_with_examples()
+    test_few_shot_with_vector_db_and_smt_bpftrace_3trails()

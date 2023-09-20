@@ -44,6 +44,9 @@ def bpftrace_get_hooks(regex: str) -> str:
 	"""
 	return f"{regex}"
 
+def ask_gpt_for_question(input: str, model_name: str) -> str:
+	llm = ChatOpenAI(model=model_name, temperature=0)
+	return llm.predict(input)
 
 def run_gpt_for_bpftrace_hooks(input: str, model_name: str) -> str:
 	# If we pass in a model explicitly, we need to make sure it supports the OpenAI function-calling API.
@@ -56,6 +59,9 @@ def run_gpt_for_bpftrace_hooks(input: str, model_name: str) -> str:
 
 	Attention: Only the first 10 matches will be returned in the bpftrace_get_hooks function.
 	For optimal results, craft your regex pattern with precision.
+	
+	You should think about what hooks you would like for this user request, and
+	search for the most possible ones.
 
 		Example:
 
@@ -162,14 +168,15 @@ def get_bpftrace_possible_hooks_and_hints(input: str) -> str:
 	if res["stdout"] == "":
 		return "No possible hooks found. You can infer one by your own."
 	res = res["stdout"]
-	if len(res.split("\n")) > 10:
-		splite_res = res.split("\n")[10:]
-		res = "\n".join(splite_res)
+	res_lines = res.split("\n")
+	if len(res_lines) > 10:
+		res_lines = res_lines[:10]  # Only take the top 10
+	res = "\n".join(res_lines)
 	print("possible hooks: ", res)
 	return res
 
 
-def run_bpftrace_prog_with_function_call(input: str) -> str:
+def run_bpftrace_prog_with_function_call(input: str, smt_resolve_func: Callable[[str], str] = None) -> str:
 	print("input prompt: ", input, "\n")
 	# read a.bt
 	prog = ""
@@ -186,6 +193,8 @@ def run_bpftrace_prog_with_function_call(input: str) -> str:
 	else:
 		print("invalid model name")
 		exit(1)
+	if smt_resolve_func != None:
+		res = smt_resolve_func(prog)
 	res = gpttrace.bpftrace_run_program(prog)
 	print(res)
 	data = json.loads(res)
@@ -258,6 +267,58 @@ You should only write the bpftrace program itself.
 """
 	return run_bpftrace_prog_with_function_call(prompt)
 
+def generate_hints(prompt: str) -> str:
+	hints = ask_gpt_for_question(f"""
+{prompt}
+You are a kernel expert. Summary the above prompt to tell the most possble hook locations
+and desire bpftrace program logic in one short sentence, but don't write the program directly. 
+							  """, "gpt-4")
+	return hints
+
+def run_few_shot_and_smt_bpftrace(user_request: str, vecdb_prompt: str = "") -> str:
+	examples = gpttrace.simple_examples
+	prompt = f"""
+You should Write a bpftrace program that traces or profile the 
+following user request: {user_request}
+
+### Examples
+Here are some simple examples to help you get started with bpftrace:
+
+{examples}
+""" + vecdb_prompt
+
+	hooks = get_bpftrace_possible_hooks_and_hints(prompt)
+	hooks_prompt = f"""
+### possible related hook locations
+{hooks}
+
+Note: these hooks may not be correct for the user request,
+it's just for reference.
+	"""
+	prompt = prompt + hooks_prompt
+	hints = "\n## hints \n" + generate_hints(prompt) 
+	additonal_prompt = prompt + hints + f"""
+
+You can refer to the above examples and hints to 
+write your own bpftrace program to help user with:
+{user_request}
+
+Use a tool provided to execute your bpftrace program.
+You should only write the bpftrace program itself. Make sure
+the program can be run with bpftrace, keep it short and clear.
+"""
+	return run_bpftrace_prog_with_function_call(additonal_prompt)
+
+def run_few_shot_with_vector_db_and_smt_bpftrace(user_request: str) -> str:
+	complex_examples = gpttrace.get_top_n_example_from_vec_db(user_request, 2)
+	vecdb_prompt = f"""
+
+	Here are some more complex examples may be related to your user request:
+
+	{complex_examples}
+	"""
+
+	return run_few_shot_and_smt_bpftrace(user_request, vecdb_prompt)
 
 def run_vector_db_bpftrace(user_request: str) -> str:
 	complex_examples = gpttrace.get_top_n_example_from_vec_db(user_request, 2)
@@ -313,7 +374,6 @@ Please retry generating the bpftrace program for: {prompt}
 			count = count - 1
 	return res
 
-
 def run_3trails_with_human_feedback(
 	prompt: str, hints: str, func: Callable[[str], str]
 ):
@@ -349,7 +409,6 @@ Here is some hints for you to help you write the bpftrace program:
 			count = count - 1
 	return res
 
-
 def run_few_shot_3trails(user_request: str) -> str:
 	return run_3trails(user_request, run_few_shot_bpftrace)
 
@@ -361,6 +420,11 @@ def run_few_shot_3trails_human_feedback(user_request: str, hints: str) -> str:
 def run_vector_db_with_examples_3trails(user_request: str) -> str:
 	return run_3trails(user_request, run_few_shot_with_vector_db_bpftrace)
 
+def run_few_shot_with_vector_db_and_smt_bpftrace_3trails(user_request: str) -> str:
+	return run_3trails(user_request, run_few_shot_with_vector_db_and_smt_bpftrace)
+
+def run_few_shot_smt_bpftrace_3trails(user_request: str) -> str:
+	return run_3trails(user_request, run_few_shot_and_smt_bpftrace)
 
 def run_vector_db_with_examples_3trails_human_feedback(
 	user_request: str, hints: str
@@ -387,4 +451,4 @@ class TestRunGPTtraceChain(unittest.TestCase):
 		get_bpftrace_possible_hooks_and_hints("Trace bpf jit compile events.")
 
 if __name__ == "__main__":
-	get_bpftrace_possible_hooks_and_hints("Trace bpf jit compile events.")
+	run_few_shot_with_vector_db_and_smt_bpftrace_3trails("Trace TCP round trip time (RTT) and print the sender and receiver IP addresses and ports.")

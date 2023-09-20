@@ -169,9 +169,10 @@ def run_command(command: List[str], require_check: bool = False) -> CommandResul
             if process.poll() is None and process.stderr.readable():
                 stderr += process.stderr.read()
                 print(stderr)
+            max_length = 1024 * 1024
             return {
                 "command": " ".join(command),
-                "stdout": stdout,
+                "stdout": stdout[:max_length] + ("...[CUT OFF]" if len(stdout) > max_length else ""),
                 "stderr": stderr,
                 "returncode": process.returncode,
             }

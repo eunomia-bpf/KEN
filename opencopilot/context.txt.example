@@ -1,0 +1,2 @@
+tracing the __nla_parse() function to hook all the function of __nla_parse,
+and add up the arg1 as maxtype only if the maxtype is 2.

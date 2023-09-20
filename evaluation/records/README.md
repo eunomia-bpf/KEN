@@ -24,6 +24,17 @@ date: 9.16
 
 false positive: 7
 
+## few shot with code llama test with 40 prompts
+
+date: 9.16
+
+- "returncode": 0, count 8
+- "returncode": 1, count 27
+- "returncode": 255, count 3
+- "returncode": -6, count 2
+
+false positive: 10 18 26
+
 ## few shot and vector db with gpt 3.5 test with 40 prompts
 
 date: 9.16
@@ -47,6 +58,19 @@ date: 9.16
 seleted top 2 elements from vector db
 
 false positive: 37 40
+
+## few shot and vector db with code llama test with 40 prompts
+
+date: 9.16
+
+- "returncode": 0, count 14
+- "returncode": 1, count 23
+- "returncode": 255, count 2
+- "returncode": -6, count 1
+
+seleted top 2 elements from vector db
+
+false positive: 21 29 40
 
 ## vector db with gpt 3.5 test with 40 prompts
 
@@ -108,6 +132,16 @@ date: 9.18
 
 false positive: 37 40
 
+## vec db with 3 trails for code llama
+
+date: 9.18
+
+- "returncode": 0, count 20
+- "returncode": 1, count 15
+- "returncode": 255, count 5
+
+false positive: 26 29 40
+
 ## few shot with 3 trails and human feed back for 4.0
 
 date: 9.18
@@ -115,6 +149,26 @@ date: 9.18
 - "returncode": 0, count 31
 - "returncode": 1, count 6
 - "returncode": 255, count 3
+
+false positive: 13 34
+
+## few shot with 3 trails for code llama
+
+date: 9.18
+
+- "returncode": 0, count 8
+- "returncode": 1, count 27
+- "returncode": 255, count 3
+
+false positive: 10 18
+
+## few shot with 3 trails and human feed back for code llama
+
+date: 9.18
+
+- "returncode": 0, count 17
+- "returncode": 1, count 19
+- "returncode": 255, count 0
 
 false positive: 13 34
 
@@ -127,3 +181,13 @@ date: 9.18
 - "returncode": 255, count 2
 
 false positive: 27
+
+## vec db with 3 trails and human feed back for code llama
+
+date: 9.18
+
+- "returncode": 0, count 19
+- "returncode": 1, count 15
+- "returncode": 255, count 2
+
+false positive: 20
