@@ -5,6 +5,39 @@ import time
 from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import ConversationChain
+from langchain.chains.openai_functions import create_openai_fn_chain
+from langchain.prompts import (
+    ChatPromptTemplate,
+    HumanMessagePromptTemplate,
+    PromptTemplate,
+)
+message_prompt = HumanMessagePromptTemplate(
+    prompt=PromptTemplate(
+        template="{input}",
+        input_variables=["input"],
+    )
+)
+prompt_template = ChatPromptTemplate.from_messages([message_prompt])
+
+def run_bpftrace_prog_with_func_call_define(prog: str) -> str:
+    """Runs a bpftrace program. You should only input the eBPF program itself.
+
+    Args:
+                    prog: The bpftrace program to run.
+    """
+    return f"{prog}"
+
+def run_gpt_for_bpftrace_func(input: str, model_name: str) -> str:
+    # If we pass in a model explicitly, we need to make sure it supports the OpenAI function-calling API.
+    llm = ChatOpenAI(model=model_name, temperature=0)
+    chain = create_openai_fn_chain(
+        [run_bpftrace_prog_with_func_call_define], llm, prompt_template, verbose=False
+    )
+    res = chain.run(input)
+    print(res)
+    prog = res["prog"]
+    return prog
+
 
 def libbpf_prompt(statement, doc):
     prompt = """

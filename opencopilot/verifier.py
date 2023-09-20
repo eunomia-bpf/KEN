@@ -3,6 +3,8 @@ from z3 import *
 import os, re, json
 import subprocess
 from z3_vector_db.z3_conditions_for_ebpf import generate_response
+from z3_vector_db.z3_conditions_for_ebpf import run_gpt_for_bpftrace_func
+
 
 # prompt what should be changed
 def replace_bpftrace_sassert_func_to_error(program: str):
@@ -10,6 +12,7 @@ def replace_bpftrace_sassert_func_to_error(program: str):
     repl = r"if(!(\1)) {error();}"
     s = re.sub(pattern, repl, program)
     return s
+
 
 def replace_bpftrace_with_pre_post(program: str, function: str, pre: str, post: str):
     pattern = re.compile(function + r"((.*\n)*)\{((.*\n)+)\}")
@@ -27,6 +30,7 @@ def replace_bpftrace_with_pre_post(program: str, function: str, pre: str, post: 
     #     return program
     return s
 
+
 def replace_line(program, line, content):
     lines = program.splitlines()
     if line <= len(lines):
@@ -37,8 +41,10 @@ def replace_line(program, line, content):
     else:
         return program
 
+
 def gen_explaination_prompt():
     pass
+
 
 def get_argument_prompt(
     function: str,
@@ -77,22 +83,23 @@ def get_argument_prompt(
     print("text code", text_code)
     return text_code[0]
 
+
 def get_bpf_prompt(
     context: str,
     program: str,
     line: str,
     linenumber: int,
     file: str = "bpftrace_z3.json",
-    error="",
 ) -> object:
     """
     prompt the current codedb and return the pre condition and post conditino json
     """
-    prompted_pre_post = bpf_prompt(context, program, line, linenumber, file, error)
+    prompted_pre_post = bpf_prompt(context, program, line, linenumber, file)
     program = program.replace(line.strip(), prompted_pre_post)
 
     program = replace_bpftrace_sassert_func_to_error(program)
     return program
+
 
 def bpf_prompt(
     context: str,
@@ -100,7 +107,6 @@ def bpf_prompt(
     function: str,
     linenumber: int,
     file: str = "bpftrace_z3.json",
-    error: str = "",
 ) -> object:
     """
     prompt the current codedb and return the pre condition and post conditino json
@@ -116,13 +122,15 @@ def bpf_prompt(
 
     prompt = (
         f"""
-    I'm working on a project involving writing {"bpftrace" if file.__contains__("bpftrace") else "libbpf"} programs and I just got the job of context "{context}", in my coded program "{program}" line {linenumber}, {function}, can you provide some refined constraints information on this line considering the context. 
+    I'm working on a project involving writing 
+    {"bpftrace" if file.__contains__("bpftrace") else "libbpf"} 
+    programs and I just got the job of context "{context}", 
+    in my coded program "{program}" line {linenumber}, {function}, 
+    can you provide some refined constraints 
+    information on this line considering the context. 
     """
         + f"Here's the broader constraints of this function: {json_template}"
         if json_template != 0
-        else ""
-        + f"However, last time you generate wrong the function with error: {error}. "
-        if error != ""
         else ""
         f"""
     Can you generate the refined constraints in following C format:
@@ -134,10 +142,10 @@ def bpf_prompt(
     The requirement is to put the condition to the correstponding [], and should comply the c definitoin so that all the variable is defined in the context and should pass bpftrace compiler.
     """
     )
-    print("prompts\n", prompt)
+    print("\nbpf_prompt prompts\n", prompt)
 
     response = generate_response(prompt)
-    print("responses", response)
+    print("\nbpf_prompt responses\n", response)
     code_pattern = r"```c\n(.*?)\n```"
     c_code = re.findall(code_pattern, response, re.DOTALL)
     if not c_code or c_code.__contains__("assume") or c_code.__contains__("sassert"):
@@ -146,20 +154,18 @@ def bpf_prompt(
     print(c_code, "\n\n")
     return c_code.replace(";\n", ";")
 
+
 def get_kprobe_prompt(
     context: str,
     program: str,
     line: str,
     linenumber: int,
     file: str = "bpftrace_z3.json",
-    error="",
 ) -> object:
     """
     prompt the current codedb and return the pre condition and post conditino json
     """
-    prompted_pre_post = kprobe_prompt(
-        context, program, line, linenumber, file=file, error=error
-    )
+    prompted_pre_post = kprobe_prompt(context, program, line, linenumber, file=file)
     prompted_pre = prompted_pre_post.splitlines()[0]
     try:
         prompted_post = prompted_pre_post.splitlines()[1]
@@ -179,7 +185,6 @@ def kprobe_prompt(
     function: str,
     linenumber: int,
     file: str = "bpftrace_z3.json",
-    error: str = "",
 ) -> object:
     """
     prompt the current codedb and return the pre condition and post conditino json
@@ -195,16 +200,16 @@ def kprobe_prompt(
     program_name = "bpftrace" if file.__contains__("bpftrace") else "libbpf"
     prompt = (
         f"""
-    I'm working on a project involving writing {program_name} programs and I just got the job of {context}, in my coded program "{program}" line {linenumber}, {function}, I need to verify based on the context of what I ask, can you provide some refined constraints information on this line considering the context. 
+    I'm working on a project involving writing {program_name} programs 
+    and I just got the job of {context}, in my coded program:
+    "{program}" 
+    line {linenumber}, {function}, I need to verify based on the context of what I ask, 
+    can you provide some refined constraints information on this line 
+    considering the context. 
     """
         + (
             f"Here's the broader constraints of this function: {json_template['description']} with pre condition {', '.join(map(lambda kv: f'{kv[0]} should be {kv[1]}', json_template['pre'].items()))}"
             if json_template != ""
-            else ""
-        )
-        + (
-            f"However, last time you generate wrong the function with error: {error}. "
-            if error != ""
             else ""
         )
         + f"""
@@ -217,10 +222,10 @@ def kprobe_prompt(
     """
         + get_argument_prompt(function)
     )
-    print("prompts\n", prompt)
+    print("\nkprobe prompts\n", prompt)
 
     response = generate_response(prompt)
-    print("responses", response)
+    print("\nkprobe responses", response)
     code_pattern = r"```c\n(.*?)\n```"
     c_code = re.findall(code_pattern, response, re.DOTALL)
     if not c_code or c_code.__contains__("assume") or c_code.__contains__("sassert"):
@@ -239,9 +244,7 @@ def verify_z3(prompt_function, context, program, function, linenumber) -> object
     print("\nstart verify with z3: \n")
     with open("/tmp/tmp.ll", "w") as f:
         f.write(program)
-    os.system(
-        "z3_vector_db/seahorn/bin/sea smt /tmp/tmp.ll -o /tmp/tmp.smt2"
-    )
+    os.system("z3_vector_db/seahorn/bin/sea smt /tmp/tmp.ll -o /tmp/tmp.smt2")
     try:
         sat = subprocess.run(
             [
@@ -268,8 +271,8 @@ def verify_z3(prompt_function, context, program, function, linenumber) -> object
 def get_linenumber(output_string: str):
     return 0
 
-def compile_bpftrace_with_retry(prompt_function, context, program, line, linenumber, retry_depth=3):
-    print("compile_bpftrace_once")
+
+def compile_bpftrace_for_llvm(program: str):
     with open("/tmp/tmp.bt", "w") as f:
         f.write(program)
     # try:
@@ -283,31 +286,44 @@ def compile_bpftrace_with_retry(prompt_function, context, program, line, linenum
         text=True,
         capture_output=True,
     )
+    return var
+
+
+def retry_generate_bpftrace_program(program: str, error: str) -> str:
+    retry_prompt = f"""
+The bpftrace program below:
+
+{program}
+
+has compile error, please fix it with no modification of it's behavior.
+
+{error}
+"""
+    response = run_gpt_for_bpftrace_func(retry_prompt, "gpt-4")
+    return response
+
+def compile_bpftrace_with_retry(context, program, line, linenumber, retry_depth=3):
+    print("compile_bpftrace_once")
+    var = compile_bpftrace_for_llvm(program)
     # print(var)
     # parce from the normal function to result
     if var.returncode != 0:
         print("\nvar.stderr: ", var.stderr)
         print("\nretry left: ", retry_depth)
         if retry_depth <= 0:
+            print("\nfailed to compile bpftrace program with retry.\n")
             return ""
+        program = retry_generate_bpftrace_program(program, var.stderr)
+        print("\nregenerated program:\n", program)
         return compile_bpftrace_with_retry(
-            prompt_function,
             context,
-            prompt_function(
-                context,
-                program,
-                line,
-                linenumber,
-                error=var.stderr,
-            ),
+            program,
             line,
             linenumber,
             retry_depth - 1,
         )
     else:
         return var.stdout
-    # except Exception as error:
-    #     pass
 
 def parse_bpftrace_program(context: str, program: str):
     """
@@ -392,7 +408,7 @@ def parse_bpftrace_program(context: str, program: str):
                 program_tmp = program
                 program = get_bpf_prompt(context, program, line, linenumber)
                 program = compile_bpftrace_with_retry(
-                    bpf_prompt, context, program, line, linenumber
+                    context, program, line, linenumber
                 )
                 res = verify_z3(bpf_prompt, context, program, line, linenumber)
                 if not res:
@@ -405,20 +421,19 @@ def parse_bpftrace_program(context: str, program: str):
                 program = get_kprobe_prompt(context, program, line, linenumber)
                 print("\nkprobe_matches, after get_kprobe_prompt program:\n", program)
                 program = compile_bpftrace_with_retry(
-                    get_kprobe_prompt, context, program, line, linenumber
+                    context, program, line, linenumber
                 )
                 parts = program.split("ModuleID")
                 if len(parts) <= 1:
                     continue
                 substring = "; ModuleID " + parts[1].strip()
-                res = verify_z3(
-                    get_kprobe_prompt, context, substring, line, linenumber
-                )
+                res = verify_z3(get_kprobe_prompt, context, substring, line, linenumber)
                 if not res:
                     program = program_tmp
     # except:
     #     pass
     return program
+
 
 def parse_libbpf_program(context: str, program: str):
     """
@@ -451,7 +466,7 @@ def parse_libbpf_program(context: str, program: str):
                 program_tmp = program
                 program = get_bpf_prompt(context, program, line, linenumber)
                 program = compile_bpftrace_with_retry(
-                    bpf_prompt, context, program, line, linenumber
+                    context, program, line, linenumber
                 )
                 res = verify_z3(bpf_prompt, context, program, line, linenumber)
                 if not res:
@@ -464,19 +479,18 @@ def parse_libbpf_program(context: str, program: str):
                 program = get_kprobe_prompt(context, program, line, linenumber)
                 print("program\n", program)
                 program = compile_bpftrace_with_retry(
-                    get_kprobe_prompt, context, program, line, linenumber
+                     context, program, line, linenumber
                 )
                 parts = program.split("ModuleID")
 
                 substring = "; ModuleID " + parts[1].strip()
-                res = verify_z3(
-                    get_kprobe_prompt, context, substring, line, linenumber
-                )
+                res = verify_z3(get_kprobe_prompt, context, substring, line, linenumber)
                 if not res:
                     program = program_tmp
     # except:
     #     pass
     return program
+
 
 # extract all the function calls
 # prompt from the vectordb and gen
@@ -505,7 +519,12 @@ END
 """
     parse_bpftrace_program(context, program)
     print(replace_bpftrace_sassert_func_to_error(program))
-    print(replace_bpftrace_with_pre_post(program, "kprobe:policy_node","assume(nd==1);","sassert(nd==1);"))
+    print(
+        replace_bpftrace_with_pre_post(
+            program, "kprobe:policy_node", "assume(nd==1);", "sassert(nd==1);"
+        )
+    )
+
 
 def test_libbpf_verifer():
     context = "This libbpf (Berkeley Packet Filter) program tracks and increments the number of SYN segments received by IPv4 and IPv6 TCP sockets, effectively monitoring the TCP SYN backlog on the system."

@@ -26,6 +26,7 @@ class MyCustomHandler(BaseCallbackHandler):
     def on_llm_new_token(self, token: str, **kwargs) -> None:
         print(f"{token}")
 
+
 simple_examples = """
 Below are some simple examples of bpftrace usage:
 
@@ -77,6 +78,7 @@ GET_EXAMPLE_PROMPT: str = """
 
     The return example is more complex examples, for top 4 results.
     """
+
 
 def get_top_n_example_from_vec_db(query: str, n: int) -> str:
     embeddings = OpenAIEmbeddings()
@@ -212,7 +214,8 @@ GET_HOOK_PROMPT: str = """
     Gets the useable hooks from bpftrace. 
     
     If You need to write a ebpf program,
-    Use this tool to check the hook points before exec. The input should be a regex,
+    Use this tool to check the hook points before exec. 
+    The input should be a regex, it should be as pr
     For example:
 
     '*sleep*'
@@ -232,8 +235,7 @@ GET_HOOK_PROMPT: str = """
 
 def bpftrace_get_hooks(regex: str) -> str:
     res = run_command(["sudo", "bpftrace", "-l", regex], False)
-    return json.dumps(res)[:1024]
-
+    return json.dumps(res)
 
 def get_gpttrace_tools() -> List[Tool]:
     bpftrace_run_tool = Tool.from_function(
@@ -375,7 +377,7 @@ if __name__ == "__main__":
     main()
 
 
-class TestRunBpftrace(unittest.TestCase):
+class TestRunBpftraceAgent(unittest.TestCase):
     def test_run_command_short_live(self):
         command = ["ls", "-l"]
         timeout = 5

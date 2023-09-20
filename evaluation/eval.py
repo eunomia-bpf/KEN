@@ -45,7 +45,7 @@ def test_with_test_cases_and_feedback(
                 f.write(json.dumps({"error": str(e)}))
 
 def test_with_test_cases(
-    func: Callable[[str], str], save_file: str, starts_from: int = 0
+    func: Callable[[str], str], save_file: str, starts_from: int = 28
 ):
     with open("test_cases.txt", "r") as file:
         lines = file.readlines()
@@ -108,4 +108,4 @@ def test_vector_db_with_examples_3trails_with_feedback():
     )
 
 if __name__ == "__main__":
-    test_vector_db_with_examples_3trails_with_feedback()
+    test_vector_db_with_examples()
