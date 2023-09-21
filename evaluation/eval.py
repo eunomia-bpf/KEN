@@ -129,4 +129,4 @@ def test_few_shot_and_smt_bpftrace_3trails():
     test_with_test_cases(chain.run_few_shot_smt_bpftrace_3trails, save_file)
 
 if __name__ == "__main__":
-    test_few_shot_and_smt_bpftrace_3trails()
+    test_few_shot_with_vector_db_and_smt_bpftrace_3trails()
