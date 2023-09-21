@@ -3,6 +3,17 @@ import subprocess
 import chain
 import json
 from typing import Callable
+from datetime import datetime
+
+def print_time():
+    now = datetime.now()
+
+    # Format and print the date and time
+    formatted_date = now.strftime('%Y-%m-%d')  # Date in YYYY-MM-DD format
+    formatted_time = now.strftime('%H:%M:%S')  # Time in HH:MM:SS format
+
+    print("Date:", formatted_date)
+    print("Time:", formatted_time)
 
 def test_with_test_cases_and_feedback(
     func: Callable[[str, str], str], save_file: str, starts_from: int = 0
@@ -24,6 +35,7 @@ def test_with_test_cases_and_feedback(
         try:
             line = line.strip()  # Remove the newline character at the end
 
+            print_time()
             print(f"\n\nRunning test case {i}: {line}")
             print(f"Output will be saved to: {save_file}")
 
@@ -59,7 +71,8 @@ def test_with_test_cases(
         try:
             line = line.strip()  # Remove the newline character at the end
 
-            print(f"\n\nRunning test case {i}: {line}")
+            print_time()
+            print(f"\n\nRunning test case {i}: {line}\n\n")
             print(f"Output will be saved to: {save_file}")
 
             # Run the bpftrace.py script with the test case as input
@@ -111,5 +124,9 @@ def test_few_shot_with_vector_db_and_smt_bpftrace_3trails():
     save_file = f"vec_db_with_examples_3trails_and_smt.json"
     test_with_test_cases(chain.run_few_shot_with_vector_db_and_smt_bpftrace_3trails, save_file)
 
+def test_few_shot_and_smt_bpftrace_3trails():
+    save_file = f"few_shot_3trails_and_smt.json"
+    test_with_test_cases(chain.run_few_shot_smt_bpftrace_3trails, save_file)
+
 if __name__ == "__main__":
-    test_few_shot_with_vector_db_and_smt_bpftrace_3trails()
+    test_few_shot_and_smt_bpftrace_3trails()

@@ -66,6 +66,8 @@ Below are some simple examples of bpftrace usage:
 # Files opened, for processes in the root cgroup-v2
 'tracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s\n", str(args->filename)); }'
 
+# tcp connect events with PID and process name
+'kprobe:tcp_connect { printf("connected from pid %d, comm %s\n", pid, comm); }'
 """
 
 GET_EXAMPLE_PROMPT: str = """

@@ -18,6 +18,12 @@ use retry for hook points:
 python3 eval.py
 ```
 
+or test with output redirect:
+
+```sh
+time python3 eval.py > few_shot_3trails_and_smt-gpt4.txt 2>&1
+```
+
 ## test cases
 
 - test_cases.txt: test cases for evaluation, one case per line

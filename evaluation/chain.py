@@ -60,7 +60,7 @@ def run_gpt_for_bpftrace_hooks(input: str, model_name: str) -> str:
 
 	Attention: Only the first 10 matches will be returned in the bpftrace_get_hooks function.
 	For optimal results, craft your regex pattern with precision.
-	
+
 	You should think about what hooks you would like for this user request, and
 	search for the most possible ones.
 
@@ -92,6 +92,9 @@ def run_gpt_for_bpftrace_hooks(input: str, model_name: str) -> str:
 
 				6. hardware events related to cache:
 				hardware:*cache*
+    
+				7. tcp related kprobes:
+				kprobe:tcp_*
 """
 	res = chain.run(full_prompt)
 	print(res)
@@ -135,7 +138,7 @@ def run_code_llama(question: str) -> str:
 	}
 
 	template = """<s>[INST] <<SYS>>
-	You should only write the bpftrace program itself. 
+	You should only write the bpftrace program itself.
 	No explain and no instructions. No words other than bpftrace program.
 	<</SYS>> {question} [/INST]
 	"""
@@ -220,7 +223,7 @@ Write a bpftrace program that traces or profile the following user request:
 
 Here are some examples to help you get started with bpftrace:
 {examples}
-You can refer to the above examples to write your own bpftrace program. Use a tool 
+You can refer to the above examples to write your own bpftrace program. Use a tool
 provided to execute your bpftrace program.
 You should only write the bpftrace program itself.
 """
@@ -268,7 +271,7 @@ You can refer to the above examples to write your own bpftrace program to help u
 {user_request}
 
 Use a tool provided to execute your bpftrace program.
-You should only write the bpftrace program itself. 
+You should only write the bpftrace program itself.
 """
 	return run_bpftrace_prog_with_function_call(prompt)
 
@@ -276,21 +279,22 @@ def generate_hints(prompt: str) -> str:
 	hints = ask_gpt_for_question(f"""
 {prompt}
 You are a kernel expert. Summary the above prompt to tell the most possble hook locations
-and desire bpftrace program logic in one short sentence, but don't write the program directly. 
+and desire bpftrace program logic in one short sentence, but don't write the program directly.
 							  """, "gpt-4")
 	return hints
 
 def run_few_shot_and_smt_bpftrace(user_request: str, vecdb_prompt: str = "") -> str:
 	examples = gpttrace.simple_examples
-	prompt = f"""
-You should Write a bpftrace program that traces or profile the 
+	original_prompt = f"""
+You should Write a bpftrace program that traces or profile the
 following user request: {user_request}
 
 ### Examples
 Here are some simple examples to help you get started with bpftrace:
 
 {examples}
-""" + vecdb_prompt
+""" 
+	prompt = original_prompt + vecdb_prompt
 
 	hooks = get_bpftrace_possible_hooks_and_hints(prompt)
 	hooks_prompt = f"""
@@ -301,10 +305,10 @@ Note: these hooks may not be correct for the user request,
 it's just for reference.
 	"""
 	prompt = prompt + hooks_prompt
-	hints = "\n## hints \n" + generate_hints(prompt) 
+	hints = "\n## hints \n" + generate_hints(prompt)
 	additonal_prompt = prompt + hints + f"""
 
-You can refer to the above examples and hints to 
+You can refer to the above examples and hints to
 write your own bpftrace program to help user with:
 {user_request}
 
@@ -314,7 +318,7 @@ the program can be run with bpftrace, keep the eBPF program short and clear
 to avoid more mistakes.
 """
 	prog = generate_bpftrace_programs_based_on_model(additonal_prompt)
-	new_prog = smtdriver.run_verifier_for_better_bpftrace_proram(user_request, prog)
+	new_prog = smtdriver.run_verifier_for_better_bpftrace_proram(original_prompt, prog)
 	return run_bpftrace_progs_and_return_prompt(additonal_prompt, new_prog)
 
 def run_few_shot_with_vector_db_and_smt_bpftrace(user_request: str) -> str:
@@ -346,7 +350,7 @@ You can refer to the above examples to write your own bpftrace program to help u
 {user_request}
 
 Use a tool provided to execute your bpftrace program.
-You should only write the bpftrace program itself. 
+You should only write the bpftrace program itself.
 """
 	return run_bpftrace_prog_with_function_call(prompt)
 
@@ -409,7 +413,7 @@ with the following error and ouput:
 
 This is your trail {3 - count + 1} out of 3 trails.
 Please retry generating the bpftrace program for: {prompt}
-Here is some hints for you to help you write the bpftrace program: 
+Here is some hints for you to help you write the bpftrace program:
 {hints}
 """
 			old_prompt = data["prompt"]
@@ -443,7 +447,6 @@ def run_vector_db_with_examples_3trails_human_feedback(
 		user_request, hints, run_few_shot_with_vector_db_bpftrace
 	)
 
-
 class TestRunGPTtraceChain(unittest.TestCase):
 	def test_run_few_shot_3trails(self):
 		run_few_shot_3trails("Trace bpf jit compile events.")
@@ -461,5 +464,5 @@ class TestRunGPTtraceChain(unittest.TestCase):
 		get_bpftrace_possible_hooks_and_hints("Trace bpf jit compile events.")
 
 if __name__ == "__main__":
-	res = run_few_shot_smt_bpftrace_3trails("Trace TCP round trip time (RTT) and print the sender and receiver IP addresses and ports.")
+	res = run_few_shot_with_vector_db_and_smt_bpftrace_3trails("Trace TCP round trip time (RTT) and print the sender and receiver IP addresses and ports.")
 	print(res)
