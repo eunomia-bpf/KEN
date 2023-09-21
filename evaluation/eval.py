@@ -24,7 +24,7 @@ def test_with_test_cases_and_feedback(
         try:
             line = line.strip()  # Remove the newline character at the end
 
-            print(f"Running test case {i}: {line}")
+            print(f"\n\nRunning test case {i}: {line}")
             print(f"Output will be saved to: {save_file}")
 
             # Run the bpftrace.py script with the test case as input
@@ -59,7 +59,7 @@ def test_with_test_cases(
         try:
             line = line.strip()  # Remove the newline character at the end
 
-            print(f"Running test case {i}: {line}")
+            print(f"\n\nRunning test case {i}: {line}")
             print(f"Output will be saved to: {save_file}")
 
             # Run the bpftrace.py script with the test case as input

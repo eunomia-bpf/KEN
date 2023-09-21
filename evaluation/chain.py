@@ -3,6 +3,7 @@ import re
 from typing import Callable, Optional
 import time
 import gpttrace
+import smtdriver
 from langchain.chains import LLMChain
 from langchain.chains.openai_functions import create_openai_fn_chain
 from langchain.chat_models import ChatOpenAI
@@ -175,10 +176,7 @@ def get_bpftrace_possible_hooks_and_hints(input: str) -> str:
 	print("possible hooks: ", res)
 	return res
 
-
-def run_bpftrace_prog_with_function_call(input: str, smt_resolve_func: Callable[[str], str] = None) -> str:
-	print("input prompt: ", input, "\n")
-	# read a.bt
+def generate_bpftrace_programs_based_on_model(input: str):
 	prog = ""
 	# Sleep for 5 seconds
 	time.sleep(2)
@@ -193,13 +191,20 @@ def run_bpftrace_prog_with_function_call(input: str, smt_resolve_func: Callable[
 	else:
 		print("invalid model name")
 		exit(1)
-	if smt_resolve_func != None:
-		res = smt_resolve_func(prog)
+	return prog
+
+def run_bpftrace_progs_and_return_prompt(input: str, prog: str) -> str:
 	res = gpttrace.bpftrace_run_program(prog)
 	print(res)
 	data = json.loads(res)
 	data["prompt"] = input
 	return json.dumps(data)
+
+def run_bpftrace_prog_with_function_call(input: str) -> str:
+	print("\n\n[run_bpftrace_prog_with_function_call]: ", input, "\n")
+	# read a.bt
+	prog = generate_bpftrace_programs_based_on_model(input)
+	return run_bpftrace_progs_and_return_prompt(input, prog)
 
 
 def run_few_shot_bpftrace(user_request: str) -> str:
@@ -305,9 +310,12 @@ write your own bpftrace program to help user with:
 
 Use a tool provided to execute your bpftrace program.
 You should only write the bpftrace program itself. Make sure
-the program can be run with bpftrace, keep it short and clear.
+the program can be run with bpftrace, keep the eBPF program short and clear
+to avoid more mistakes.
 """
-	return run_bpftrace_prog_with_function_call(additonal_prompt)
+	prog = generate_bpftrace_programs_based_on_model(additonal_prompt)
+	new_prog = smtdriver.run_verifier_for_better_bpftrace_proram(user_request, prog)
+	return run_bpftrace_progs_and_return_prompt(additonal_prompt, new_prog)
 
 def run_few_shot_with_vector_db_and_smt_bpftrace(user_request: str) -> str:
 	complex_examples = gpttrace.get_top_n_example_from_vec_db(user_request, 2)
@@ -353,8 +361,9 @@ def run_3trails(prompt, func: Callable[[str], str]):
 			return res
 		else:
 			error = data["stderr"]
-			print("retry left: ", count)
+			print("\n\n[retry]: left: ", count)
 			print("error ", error)
+			print("\n\n")
 			err_prompt = f"""
 Run the bpftrace program：
 
@@ -366,6 +375,7 @@ with the following error and ouput:
 
 This is your trail {3 - count + 1} out of 3 trails.
 Please retry generating the bpftrace program for: {prompt}
+And fix the error.
 """
 			old_prompt = data["prompt"]
 			full_prompt = data["prompt"] + err_prompt
@@ -451,4 +461,5 @@ class TestRunGPTtraceChain(unittest.TestCase):
 		get_bpftrace_possible_hooks_and_hints("Trace bpf jit compile events.")
 
 if __name__ == "__main__":
-	run_few_shot_with_vector_db_and_smt_bpftrace_3trails("Trace TCP round trip time (RTT) and print the sender and receiver IP addresses and ports.")
+	res = run_few_shot_smt_bpftrace_3trails("Trace TCP round trip time (RTT) and print the sender and receiver IP addresses and ports.")
+	print(res)

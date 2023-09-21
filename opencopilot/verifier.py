@@ -15,22 +15,27 @@ def replace_bpftrace_sassert_func_to_error(program: str):
     return s
 
 
-def replace_bpftrace_with_pre_post(program: str, function: str, pre: str, post: str):
-    # fix me: support more cases
-    pattern = re.compile(function + r"((.*\n)*)\{((.*\n)+)\}")
-    # try:
-    temp = re.search(pattern, program)
-    if temp == None:
+def replace_bpftrace_with_pre_post(program: str, function: str, pre: str, post: str) -> str:
+    # Escape special characters in the function name for regex
+    escaped_function = re.escape(function)
+    
+    # Use a non-greedy match for content inside the braces
+    pattern = re.compile(escaped_function + r"\s*\{(.*?)\}", re.DOTALL)
+    
+    matches = pattern.findall(program)
+    
+    # If there's no match, return the original program
+    if not matches:
         return program
-    temp = temp.group().split("}")[0] + "}"
-    print("tmp", temp)
-    temp_program = program.split(temp)
-    repl = function + r"\1{" + pre + r"\3" + post + r"}"
-    s = re.sub(pattern, repl, temp)
-    s = temp_program[0] + s + temp_program[1]
-    # except:
-    #     return program
-    return s
+    
+    # For simplicity, replace only the first occurrence
+    original_content = matches[0]
+    replaced_content = pre + original_content + post
+    
+    # Use sub to replace the content
+    result_program = re.sub(pattern, function + " {" + replaced_content + "}", program, count=1)
+    
+    return result_program
 
 
 def replace_line(program, line, content):
@@ -168,6 +173,8 @@ def get_kprobe_prompt(
     prompt the current codedb and return the pre condition and post conditino json
     """
     prompted_pre_post = kprobe_prompt(context, program, line, linenumber, file=file)
+    if len(prompted_pre_post.splitlines()) == 0:
+        return program
     prompted_pre = prompted_pre_post.splitlines()[0]
     try:
         prompted_post = prompted_pre_post.splitlines()[1]
@@ -345,7 +352,9 @@ def compile_bpftrace_with_retry(context, program, retry_depth=3):
             retry_depth - 1,
         )
     else:
-        return var.stdout, program
+        stdout = var.stdout
+        stdout = stdout.replace('@__SEA_assume(i1 %0)', '@__SEA_assume(i64 %0)')
+        return stdout, program
 
 
 def parse_bpftrace_program(context: str, program: str):
@@ -531,11 +540,20 @@ def parse_libbpf_program(context: str, program: str):
 def run_bpftrace_verifier(context: str, program: str) -> str:
     # make sure the program can be compile by bpftrace.
     # retry 3 times to generate correct program
-    _, program = compile_bpftrace_with_retry(context, program)
+    _, new_program = compile_bpftrace_with_retry(context, program)
+    # make sure it can be compile
+    test_new = compile_bpftrace_for_llvm(new_program)
+    if test_new.returncode != 0:
+            return program
     # run the verifier to modify the program
-    res = parse_bpftrace_program(context, program)
+    res = parse_bpftrace_program(context, new_program)
     if not res:
         return program
+    # test for compile again
+    var = compile_bpftrace_for_llvm(res)
+    if var.returncode != 0:
+        # test for correct compile program
+        return new_program
     return res
 
 
