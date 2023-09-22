@@ -138,4 +138,4 @@ def test_few_shot_vec_db_and_smt_bpftrace_3trails():
 
 
 if __name__ == "__main__":
-    test_vector_db_with_examples_3trails_libbpf()
+    test_vector_db_with_examples_3trails()
