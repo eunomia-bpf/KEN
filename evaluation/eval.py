@@ -108,6 +108,10 @@ def test_vector_db_with_examples_3trails():
     save_file = f"vec_db_with_examples_3trails.json"
     test_with_test_cases(chain.run_vector_db_with_examples_3trails, save_file)
 
+def test_vector_db_with_examples_3trails_libbpf():
+    save_file = f"vec_db_with_examples_3trails_libbpf.json"
+    test_with_test_cases(chain.run_vector_db_with_examples_libbpf_3trails, save_file)
+
 def test_few_shot_3trails_with_feedback():
     save_file = f"few_shot_3trails_with_feedback.json"
     test_with_test_cases_and_feedback(
@@ -134,4 +138,4 @@ def test_few_shot_vec_db_and_smt_bpftrace_3trails():
 
 
 if __name__ == "__main__":
-    test_few_shot_vec_db_and_smt_bpftrace_3trails()
+    test_vector_db_with_examples_3trails_libbpf()

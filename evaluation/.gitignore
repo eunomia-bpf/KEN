@@ -1,5 +1,6 @@
 result
 data_save
+data_save_libbpf
 basic_result.json
 a.bt
 .program.bt
@@ -8,3 +9,7 @@ output.json
 3trail_record.txt
 ecc
 ecli
+*.h
+tmp.skel.json
+package.json
+tmp.bpf.c

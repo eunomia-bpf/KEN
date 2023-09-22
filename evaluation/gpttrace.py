@@ -107,8 +107,58 @@ GET_EXAMPLE_PROMPT: str = """
     The return example is more complex examples, for top 4 results.
     """
 
+LIBBPF_BASIC_EXAMPLE = """
+    ```
+    /* SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause) */
+    #define BPF_NO_GLOBAL_DATA
+    #include <linux/bpf.h>
+    #include <bpf/bpf_helpers.h>
+    #include <bpf/bpf_tracing.h>
 
-def get_top_n_example_from_vec_db(query: str, n: int) -> str:
+    typedef unsigned int u32;
+    typedef int pid_t;
+    const pid_t pid_filter = 0;
+
+    char LICENSE[] SEC("license") = "Dual BSD/GPL";
+
+    SEC("tp/syscalls/sys_enter_write")
+    int handle_tp(void* ctx) {
+        pid_t pid = bpf_get_current_pid_tgid() >> 32;
+        if (pid_filter && pid != pid_filter)
+            return 0;
+        bpf_printk("BPF triggered from PID %d.\n", pid);
+        return 0;
+    }
+    ```
+    """
+
+def get_top_n_example_from_libbpf_vec_db(query: str, n: int = 2) -> str:
+    embeddings = OpenAIEmbeddings()
+    # Check if the vector database files exist
+    if not (
+        os.path.exists("./data_save_libbpf/vector_db.faiss")
+        and os.path.exists("./data_save_libbpf/vector_db.pkl")
+    ):
+        loader = JSONLoader(
+            file_path="../dataset/libbpf/examples.json",
+            jq_schema=".data[].content",
+            json_lines=True,
+        )
+        documents = loader.load()
+        db = FAISS.from_documents(documents, embeddings)
+        db.save_local("./data_save_libbpf", index_name="vector_db")
+    else:
+        # Load an existing FAISS vector store
+        db = FAISS.load_local(
+            "./data_save_libbpf", index_name="vector_db", embeddings=embeddings
+        )
+
+    results = db.search(query, search_type="similarity")
+    results = [result.page_content for result in results]
+    return "\n".join(results[:n])
+
+
+def get_top_n_example_from_bpftrace_vec_db(query: str, n: int = 2) -> str:
     embeddings = OpenAIEmbeddings()
     # Check if the vector database files exist
     if not (
@@ -135,7 +185,7 @@ def get_top_n_example_from_vec_db(query: str, n: int) -> str:
 
 
 def get_full_examples_with_vec_db(query: str) -> str:
-    return simple_examples + get_top_n_example_from_vec_db(query, 2)
+    return simple_examples + get_top_n_example_from_bpftrace_vec_db(query, 2)
 
 
 def construct_bpftrace_examples(text: str) -> str:
@@ -200,7 +250,8 @@ def run_command(command: List[str], require_check: bool = False) -> CommandResul
             max_length = 1024 * 1024
             return {
                 "command": " ".join(command),
-                "stdout": stdout[:max_length] + ("...[CUT OFF]" if len(stdout) > max_length else ""),
+                "stdout": stdout[:max_length]
+                + ("...[CUT OFF]" if len(stdout) > max_length else ""),
                 "stderr": stderr,
                 "returncode": process.returncode,
             }
@@ -239,6 +290,41 @@ def bpftrace_run_program(program: str) -> str:
     return json.dumps(res)
 
 
+def libbpf_compile_and_run_program(program: str) -> str:
+    with open("tmp.bpf.c", "w") as f:
+        f.write(program)
+    print("\n\n[ecc]: compile: \n\n", program, "\n\n")
+    res = run_command(
+        [
+            "./ecc",
+            "tmp.bpf.c",
+        ]
+    )
+    if res["returncode"] != 0:
+        res["command"] = program
+        return json.dumps(res)
+    print("\ncompile success\n")
+    res = run_command(
+        [
+            "sudo",
+            "timeout",
+            "--preserve-status",
+            "-s",
+            "2",
+            "20",
+            "./ecli",
+            "run",
+            "package.json",
+        ]
+    )
+    if res["returncode"] != 0:
+        res["command"] = program
+        return json.dumps(res)
+    print("\nrun success\n")
+    res["command"] = program
+    return json.dumps(res)
+
+
 GET_HOOK_PROMPT: str = """
     Gets the useable hooks from bpftrace. 
     
@@ -265,6 +351,7 @@ GET_HOOK_PROMPT: str = """
 def bpftrace_get_hooks(regex: str) -> str:
     res = run_command(["sudo", "bpftrace", "-l", regex], False)
     return json.dumps(res)
+
 
 def get_gpttrace_tools() -> List[Tool]:
     bpftrace_run_tool = Tool.from_function(

@@ -162,6 +162,27 @@ date: 9.18
 
 false positive: 10 18
 
+## few shot with 3 trails and smt for code llama
+
+date: 9.18
+
+- "returncode": 0, count 15
+- "returncode": 1, count 27
+- "returncode": 255, count 3
+
+false positive: 24 38
+
+## few shot with 3 trails and smt for gpt-4
+
+date: 9.22
+
+- "returncode": 0, count 33
+- "returncode": 1, count 27
+- "returncode": 255, count 3
+
+false positive: 30 33
+
+
 ## few shot with 3 trails and human feed back for code llama
 
 date: 9.18
@@ -201,3 +222,14 @@ date: 9.18
 - "returncode": 255, count 2
 
 false positive: 30
+
+## vec db with 3 trails and smt for code llama
+
+date: 9.18
+
+- "returncode": 0, count 17
+- "returncode": 1, count 20
+- "returncode": 255, count 3
+
+false positive: 26
+

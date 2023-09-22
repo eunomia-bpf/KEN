@@ -1,7 +1,7 @@
 import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from gpttrace import simple_examples, get_top_n_example_from_vec_db
+from gpttrace import simple_examples, get_top_n_example_from_bpftrace_vec_db
 import os
 from langchain.chat_models import ChatOpenAI
 from langchain.llms import CTransformers
@@ -11,7 +11,7 @@ app = Flask(__name__)
 CORS(app)
 
 def prompt(user_query):
-    complex_example = get_top_n_example_from_vec_db(user_query, 3)
+    complex_example = get_top_n_example_from_bpftrace_vec_db(user_query, 3)
     PROMPT = f"""
     Please create a BPFTrace program that accomplishes the following task: ${user_query}
     The program should be syntactically correct and ready for execution. 
