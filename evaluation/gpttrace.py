@@ -28,46 +28,72 @@ class MyCustomHandler(BaseCallbackHandler):
 
 
 simple_examples = """
-Below are some simple examples of bpftrace usage:
+Below are some simple examples of bpftrace programs:
 
-# trace processes calling sleep
-'kprobe:do_nanosleep { printf("PID %d sleeping...\n", pid); }'
+trace processes calling sleep:
+```
+kprobe:do_nanosleep { printf("PID %d sleeping...", pid); }
+```
 
-# count syscalls by process name
-'tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }'
+count syscalls by process name:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
 
-# Files opened by process
-'tracepoint:syscalls:sys_enter_open { printf("%s %s\n", comm, str(args->filename)); }'
+Files opened by process:
+```
+tracepoint:syscalls:sys_enter_open { printf("%s %s", comm, str(args->filename)); }
+```
 
-# Syscall count by program
-'tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }'
+Syscall count by program:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
 
-# Read bytes by process:
-'tracepoint:syscalls:sys_exit_read /args->ret/ { @[comm] = sum(args->ret); }'
+Read bytes by process:
+```
+tracepoint:syscalls:sys_exit_read /args->ret/ { @[comm] = sum(args->ret); }
+```
 
-# Read size distribution by process:
-'tracepoint:syscalls:sys_exit_read { @[comm] = hist(args->ret); }'
+Read size distribution by process:
+```
+tracepoint:syscalls:sys_exit_read { @[comm] = hist(args->ret); }
+```
 
-# Show per-second syscall rates:
-'tracepoint:raw_syscalls:sys_enter { @ = count(); } interval:s:1 { print(@); clear(@); }'
+Show per-second syscall rates:
+```
+tracepoint:raw_syscalls:sys_enter { @ = count(); } interval:s:1 { print(@); clear(@); }
+```
 
-# Trace disk size by process
-'tracepoint:block:block_rq_issue { printf("%d %s %d\n", pid, comm, args->bytes); }'
+Trace disk size by process:
+```
+tracepoint:block:block_rq_issue { printf("%d %s %d", pid, comm, args->bytes); }
+```
 
-# Count page faults by process
-'software:faults:1 { @[comm] = count(); }'
+Count page faults by process
+```
+software:faults:1 { @[comm] = count(); }
+```
 
-# Count LLC cache misses by process name and PID (uses PMCs):
-'hardware:cache-misses:1000000 { @[comm, pid] = count(); }'
+Count LLC cache misses by process name and PID (uses PMCs):
+```
+hardware:cache-misses:1000000 { @[comm, pid] = count(); }
+```
 
-# Profile user-level stacks at 99 Hertz, for PID 189:
-'profile:hz:99 /pid == 189/ { @[ustack] = count(); }'
+Profile user-level stacks at 99 Hertz, for PID 189:
+```
+profile:hz:99 /pid == 189/ { @[ustack] = count(); }
+```
 
-# Files opened, for processes in the root cgroup-v2
-'tracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s\n", str(args->filename)); }'
+Files opened, for processes in the root cgroup-v2
+```
+tracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s", str(args->filename)); }
+```
 
-# tcp connect events with PID and process name
-'kprobe:tcp_connect { printf("connected from pid %d, comm %s\n", pid, comm); }'
+tcp connect events with PID and process name
+```
+kprobe:tcp_connect { printf("connected from pid %d, comm %s", pid, comm); }
+```
 """
 
 GET_EXAMPLE_PROMPT: str = """

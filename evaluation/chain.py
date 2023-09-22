@@ -25,7 +25,7 @@ message_prompt = HumanMessagePromptTemplate(
 )
 prompt_template = ChatPromptTemplate.from_messages([message_prompt])
 
-model = "gpt-4"  # can be "code-llama" or "gpt-3.5-turbo" or "gpt-3.5-turbo-16k"
+model = "code-llama"  # can be "code-llama" or "gpt-3.5-turbo" or "gpt-3.5-turbo-16k"
 
 
 def run_bpftrace_prog_with_func_call_define(prog: str) -> str:
@@ -92,7 +92,7 @@ def run_gpt_for_bpftrace_hooks(input: str, model_name: str) -> str:
 
 				6. hardware events related to cache:
 				hardware:*cache*
-    
+	
 				7. tcp related kprobes:
 				kprobe:tcp_*
 """
@@ -125,7 +125,7 @@ def extract_code_blocks(text: str) -> str:
 	return res.replace("bpftrace -e", "").strip().strip("'")
 
 
-def run_code_llama(question: str) -> str:
+def run_code_llama_for_prog(question: str) -> str:
 	if len(question) >= 5 * 3000:
 		print("question too long, truncating to 5 * 3000 chars")
 		question = question[: 5 * 3000]
@@ -152,20 +152,7 @@ def run_code_llama(question: str) -> str:
 def get_bpftrace_possible_hooks_and_hints(input: str) -> str:
 	print("input prompt: ", input, "\n")
 	time.sleep(2)
-	hooks = ""
-	if model == "gpt-4":
-		hooks = run_gpt_for_bpftrace_hooks(input, "gpt-4")
-	elif model == "gpt-3.5-turbo":
-		hooks = run_gpt_for_bpftrace_hooks(input, "gpt-3.5-turbo")
-	elif model == "code-llama":
-		print("invalid model name")
-		exit(1)
-		hooks = run_code_llama(input)
-	elif model == "gpt-3.5-turbo-16k":
-		hooks = run_gpt_for_bpftrace_hooks(input, "gpt-3.5-turbo-16k")
-	else:
-		print("invalid model name")
-		exit(1)
+	hooks = run_gpt_for_bpftrace_hooks(input, "gpt-4")
 	res = gpttrace.bpftrace_get_hooks(hooks)
 	print(res)
 	res = json.loads(res)
@@ -188,7 +175,7 @@ def generate_bpftrace_programs_based_on_model(input: str):
 	elif model == "gpt-3.5-turbo":
 		prog = run_gpt_for_bpftrace_progs(input, "gpt-3.5-turbo")
 	elif model == "code-llama":
-		prog = run_code_llama(input)
+		prog = run_code_llama_for_prog(input)
 	elif model == "gpt-3.5-turbo-16k":
 		prog = run_gpt_for_bpftrace_progs(input, "gpt-3.5-turbo-16k")
 	else:
@@ -275,12 +262,44 @@ You should only write the bpftrace program itself.
 """
 	return run_bpftrace_prog_with_function_call(prompt)
 
+def ask_code_llama(question: str, sys_prompt: str) -> str:
+	if len(question) >= 4 * 2500:
+		print("question too long, truncating to 5 * 3000 chars")
+		question = question[: 4 * 3000]
+	llm = DeepInfra(model_id="codellama/CodeLlama-34b-Instruct-hf")
+	llm.model_kwargs = {
+		"temperature": 0.7,
+		"repetition_penalty": 1.2,
+		"max_new_tokens": 1500,
+		"top_p": 0.9,
+	}
+
+	template = f"""<s>[INST] <<SYS>>
+	{sys_prompt}
+	<</SYS>> {question} [/INST]"""
+
+	print("\n\n[ask code llama] prompt: ", template)
+	print(len(template))
+	res = llm.predict(template)
+	print("\n\n[ask code llama] res: ", res, "\n\n")
+	return res
+
 def generate_hints(prompt: str) -> str:
-	hints = ask_gpt_for_question(f"""
+	question_prompt = f"""
 {prompt}
 You are a kernel expert. Summary the above prompt to tell the most possble hook locations
 and desire bpftrace program logic in one short sentence, but don't write the program directly.
-							  """, "gpt-4")
+"""
+	hints = ""
+	if model == "gpt-4":
+		hints = ask_gpt_for_question(question_prompt, "gpt-4")
+	elif model == "code-llama":
+		hints = ask_code_llama(question_prompt, """
+You are a kernel expert. Summary the above prompt to tell the most possble hook locations
+and desire bpftrace program logic in one short sentence, but don't write the program directly.""")
+	else:
+		print("invalid model name")
+		exit(1)
 	return hints
 
 def run_few_shot_and_smt_bpftrace(user_request: str, vecdb_prompt: str = "") -> str:
@@ -289,36 +308,39 @@ def run_few_shot_and_smt_bpftrace(user_request: str, vecdb_prompt: str = "") -> 
 You should Write a bpftrace program that traces or profile the
 following user request: {user_request}
 
-### Examples
-Here are some simple examples to help you get started with bpftrace:
-
 {examples}
 """ 
 	prompt = original_prompt + vecdb_prompt
-
-	hooks = get_bpftrace_possible_hooks_and_hints(prompt)
-	hooks_prompt = f"""
-### possible related hook locations
-{hooks}
-
-Note: these hooks may not be correct for the user request,
-it's just for reference.
-	"""
-	prompt = prompt + hooks_prompt
-	hints = "\n## hints \n" + generate_hints(prompt)
-	additonal_prompt = prompt + hints + f"""
-
+	prompt_tail = f"""
 You can refer to the above examples and hints to
 write your own bpftrace program to help user with:
+
 {user_request}
 
 Use a tool provided to execute your bpftrace program.
-You should only write the bpftrace program itself. Make sure
-the program can be run with bpftrace, keep the eBPF program short and clear
+No explain and no instructions. No extra words of description other 
+than bpftrace program. No need to write the bpftrace command, only the program itself.
+Make sure the program can be run with bpftrace, keep the eBPF program short and clear
 to avoid more mistakes.
 """
+	hooks = get_bpftrace_possible_hooks_and_hints(prompt)
+	hooks_prompt = f"""
+	### possible related hook locations
+	{hooks}
+
+	Note: these hooks may not be correct for the user request,
+	it's just for reference.
+		"""
+	if model == "gpt-4":
+		prompt = prompt + hooks_prompt
+		hints = "\n## hints \n" + generate_hints(prompt)
+		additonal_prompt = prompt + hints + prompt_tail
+	else:
+		additonal_prompt = prompt + prompt_tail
+
 	prog = generate_bpftrace_programs_based_on_model(additonal_prompt)
 	new_prog = smtdriver.run_verifier_for_better_bpftrace_proram(original_prompt, prog)
+	# new_prog = prog
 	return run_bpftrace_progs_and_return_prompt(additonal_prompt, new_prog)
 
 def run_few_shot_with_vector_db_and_smt_bpftrace(user_request: str) -> str:
@@ -369,14 +391,14 @@ def run_3trails(prompt, func: Callable[[str], str]):
 			print("error ", error)
 			print("\n\n")
 			err_prompt = f"""
-Run the bpftrace program：
-
-{data["command"]}
-
+Run the bpftrace program
+```
+{data["command"].replace("sudo timeout --preserve-status -s 2 20 bpftrace -e ", " ")}
+```
 with the following error and ouput:
-
+```
 {error}
-
+```
 This is your trail {3 - count + 1} out of 3 trails.
 Please retry generating the bpftrace program for: {prompt}
 And fix the error.
@@ -403,20 +425,19 @@ def run_3trails_with_human_feedback(
 			print("retry left: ", count)
 			print("error ", error)
 			err_prompt = f"""
-Run the bpftrace program：
-
-{data["command"]}
-
+Run the bpftrace program
+```
+{data["command"].replace("sudo timeout --preserve-status -s 2 20 bpftrace -e ", " ")}
+```
 with the following error and ouput:
-
+```
 {error}
-
+```
 This is your trail {3 - count + 1} out of 3 trails.
 Please retry generating the bpftrace program for: {prompt}
 Here is some hints for you to help you write the bpftrace program:
 {hints}
 """
-			old_prompt = data["prompt"]
 			full_prompt = data["prompt"] + err_prompt
 			print("full prompt: ", full_prompt)
 			res = run_bpftrace_prog_with_function_call(full_prompt)
@@ -464,5 +485,5 @@ class TestRunGPTtraceChain(unittest.TestCase):
 		get_bpftrace_possible_hooks_and_hints("Trace bpf jit compile events.")
 
 if __name__ == "__main__":
-	res = run_few_shot_with_vector_db_and_smt_bpftrace_3trails("Trace TCP round trip time (RTT) and print the sender and receiver IP addresses and ports.")
+	res = run_few_shot_smt_bpftrace_3trails("Trace md flush events with pid and process name")
 	print(res)

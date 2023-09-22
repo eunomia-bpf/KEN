@@ -191,3 +191,13 @@ date: 9.18
 - "returncode": 255, count 2
 
 false positive: 20
+
+## vec db with 3 trails and smt for gpt-4
+
+date: 9.18
+
+- "returncode": 0, count 34
+- "returncode": 1, count 4
+- "returncode": 255, count 2
+
+false positive: 30

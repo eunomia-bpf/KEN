@@ -16,7 +16,7 @@ def run_python_script_in_dir(script_path, dir_path):
         os.chdir(original_cwd)
 
 def run_verifier_for_better_bpftrace_proram(context_desc: str, program: str) -> str:
-    
+    print("\n\n[run_verifier_for_better_bpftrace_proram]: enter\n")
     with open('../opencopilot/context.txt', 'w') as f:
         f.write(context_desc)
     with open('../opencopilot/program.bt', 'w') as f:
@@ -28,4 +28,8 @@ def run_verifier_for_better_bpftrace_proram(context_desc: str, program: str) -> 
     with open('../opencopilot/result.bt', 'r') as f:
         res = f.read()
     # Return the path to the output file
+    print("\n\n[run_verifier_for_better_bpftrace_proram]: exit\n")
     return res
+
+if __name__ == "__main__":
+    run_python_script_in_dir('verifier.py', '../opencopilot')

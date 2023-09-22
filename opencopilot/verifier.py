@@ -5,7 +5,9 @@ import os, re, json
 import subprocess
 from z3_vector_db.z3_conditions_for_ebpf import generate_response
 from z3_vector_db.z3_conditions_for_ebpf import run_gpt_for_bpftrace_func
+from z3_vector_db.z3_conditions_for_ebpf import run_code_llama_for_prog
 
+model = "code-llama"  # can be "code-llama"
 
 # prompt what should be changed
 def replace_bpftrace_sassert_func_to_error(program: str):
@@ -302,7 +304,7 @@ The bpftrace program below:
 
 {program}
 
-has compile error, please fix it without change it's behavior
+has compile error, please fix it without change it's behavior, without change the hook location
 or remove assume statement. only do mininium modification if required.
 
 {error}
@@ -312,7 +314,14 @@ REMEMBER to keep the assume or assert statement to make sure it can be verified.
 If assume statement exists, do not change it to if or other statements.
 """
     print("\nretry_generate_bpftrace_program_for_compile: \n", retry_prompt)
-    response = run_gpt_for_bpftrace_func(retry_prompt, "gpt-4")
+    response = ""
+    if model == "gpt-4":
+       response = run_gpt_for_bpftrace_func(retry_prompt, "gpt-4")
+    elif model == "code-llama":
+        response = run_code_llama_for_prog(retry_prompt)
+    else:
+        print("invalid model name")
+        exit(1)
     return response
 
 
@@ -329,7 +338,14 @@ has sat error. if the error is related to the program itself, please fix it.
 use function to run the bpftrace program without any assume or assert statments.
 """
     print("\nretry_generate_bpftrace_program_for_sat\n", retry_prompt)
-    response = run_gpt_for_bpftrace_func(retry_prompt, "gpt-4")
+    response = ""
+    if model == "gpt-4":
+       response = run_gpt_for_bpftrace_func(retry_prompt, "gpt-4")
+    elif model == "code-llama":
+        response = run_code_llama_for_prog(retry_prompt)
+    else:
+        print("invalid model name")
+        exit(1)
     return response
 
 
@@ -617,6 +633,7 @@ if __name__ == "__main__":
         program = file.read()
     with open("context.txt", "r") as file:
         context = file.read()
+    print("\n\n[run verifier]\n\n")
     res = run_bpftrace_verifier(context, program)
     with open("result.bt", "w") as file:
         file.write(res)
