@@ -7,7 +7,7 @@ from z3_vector_db.z3_conditions_for_ebpf import generate_response
 from z3_vector_db.z3_conditions_for_ebpf import run_gpt_for_bpftrace_func
 from z3_vector_db.z3_conditions_for_ebpf import run_code_llama_for_prog
 
-model = "code-llama"  # can be "code-llama"
+model = "gpt-4"  # can be "code-llama"
 
 # prompt what should be changed
 def replace_bpftrace_sassert_func_to_error(program: str):
@@ -25,11 +25,11 @@ def replace_bpftrace_with_pre_post(program: str, function: str, pre: str, post: 
     pattern = re.compile(escaped_function + r"\s*\{(.*?)\}", re.DOTALL)
     
     matches = pattern.findall(program)
-    
+
     # If there's no match, return the original program
     if not matches:
         return program
-    
+
     # For simplicity, replace only the first occurrence
     original_content = matches[0]
     replaced_content = pre + original_content + post

@@ -23,3 +23,4 @@ pip install -r requirements.txt
 
 ## LICENSE
 
+MIT

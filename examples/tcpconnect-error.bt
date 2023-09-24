@@ -1,0 +1,18 @@
+#ifndef BPFTRACE_HAVE_BTF
+#include <linux/socket.h>
+#include <net/sock.h>
+#else
+#include <sys/socket.h>
+#endif
+
+kprobe:tcp_connect
+{
+    $sk = (struct sock *) arg0;
+    
+    $saddr = ntop(2, $sk->__sk_common.skc_rcv_saddr);
+    $daddr = ntop(2, $sk->__sk_common.skc_daddr);
+    $sport = ($sk->__sk_common.skc_num);
+    $dport = ($sk->__sk_common.skc_dport);
+    
+    printf("TCP connect: %s:%d -> %s:%d\n", $saddr, $sport, $daddr, $dport);
+}

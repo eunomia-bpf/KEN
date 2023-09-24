@@ -1,0 +1,32 @@
+#ifndef BPFTRACE_HAVE_BTF
+#include <linux/socket.h>
+#include <net/sock.h>
+#else
+#include <sys/socket.h>
+#endif
+
+kprobe:tcp_connect
+{
+    $sk = (struct sock *) arg0;
+
+    // Assumptions
+    assume($sk != 0);
+    assume($sk->__sk_common.skc_rcv_saddr != 0);
+    assume($sk->__sk_common.skc_daddr != 0);
+    assume($sk->__sk_common.skc_num >= 0);
+    assume($sk->__sk_common.skc_dport >= 0);
+    
+    // Assumption for IPv4 and IPv6
+    assume(sizeof($sk->__sk_common.skc_rcv_saddr) == 4 || sizeof($sk->__sk_common.skc_rcv_saddr) == 16);
+    assume(sizeof($sk->__sk_common.skc_daddr) == 4 || sizeof($sk->__sk_common.skc_daddr) == 16);
+
+    $saddr = ntop(2, $sk->__sk_common.skc_rcv_saddr);
+    $daddr = ntop(2, $sk->__sk_common.skc_daddr);
+    $sport = ($sk->__sk_common.skc_num);
+    $dport = ($sk->__sk_common.skc_dport);
+    
+    // Assumption for byte order
+    assume($dport == bswap($sk->__sk_common.skc_dport));
+
+    printf("TCP connect: %s:%d -> %s:%d\n", $saddr, $sport, $daddr, $dport);
+}
