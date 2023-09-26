@@ -1,4 +1,4 @@
-# OpenCopilot: A LLM empowered eBPF info collection and codegen
+# KEN: Kernel Extensions using Natural Language
 
 - Stable Mapping from Natural Language to eBPF semantics
 - Context Abstraction: thread isolation and information refinement 

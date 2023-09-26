@@ -17,16 +17,16 @@ def parse_requirements(file_name: str) -> List[str]:
 
 
 setuptools.setup(
-    name="opencopilot",
+    name="kenl",
     packages=find_packages(),
     version="0.1.0",
-    author=["yunwei"],
-    author_email=["yunwei356@gmail.com"],
-    description="OpenCopilot is an experimental open-source project that uses localized GPT large models to maintain your Linux as prompted and verified the semantic by automatic assertion verification.",
+    author=["yunwei","victoryang00","agaaaub.try"],
+    author_email=["yunwei356@gmail.com","victoryang00@ucsc.edu","agaaaub.try@gmail.com"],
+    description="KENL is an experimental open-source project that uses localized GPT large models to maintain your Linux as prompted and verified the semantic by automatic assertion verification.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=parse_requirements("requirements.txt"),
-    url="https://github.com/eunomia-bpf/OpenCopilot",
+    url="https://github.com/eunomia-bpf/KENL",
     license="https://opensource.org/license/mit/",
     python_requires=">=3.8",
     zip_safe=False

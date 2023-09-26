@@ -1,4 +1,4 @@
-# evaluation for OpenCopilot
+# evaluation for KEN
 
 ## evaluation cases
 

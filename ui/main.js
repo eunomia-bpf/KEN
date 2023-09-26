@@ -79,7 +79,7 @@ function createMainWindow () {
   });
 
   /* TRAY */
-  tray = new Tray(path.join(__dirname, 'OpenCopilot.png'));
+  tray = new Tray(path.join(__dirname, 'KEN.png'));
 
   tray.on('click', () => {
     mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();

@@ -10,8 +10,8 @@ evaluation/__pycache__
 node_modules
 .vscode
 bcc
-opencopilot.egg-info
-opencopilot-*
+ken.egg-info
+ken-*
 venv
 huggingface_hub
 evaluation/models/*
