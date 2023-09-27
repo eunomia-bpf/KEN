@@ -11,7 +11,8 @@ data = {
     'GPT4-3Trails': [
         {'Total Pass': 25, 'TP': 24, 'FP case': [38]},
         {'Total Pass': 29, 'TP': 27, 'FP case': [14, 40]},
-        {'Total Pass': 28, 'TP': 28, 'FP case': []}
+        {'Total Pass': 28, 'TP': 28, 'FP case': []},
+        {'Total Pass': 30, 'TP': 29, 'FP case': [13]}
     ],
     'GPT4-Base': [
         {'Total Pass': 18, 'TP': 17, 'FP case': [40]},
