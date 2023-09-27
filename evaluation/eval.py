@@ -126,16 +126,15 @@ def test_vector_db_with_examples_3trails_with_feedback():
 
 def test_few_shot_with_vector_db_and_smt_bpftrace_3trails():
     save_file = f"vec_db_with_examples_3trails_and_smt.json"
-    test_with_test_cases(chain.run_few_shot_with_vector_db_and_smt_bpftrace_3trails, save_file)
+    test_with_test_cases_and_feedback(chain.run_few_shot_with_vector_db_and_smt_bpftrace_3trails, save_file)
 
 def test_few_shot_and_smt_bpftrace_3trails():
     save_file = f"few_shot_3trails_and_smt.json"
-    test_with_test_cases(chain.run_few_shot_smt_bpftrace_3trails, save_file)
+    test_with_test_cases_and_feedback(chain.run_few_shot_smt_bpftrace_3trails, save_file)
 
 def test_few_shot_vec_db_and_smt_bpftrace_3trails():
     save_file = f"vec_db_3trails_and_smt.json"
     test_with_test_cases(chain.run_few_shot_with_vector_db_and_smt_bpftrace_3trails, save_file)
 
-
 if __name__ == "__main__":
-    test_vector_db_with_examples()
+    test_few_shot_with_vector_db_and_smt_bpftrace_3trails()

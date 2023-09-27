@@ -570,14 +570,11 @@ def run_vector_db_with_examples_libbpf_3trails(user_request: str) -> str:
         run_libbpf_prog_with_function_call,
     )
 
+def run_few_shot_with_vector_db_and_smt_bpftrace_3trails(user_request: str, hints: str) -> str:
+    return run_3trails_with_human_feedback(user_request, hints, run_few_shot_with_vector_db_and_smt_bpftrace)
 
-def run_few_shot_with_vector_db_and_smt_bpftrace_3trails(user_request: str) -> str:
-    return run_3trails(user_request, run_few_shot_with_vector_db_and_smt_bpftrace)
-
-
-def run_few_shot_smt_bpftrace_3trails(user_request: str) -> str:
-    return run_3trails(user_request, run_few_shot_and_smt_bpftrace)
-
+def run_few_shot_smt_bpftrace_3trails(user_request: str, hints: str) -> str:
+    return run_3trails_with_human_feedback(user_request, hints, run_few_shot_and_smt_bpftrace)
 
 def run_vector_db_with_examples_3trails_human_feedback(
     user_request: str, hints: str
