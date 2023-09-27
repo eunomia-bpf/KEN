@@ -141,7 +141,7 @@ kprobe:tcp_connect
     assume($sk->__sk_common.skc_daddr != 0);
     assume($sk->__sk_common.skc_num >= 0);
     assume($sk->__sk_common.skc_dport >= 0);
-    
+
     // Assumption for IPv4 and IPv6
     assume(sizeof($sk->__sk_common.skc_rcv_saddr) == 4 || sizeof($sk->__sk_common.skc_rcv_saddr) == 16);
     assume(sizeof($sk->__sk_common.skc_daddr) == 4 || sizeof($sk->__sk_common.skc_daddr) == 16);
@@ -150,7 +150,7 @@ kprobe:tcp_connect
     $daddr = ntop(2, $sk->__sk_common.skc_daddr);
     $sport = ($sk->__sk_common.skc_num);
     $dport = ($sk->__sk_common.skc_dport);
-    
+
     // Assumption for byte order
     assume($dport == bswap($sk->__sk_common.skc_dport));
 
