@@ -1,20 +1,21 @@
-## how to use
+## How to Use
 
-### Start the service program
+### Starting the Service Program
+Before you begin, make sure to install the necessary packages: flask, flask_cors, jq.
+
+Then, you can start the backend service using the following command:
 ```shell
 cd ./evaluation
 python ./index.py
 ```
 
-This will start the service program http://127.0.0.1:4000. To use this service, you need to pass four parameters: user_query, bpfType, model, and apiKey. The backend service will return the program corresponding to `user_query`.
+This will launch the service program at http://127.0.0.1:4000. The backend service accepts five parameters: `user_input`, `additionalContext`, `bpfType`, `model`, and `apiKey`. The backend will generate code using KEN and return the results.
 
-Currently, `index.py` contains the relevant processing code for GPT-3.5 and GPT-4, with the code for other models to be completed later.
-
-### Launch the front-end web page
+### Launching the Front-end Web Page
 ```shell
 cd ./front-end
-npm install # executes on first run
+npm install # This command only needs to be executed on the first run
 npm run dev
 ```
 
-This will start the service http://127.0.0.1:3000. You can select the desired model on the frontend and input program description information. The frontend will pass the parameters to the backend and return the processing results.
+This will initiate the service at http://127.0.0.1:3000. You can choose your desired model on the frontend and provide program description information. The frontend will then send these parameters to the backend and display the processing results.

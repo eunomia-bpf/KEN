@@ -1,11 +1,10 @@
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response, stream_with_context
 from flask_cors import CORS
 from gpttrace import simple_examples, get_top_n_example_from_bpftrace_vec_db
 import os
 from langchain.chat_models import ChatOpenAI
 from langchain.llms import CTransformers
-
 
 app = Flask(__name__)
 CORS(app)
@@ -39,7 +38,7 @@ def get_llm(model_name):
         llm = ChatOpenAI(temperature=0, model_name=model_name)
     return llm
 
-def handler(user_query, bpf_type, model, api_key):
+def handler(user_query, additional_contex, bpf_type, model, api_key):
     if os.getenv('OPENAI_API_KEY', api_key) is None:
         print(
             "Either provide your access token through `-k` or through environment variable `OPENAI_API_KEY`")
@@ -48,20 +47,22 @@ def handler(user_query, bpf_type, model, api_key):
     result = llm.predict(prompt(user_query))
     return result
 
- 
+
 @app.route('/', methods=['POST'])
 def post_json_data():
     # 从POST请求中获取JSON数据
     json_data = request.get_json()
-
+    print(f"json_data: {json_data}")
     if json_data:
         # 提取所需的数据并创建响应
-        user_query = json_data.get('user_query', '')
+        user_query = json_data.get('userInput', '')
+        additional_context = json_data.get('additionalContext', '')
         bpf_type = json_data.get('bpfType', '')
         model = json_data.get('model', 'gpt-3.5-turbo')
         api_key = json_data.get('apiKey', '')
-        result = handler(user_query, bpf_type, model, api_key)
-        return result
+
+        result = handler(user_query, additional_context, bpf_type, model, api_key)
+        return Response(result, headers={ "Cache-Control": "no-cache" })
     else:
         return jsonify({'error': '无效的JSON数据'}), 400
 

@@ -1,15 +1,16 @@
-import "@/styles/globals.css";
+// MIT License Copyright (c) 2023 Hassan El Mghari
+import React from "react";
+import { Analytics } from "@vercel/analytics/react";
 import type { AppProps } from "next/app";
-import { Inter } from "next/font/google";
+import "../styles/globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
-
-function App({ Component, pageProps }: AppProps<{}>) {
+function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <main className={inter.className}>
+    <>
       <Component {...pageProps} />
-    </main>
+      <Analytics />
+    </>
   );
 }
 
-export default App;
+export default MyApp;

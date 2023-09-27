@@ -1,5 +1,8 @@
-import { OpenAIModel, BPF } from '@/types/types';
 import { FC } from 'react';
+import React from "react";
+
+export type OpenAIModel = 'gpt-3.5-turbo' | 'gpt-4';
+export type BPF = 'libbpf' | 'bpftrace';
 
 interface Props {
   model: OpenAIModel;
