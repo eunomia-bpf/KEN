@@ -44,7 +44,7 @@ def aggregate_results(file_names):
                         return_values[test_case].append(return_value)
                     except Exception as e:
                         print(f"Error processing {e} in {json_file}:{line}")
-                        return_values[test_case].append(1)
+                        return_values[test_case].append(-1)
     return return_values
 
 return_values = aggregate_results(vector_db_with_example_files)
