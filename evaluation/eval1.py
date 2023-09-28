@@ -96,6 +96,7 @@ def test_zero_shot():
     save_file = f"zero_shot.json"
     test_with_test_cases(chain.run_zero_shot_bpftrace, save_file)
 
+
 def test_few_shot():
     save_file = f"few_shot.json"
     test_with_test_cases(chain.run_few_shot_bpftrace, save_file)
@@ -141,5 +142,5 @@ def test_few_shot_vec_db_and_smt_bpftrace_3trails():
     test_with_test_cases(chain.run_few_shot_with_vector_db_and_smt_bpftrace_3trails, save_file)
 
 if __name__ == "__main__":
+    # test_vector_db_with_examples()
     test_few_shot_with_vector_db_and_smt_bpftrace_3trails()
-    # test_few_shot_with_vector_db_and_smt_bpftrace_3trails()
