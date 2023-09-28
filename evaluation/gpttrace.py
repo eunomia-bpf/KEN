@@ -352,13 +352,17 @@ def bpftrace_get_hooks(regex: str) -> str:
     res = run_command(["sudo", "bpftrace", "-l", regex], False)
     return json.dumps(res)
 
+def bpftrace_get_hooks_limited(regex: str) -> str:
+    res = run_command(["sudo", "bpftrace", "-l", regex], False)
+    res["stdout"] = res["stdout"].split("\n")[:10]
+    return json.dumps(res)
 
 def get_gpttrace_tools() -> List[Tool]:
     bpftrace_run_tool = Tool.from_function(
         bpftrace_run_program, "run-ebpf-program", description=RUN_PROGRAM_PROMPT
     )
     bpftrace_probe_tool = Tool.from_function(
-        bpftrace_get_hooks, "get-ebpf-hooks-with-regex", description=GET_HOOK_PROMPT
+        bpftrace_get_hooks_limited, "get-ebpf-hooks-with-regex", description=GET_HOOK_PROMPT
     )
     get_full_examples_with_vec_db_tool = Tool.from_function(
         get_full_examples_with_vec_db,
@@ -412,6 +416,18 @@ def setup_react_agent(
     )
     return agent_chain
 
+def run_agent(name, agent_type, input_string):
+    agent_chain = None
+    if agent_type == "react":
+        agent_chain = setup_react_agent(model_name=name)
+    elif agent_type == "openai":
+        agent_chain = setup_openai_agent(model_name=name)
+    elif agent_type == "codellama":
+        agent_chain = setup_codellama_agent(model_name=name)
+    else:
+        agent_chain = setup_react_agent(model_name=name)
+    agent_chain.run(input_string)
+    return
 
 def setup_codellama_agent(
     model_name: str = "gpt-3.5-turbo", temperature: float = 0
