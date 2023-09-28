@@ -51,24 +51,6 @@ return_values = aggregate_results(vector_db_with_example_files)
 df = pd.DataFrame(return_values)
 df.to_csv('vector_db_with_example_files.csv')
 
-
 return_values = aggregate_results(vec_db_with_examples_3trails_and_smt_files)
 df = pd.DataFrame(return_values)
 df.to_csv('vec_db_with_examples_3trails_and_smt_files.csv')
-
-# Load the data from the CSV file
-df = pd.read_csv('vector_db_with_example_files.csv')
-
-# Convert the DataFrame to a numpy array
-result = df.to_numpy()
-
-def plot_TS_expect(result, *name):
-    for i in range(len(name)):
-        plt.figure(figsize=(16, 9))
-        # plt.ylim([0, 20000])
-        df = pd.DataFrame(result[i])
-        plt.plot(df, title="The graph for scaled "+name[i])
-        plt.savefig(name[i]+".png")
-
-# Call the plotting function
-plot_TS_expect(result, "SPP Comparison")
