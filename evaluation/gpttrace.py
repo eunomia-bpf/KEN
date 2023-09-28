@@ -287,6 +287,9 @@ def bpftrace_run_program(program: str) -> str:
             program,
         ]
     )
+    if res["returncode"] == 0:
+        with open("agent_successful_run_commands.json", "w") as f:
+            f.write(json.dumps(res) + '\n')
     return json.dumps(res)
 
 
@@ -428,6 +431,9 @@ def run_agent(name, agent_type, input_string):
         agent_chain = setup_react_agent(model_name=name)
     agent_chain.run(input_string)
     return
+
+def run_react_agent_gpt4(name, input_string):
+    run_agent("gpt-4", "react", input_string)
 
 def setup_codellama_agent(
     model_name: str = "gpt-3.5-turbo", temperature: float = 0

@@ -615,6 +615,6 @@ class TestRunGPTtraceChain(unittest.TestCase):
 
 if __name__ == "__main__":
     res = run_vector_db_with_examples_3trails(
-        "Trace md flush events with pid and process name"
+        "if the process fork 20 times, kill it"
     )
     print(res)
