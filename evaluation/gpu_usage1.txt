@@ -1,0 +1,32 @@
+Wed Sep 27 21:08:03 2023       
++---------------------------------------------------------------------------------------+
+| NVIDIA-SMI 535.104.05             Driver Version: 535.104.05   CUDA Version: 12.2     |
+|-----------------------------------------+----------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+|                                         |                      |               MIG M. |
+|=========================================+======================+======================|
+|   0  NVIDIA GeForce RTX 4090        Off | 00000000:01:00.0  On |                    0 |
+| 30%   37C    P3              51W / 450W |   2479MiB / 23028MiB |      8%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+                                                                                         
++---------------------------------------------------------------------------------------+
+| Processes:                                                                            |
+|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+|        ID   ID                                                             Usage      |
+|=======================================================================================|
+|    0   N/A  N/A      3902      G   /usr/lib/xorg/Xorg                         1172MiB |
+|    0   N/A  N/A      4116      G   /usr/bin/gnome-shell                        209MiB |
+|    0   N/A  N/A      4308      G   /usr/bin/nautilus                            31MiB |
+|    0   N/A  N/A      4490      G   /usr/bin/gnome-software                      14MiB |
+|    0   N/A  N/A      4629      G   /usr/libexec/xdg-desktop-portal-gnome        18MiB |
+|    0   N/A  N/A      7187      G   ...3616620,16544017629632019316,262144      409MiB |
+|    0   N/A  N/A     29221      G   ...sion,SpareRendererForSitePerProcess      374MiB |
+|    0   N/A  N/A     54671      G   ...,WinRetrieveSuggestionsOnlyOnDemand       82MiB |
+|    0   N/A  N/A    100649      G   ...e/victoryang00/.cargo/bin/alacritty       15MiB |
+|    0   N/A  N/A    129967      G   ...sktop/5088/usr/bin/telegram-desktop        7MiB |
+|    0   N/A  N/A    441071      G   /opt/zoom/zoom                               40MiB |
+|    0   N/A  N/A    442596      G   ...,WinRetrieveSuggestionsOnlyOnDemand       26MiB |
+|    0   N/A  N/A    633696      G   ...e/victoryang00/.cargo/bin/alacritty       15MiB |
++---------------------------------------------------------------------------------------+

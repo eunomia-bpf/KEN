@@ -16,6 +16,7 @@ from langchain.prompts import (
 from langchain.prompts.chat import ChatPromptTemplate, HumanMessagePromptTemplate
 from langchain.schema import HumanMessage, SystemMessage
 import unittest
+from transformers import pipeline
 
 message_prompt = HumanMessagePromptTemplate(
     prompt=PromptTemplate(
@@ -25,8 +26,8 @@ message_prompt = HumanMessagePromptTemplate(
 )
 prompt_template = ChatPromptTemplate.from_messages([message_prompt])
 
-model = "gpt-4"  # can be "code-llama" or "gpt-3.5-turbo" or "gpt-3.5-turbo-16k"
-
+model = "code-llama"  # can be "code-llama" or "gpt-3.5-turbo" or "gpt-3.5-turbo-16k"
+local_code_llama = True
 
 def run_bpftrace_prog_with_func_call_define(prog: str) -> str:
     """Runs a bpftrace program. You should only input the eBPF program itself.
@@ -149,11 +150,7 @@ def extract_code_blocks(text: str) -> str:
     res = "\n".join(matches)
     return res.replace("bpftrace -e", "").strip().strip("'")
 
-
-def run_code_llama_for_prog(question: str) -> str:
-    if len(question) >= 5 * 3000:
-        print("question too long, truncating to 5 * 3000 chars")
-        question = question[: 5 * 3000]
+def deepinfra_code_llama_generate_response(input_full_prompt: str) -> str:
     llm = DeepInfra(model_id="codellama/CodeLlama-34b-Instruct-hf")
     llm.model_kwargs = {
         "temperature": 0.7,
@@ -161,16 +158,35 @@ def run_code_llama_for_prog(question: str) -> str:
         "max_new_tokens": 2048,
         "top_p": 0.9,
     }
+    res = llm.chat(input_full_prompt)
+    return res
 
-    template = """<s>[INST] <<SYS>>
+def local_code_llama_generate_response(input_full_prompt: str) -> str:
+    pipe = pipeline("text-generation",
+                model="TheBloke/CodeLlama-13B-Instruct-GPTQ", 
+                device_map="auto", 
+                batch_size=1, 
+                max_new_tokens=1024)
+
+    res = pipe("Generate a eBPF program Traces process signals and logs the signal names and process IDs affected.")
+    print(res)
+    data = res[0]['generated_text']
+    return data
+
+def run_code_llama_for_prog(question: str) -> str:
+    if len(question) >= 5 * 3000:
+        print("question too long, truncating to 5 * 3000 chars")
+        question = question[: 5 * 3000]
+
+    input_full_prompt = f"""<s>[INST] <<SYS>>
 	You should only write the bpftrace program itself.
 	No explain and no instructions. No words other than bpftrace program.
 	<</SYS>> {question} [/INST]
 	"""
-
-    prompt = PromptTemplate(template=template, input_variables=["question"])
-    llm_chain = LLMChain(prompt=prompt, llm=llm)
-    res = llm_chain.run(question)
+    if local_code_llama:
+        res = local_code_llama_generate_response(input_full_prompt)
+    else:
+        res = deepinfra_code_llama_generate_response(input_full_prompt)
     return extract_code_blocks(res)
 
 
@@ -598,7 +614,7 @@ class TestRunGPTtraceChain(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    res = run_vector_db_with_examples_libbpf_3trails(
+    res = run_vector_db_with_examples_3trails(
         "Trace md flush events with pid and process name"
     )
     print(res)

@@ -1,0 +1,50 @@
+[?1049h[22;0;0t[1;19r(B[m[4l[?7h[H[2J[?1h=[?25l[H[2J Device 0 [AlderLake-S GT1][1;37HIntegrated GPU RX: N/A TX: N/A
+[2d GPU(B[m 300MHz  MEM(B[m N/A MHz TEMP(B[m N/A(0[0mf(BC CPU-FAN (B[m POW(B[m N/A W
+[3d GPU[[3;38HN/A] MEM[[3;79HN/A]
+[5d Device 1 [NVIDIA GeForce RTX 4090] PCIe GEN 4@16x RX: 1.953 MiB/s TX: 0.977 MiB/s
+[6d GPU(B[m 375MHz  MEM(B[m 5001MHz TEMP  56(0[0mf(BC FAN(B[m  41% POW(B[m  40 / 450 W
+[7d GPU[|||||||||||||[7;38H(B[m38%] MEM[|||[7;66H(B[m2.149Gi/22.488Gi]
+[9d(B[0;7m    PID         USER DEV     TYPE  GPU        GPU MEM    CPU  HOST MEM Command                        [10;1H   3902 victoryang00   1  Graphic   6%   1165MiB   5%     0%    388MiB /usr/lib/xorg/Xorg vt2 -display[11;3H(B[m29221 victoryang00   1  Graphic(B[m   0%    245MiB   1%     0%    798MiB /usr/share/code-insiders/code-i[12;4H4116 victoryang00   1  Graphic(B[m  32%     73MiB   0%     0%    977MiB /usr/bin/gnome-shell[13;3H54671 victoryang00   1  Graphic(B[m   0%     71MiB   0%     0%    242MiB /snap/slack/98/usr/lib/slack/sl[14;4H7187 victoryang00   1  Graphic(B[m   0%     57MiB   0%     0%   1208MiB /opt/google/chrome/chrome --typ[15;2H441071 victoryang00   1  Graphic(B[m   0%     40MiB   0%     0%    592MiB /opt/zoom/zoom[16;4H4308 victoryang00   1  Graphic(B[m   0%     31MiB   0%     0%     83MiB /usr/bin/nautilus --gapplicatio[17;2H442596 victoryang00   1  Graphic(B[m   0%     29MiB   0%     0%    141MiB /snap/discord/156/usr/share/dis[18;4H4629 victoryang00   1  Graphic(B[m   0%     18MiB   0%     0%    102MiB /usr/libexec/xdg-desktop-portal[19;1HF2(B[0;7mSetup   (B[mF6(B[0;7mSort    (B[mF9(B[0;7mKill    (B[mF10(B[0;7mQuit    (B[mF12(B[0;7mSave Config                                              [?7l [?7h[19;56H(B[m[18;26H[11;18r[11;1HM[1;19r[5;56H93.75[5;72H41.02[6;6H2730MHz MEM(B[m 10251MH[32G69[6;43H3[50G358[7;19H||||||||||||||||||100%[7;50H||||||||||||||(B[m 11.134[10;2H(B[0;7m575909[10;27HCompute 100%   9196MiB  40[10;64H1473MiB python ./chain.py              [11;4H(B[m3902 victoryang00   1  Graphic(B[m   0%   1165MiB   5%     0%    388MiB /usr/lib/xorg/Xorg vt2 -display[12;59H1[13;36H 0[13;59H4[15;45H5[18;26H[5;56H62.50[5;72H28.3[6;43H5[51G60[7;64H|1(B[m1.938[10;41H(B[0;7m10012[52G3%   10[12;67H(B[m9[13;59H3[15;44H63[18;26H[5;56H225.6[5;72H100.6[6;51H58[7;64H 11.201[10;41H(B[0;7m 9108[52G0[10;64H2014[12;45H(B[m7[13;4H7187[13;43H196[52G1[59G0%   1119MiB /opt/google/chrome/chrome --typ[14;44H85[14;66H30[15;4H4116[15;44H7[15;59H4%    977MiB /usr/bin/gnome-shell[K[18;26H[19;1H[?12l[?25h[?1049l[23;0;0t
+[?1l>[?1049h[22;0;0t[1;19r[?25l(B[m[4l[?7h[H[2J[H[2J Device 0 [AlderLake-S GT1][1;37HIntegrated GPU[2;2HGPU(B[m 300MHz  MEM(B[m N/A MHz TEMP(B[m N/A(0[0mf(BC CPU-FAN (B[m POW(B[m N[3;2HGPU[[3;38HN/A] MEM[
+[5d Device 1 [NVIDIA GeForce RTX 4090] PCIe GEN 4@16x[6;2HGPU(B[m 2730MHz MEM(B[m 10251MH TEMP  69(0[0mf(BC FAN(B[m  45% POW(B[m 3[7;2HGPU[|||||||||||||||||||||||||||||||100%(B[m] MEM[||||[9;1H(B[0;7m    PID         USER DEV     TYPE  GPU        GPU [10;1H 575909 victoryang00   1  Compute 100%   9108MiB  [11;4H(B[m3902 victoryang00   1  Graphic(B[m   0%   1165MiB[12;3H29221 victoryang00   1  Graphic(B[m   0%    247MiB[13;4H7187 victoryang00   1  Graphic(B[m   0%    196MiB[14;3H54671 victoryang00   1  Graphic(B[m   0%     85MiB[15;4H4116 victoryang00   1  Graphic(B[m   0%     73MiB
+[16d 441071 victoryang00   1  Graphic(B[m   0%     40MiB[17;4H4308 victoryang00   1  Graphic(B[m   0%     31MiB
+[18d 442596 victoryang00   1  Graphic(B[m   0%     29MiB
+[19dF2(B[0;7mSetup   (B[mF6(B[0;7mSort    (B[mF9(B[0;7mKill    (B[mF10(B[0;7mQuit    (B[mF12(B[0;7mSave [?7lC[?7h(B[m[18;26H[?1h=[19;1H[?12l[?25h[?1049l[23;0;0t
+[?1l>[?1049h[22;0;0t[1;19r[?25l(B[m[4l[?7h[H[2J[H[2J Device 0 [AlderLake-S GT1][1;37HIntegrated GPU RX: N/A TX: N/A
+[2d GPU(B[m 300MHz  MEM(B[m N/A MHz TEMP(B[m N/A(0[0mf(BC CPU-FAN (B[m POW(B[m N/A W
+[3d GPU[[3;38HN/A] MEM[[3;79HN/A]
+[5d Device 1 [NVIDIA GeForce RTX 4090] PCIe GEN 4@16x RX: 225.6 MiB/s TX: 100.6 MiB/s
+[6d GPU(B[m 2730MHz MEM(B[m 10251MH TEMP  69(0[0mf(BC FAN(B[m  45% POW(B[m 358 / 450 W
+[7d GPU[|||||||||||||||||||||||||||||||100%(B[m] MEM[|||||||||||||||||(B[m 11.201Gi/22.488Gi]
+[9d(B[0;7m    PID         USER DEV     TYPE  GPU        GPU MEM    CPU  HOST MEM Command                          [10;1H 575909 victoryang00   1  Compute 100%   9108MiB  40%   100%   2014MiB python ./chain.py                [11;4H(B[m3902 victoryang00   1  Graphic(B[m   0%   1165MiB   5%     0%    388MiB /usr/lib/xorg/Xorg vt2 -displayfd[12;3H29221 victoryang00   1  Graphic(B[m   0%    247MiB   1%     1%    799MiB /usr/share/code-insiders/code-ins[13;4H7187 victoryang00   1  Graphic(B[m   0%    196MiB   1%     0%   1119MiB /opt/google/chrome/chrome --type=[14;3H54671 victoryang00   1  Graphic(B[m   0%     85MiB   0%     0%    230MiB /snap/slack/98/usr/lib/slack/slac[15;4H4116 victoryang00   1  Graphic(B[m   0%     73MiB   0%     4%    977MiB /usr/bin/gnome-shell
+[16d 441071 victoryang00   1  Graphic(B[m   0%     40MiB   0%     0%    592MiB /opt/zoom/zoom[17;4H4308 victoryang00   1  Graphic(B[m   0%     31MiB   0%     0%     83MiB /usr/bin/nautilus --gapplication-[18;2H442596 victoryang00   1  Graphic(B[m   0%     29MiB   0%     0%    141MiB /snap/discord/156/usr/share/disco[19;1HF2(B[0;7mSetup   (B[mF6(B[0;7mSort    (B[mF9(B[0;7mKill    (B[mF10(B[0;7mQuit    (B[mF12(B[0;7mSave Config                                                [?7l [?7h[19;56H(B[m[18;26H[?1h=[5;56H59.57[5;72H47.85[6;32H70[6;43H7[51G62[7;64H|1(B[m2.070[10;35H(B[0;7m 98%   9992[52G3[12;45H(B[m5[12;67H8[13;43H204[15;37H2[18;26H[5;56H157.2[5;72H77.1[6;32H68[6;43H6[6;52H1[7;64H 11.096[10;37H(B[0;7m1%   897[51G39[10;67H9[12;44H(B[m7[12;67H9[13;43H196[13;65H094[14;45H4[14;67H2[15;37H9[18;26H[5;57H08.4[5;72H63.48[6;32H70[6;43H7[51G52[7;64H|1(B[m2.042[10;37H(B[0;7m8%   9788MiB  43[11;59H(B[m1[12;45H6[12;66H62[13;4H4116[13;37H2%    221[13;59H4%    978MiB /usr/bin/gnome-shell[K[14;3H 7187[14;43H198[52G1[14;64H1095MiB /opt/google/chrome/chrome --type=[15;3H54671[15;37H0[44G85[15;59H0%    232MiB /snap/slack/98/usr/lib/slack/slac[18;26H[5;57H92[5;72H152.3[6;32H68[6;43H6[51G43[7;65H11.427[10;36H(B[0;7m84%   8836MiB  38%    98%   1991[11;37H(B[m2[11;59H5[67G7[12;3H 7187[12;37H9%    368[52G2%    1[65G940MiB /opt/google/chrome/chrome --type=[13;3H29221[13;37H0%    357[52G2[59G1%    685[13;77Hshare/code-insiders/code-ins[14;4H4116[14;37H6%    233[14;59H6%    980MiB /usr/bin/gnome-shell[K[15;43H134[52G1[59G2[66G41[16;45H8[18;26H[5;56H86.91[5;72H46.88[6;32H70[6;51H5[7;65H12(B[m.660[10;36H(B[0;7m91%   9652MiB  42[59G9[11;45H(B[m4[11;59H1[12;37H5%    823[52G4%     5[66G38[13;59H0[14;37H0[14;59H5[15;37H3[44G28[18;26H[19;1H[?12l[?25h[?1049l[23;0;0t
+[?1l>
+
+Wed Sep 27 20:13:12 2023       
++---------------------------------------------------------------------------------------+
+| NVIDIA-SMI 535.104.05             Driver Version: 535.104.05   CUDA Version: 12.2     |
+|-----------------------------------------+----------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+|                                         |                      |               MIG M. |
+|=========================================+======================+======================|
+Device 0 [AlderLake-S GT1]         Integrated GPU RX: N/A TX: N/A
+ GPU 300MHz  MEM N/A MHz TEMP N/A°C CPU-FAN  POW N/A W
+ GPU[                                N/A] MEM[                                N/A]
+
+ Device 1 [NVIDIA GeForce RTX 4090] PCIe GEN 4@16x RX: 143.6 MiB/s TX: 108.4 MiB/s
+ GPU 2730MHz MEM 10251MH TEMP  69°C FAN  46% POW 346 / 450 W
+ GPU[|||||||||||||||||||||||||||||||100%] MEM[||||||||||||||||||12.222Gi/22.488Gi]
+
+    PID         USER DEV     TYPE  GPU        GPU MEM    CPU  HOST MEM Command                        
+ 575909 victoryang00   1  Compute  80%   9516MiB  41%    98%   1991MiB python ./chain.py              
+   3902 victoryang00   1  Graphic   0%   1164MiB   5%     1%    388MiB /usr/lib/xorg/Xorg vt2 -display
+   7187 victoryang00   1  Graphic   0%    503MiB   2%     1%    933MiB /opt/google/chrome/chrome --typ
+  29221 victoryang00   1  Graphic   0%    357MiB   2%     0%    685MiB /usr/share/code-insiders/code-i
+   4116 victoryang00   1  Graphic  20%    233MiB   1%     6%    980MiB /usr/bin/gnome-shell
+  54671 victoryang00   1  Graphic   0%    134MiB   1%     2%    241MiB /snap/slack/98/usr/lib/slack/sl
+ 441071 victoryang00   1  Graphic   0%     48MiB   0%     0%    592MiB /opt/zoom/zoom
+   4308 victoryang00   1  Graphic   0%     31MiB   0%     0%     83MiB /usr/bin/nautilus --gapplicatio
+ 442596 victoryang00   1  Graphic   0%     29MiB   0%     0%    141MiB /snap/discord/156/usr/share/dis
+F2Setup   F6Sort    F9Kill    F10Quit    F12Save Config                                              
+
