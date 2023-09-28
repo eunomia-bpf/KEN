@@ -1,0 +1,28 @@
+Wed Sep 27 20:13:12 2023       
++---------------------------------------------------------------------------------------+
+| NVIDIA-SMI 535.104.05             Driver Version: 535.104.05   CUDA Version: 12.2     |
+|-----------------------------------------+----------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+|                                         |                      |               MIG M. |
+|=========================================+======================+======================|
+Device 0 [AlderLake-S GT1]         Integrated GPU RX: N/A TX: N/A
+ GPU 300MHz  MEM N/A MHz TEMP N/A°C CPU-FAN  POW N/A W
+ GPU[                                N/A] MEM[                                N/A]
+
+ Device 1 [NVIDIA GeForce RTX 4090] PCIe GEN 4@16x RX: 143.6 MiB/s TX: 108.4 MiB/s
+ GPU 2730MHz MEM 10251MH TEMP  69°C FAN  46% POW 346 / 450 W
+ GPU[|||||||||||||||||||||||||||||||100%] MEM[||||||||||||||||||12.222Gi/22.488Gi]
+
+    PID         USER DEV     TYPE  GPU        GPU MEM    CPU  HOST MEM Command                        
+ 575909 victoryang00   1  Compute  80%   9516MiB  41%    98%   1991MiB python ./chain.py              
+   3902 victoryang00   1  Graphic   0%   1164MiB   5%     1%    388MiB /usr/lib/xorg/Xorg vt2 -display
+   7187 victoryang00   1  Graphic   0%    503MiB   2%     1%    933MiB /opt/google/chrome/chrome --typ
+  29221 victoryang00   1  Graphic   0%    357MiB   2%     0%    685MiB /usr/share/code-insiders/code-i
+   4116 victoryang00   1  Graphic  20%    233MiB   1%     6%    980MiB /usr/bin/gnome-shell
+  54671 victoryang00   1  Graphic   0%    134MiB   1%     2%    241MiB /snap/slack/98/usr/lib/slack/sl
+ 441071 victoryang00   1  Graphic   0%     48MiB   0%     0%    592MiB /opt/zoom/zoom
+   4308 victoryang00   1  Graphic   0%     31MiB   0%     0%     83MiB /usr/bin/nautilus --gapplicatio
+ 442596 victoryang00   1  Graphic   0%     29MiB   0%     0%    141MiB /snap/discord/156/usr/share/dis
+F2Setup   F6Sort    F9Kill    F10Quit    F12Save Config                                              
+

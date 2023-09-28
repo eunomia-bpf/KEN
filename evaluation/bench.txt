@@ -1,0 +1,1222 @@
+
+
+[run_bpftrace_prog_with_function_call]:  
+Write a bpftrace program that traces or profile the following user request:
+
+### User Request
+
+Trace md flush events with pid and process name
+
+### Examples
+
+Here are some simple examples to help you get started with bpftrace:
+
+
+Below are some simple examples of bpftrace programs:
+
+trace processes calling sleep:
+```
+kprobe:do_nanosleep { printf("PID %d sleeping...", pid); }
+```
+
+count syscalls by process name:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
+
+Files opened by process:
+```
+tracepoint:syscalls:sys_enter_open { printf("%s %s", comm, str(args->filename)); }
+```
+
+Syscall count by program:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
+
+Read bytes by process:
+```
+tracepoint:syscalls:sys_exit_read /args->ret/ { @[comm] = sum(args->ret); }
+```
+
+Read size distribution by process:
+```
+tracepoint:syscalls:sys_exit_read { @[comm] = hist(args->ret); }
+```
+
+Show per-second syscall rates:
+```
+tracepoint:raw_syscalls:sys_enter { @ = count(); } interval:s:1 { print(@); clear(@); }
+```
+
+Trace disk size by process:
+```
+tracepoint:block:block_rq_issue { printf("%d %s %d", pid, comm, args->bytes); }
+```
+
+Count page faults by process
+```
+software:faults:1 { @[comm] = count(); }
+```
+
+Count LLC cache misses by process name and PID (uses PMCs):
+```
+hardware:cache-misses:1000000 { @[comm, pid] = count(); }
+```
+
+Profile user-level stacks at 99 Hertz, for PID 189:
+```
+profile:hz:99 /pid == 189/ { @[ustack] = count(); }
+```
+
+Files opened, for processes in the root cgroup-v2
+```
+tracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s", str(args->filename)); }
+```
+
+tcp connect events with PID and process name
+```
+kprobe:tcp_connect { printf("connected from pid %d, comm %s", pid, comm); }
+```
+
+
+Here are some complex examples may be related to your user request:
+
+example: Write a BPF code that traces md flush events and displays the time, process ID, command, and device information of each event.
+
+```
+#ifndef BPFTRACE_HAVE_BTF
+#include <linux/genhd.h>
+#include <linux/bio.h>
+#endif
+
+BEGIN
+{
+	printf("Tracing md flush events... Hit Ctrl-C to end.\n");
+	printf("%-8s %-6s %-16s %s\n", "TIME", "PID", "COMM", "DEVICE");
+}
+
+kprobe:md_flush_request
+{
+	time("%H:%M:%S ");
+	printf("%-6d %-16s %s\n", pid, comm,
+	    ((struct bio *)arg1)->bi_bdev->bd_disk->disk_name);
+}
+
+```
+
+example: Write a BPF code that traces sync-related system calls, such as sync(), syncfs(), fsync(), and fdatasync(), and prints the time, process ID, command, and event for each traced system call.
+
+```
+BEGIN
+{
+	printf("Tracing sync syscalls... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %-16s %s\n", "TIME", "PID", "COMM", "EVENT");
+}
+
+tracepoint:syscalls:sys_enter_sync,
+tracepoint:syscalls:sys_enter_syncfs,
+tracepoint:syscalls:sys_enter_fsync,
+tracepoint:syscalls:sys_enter_fdatasync,
+tracepoint:syscalls:sys_enter_sync_file_range*,
+tracepoint:syscalls:sys_enter_msync
+{
+	time("%H:%M:%S  ");
+	printf("%-6d %-16s %s\n", pid, comm, probe);
+}
+
+```
+
+
+You can refer to the above examples to write your own bpftrace program to help user with:
+
+Trace md flush events with pid and process name
+
+Use a tool provided to execute your bpftrace program.
+You should only write the bpftrace program itself.
+ 
+
+[{'generated_text': 'Generate a eBPF program Traces process signals and logs the signal names and process IDs affected.\n\n### Usage\n\n```\n#./ebpf_signal_trace\n```\n\n### Output\n\n```\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID'}]
+The bpf program to run is: sudo timeout --preserve-status -s 2 20 bpftrace -e #./ebpf_signal_trace
+kill process 815325
+{"command": "sudo timeout --preserve-status -s 2 20 bpftrace -e #./ebpf_signal_trace", "stdout": "", "stderr": "stdin:1:21-21: ERROR: unexpected end of file, expected {\n#./ebpf_signal_trace\n                    \n", "returncode": 1}
+{'command': 'sudo timeout --preserve-status -s 2 20 bpftrace -e #./ebpf_signal_trace', 'stdout': '', 'stderr': 'stdin:1:21-21: ERROR: unexpected end of file, expected {\n#./ebpf_signal_trace\n                    \n', 'returncode': 1, 'prompt': '\nWrite a bpftrace program that traces or profile the following user request:\n\n### User Request\n\nTrace md flush events with pid and process name\n\n### Examples\n\nHere are some simple examples to help you get started with bpftrace:\n\n\nBelow are some simple examples of bpftrace programs:\n\ntrace processes calling sleep:\n```\nkprobe:do_nanosleep { printf("PID %d sleeping...", pid); }\n```\n\ncount syscalls by process name:\n```\ntracepoint:raw_syscalls:sys_enter { @[comm] = count(); }\n```\n\nFiles opened by process:\n```\ntracepoint:syscalls:sys_enter_open { printf("%s %s", comm, str(args->filename)); }\n```\n\nSyscall count by program:\n```\ntracepoint:raw_syscalls:sys_enter { @[comm] = count(); }\n```\n\nRead bytes by process:\n```\ntracepoint:syscalls:sys_exit_read /args->ret/ { @[comm] = sum(args->ret); }\n```\n\nRead size distribution by process:\n```\ntracepoint:syscalls:sys_exit_read { @[comm] = hist(args->ret); }\n```\n\nShow per-second syscall rates:\n```\ntracepoint:raw_syscalls:sys_enter { @ = count(); } interval:s:1 { print(@); clear(@); }\n```\n\nTrace disk size by process:\n```\ntracepoint:block:block_rq_issue { printf("%d %s %d", pid, comm, args->bytes); }\n```\n\nCount page faults by process\n```\nsoftware:faults:1 { @[comm] = count(); }\n```\n\nCount LLC cache misses by process name and PID (uses PMCs):\n```\nhardware:cache-misses:1000000 { @[comm, pid] = count(); }\n```\n\nProfile user-level stacks at 99 Hertz, for PID 189:\n```\nprofile:hz:99 /pid == 189/ { @[ustack] = count(); }\n```\n\nFiles opened, for processes in the root cgroup-v2\n```\ntracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s", str(args->filename)); }\n```\n\ntcp connect events with PID and process name\n```\nkprobe:tcp_connect { printf("connected from pid %d, comm %s", pid, comm); }\n```\n\n\nHere are some complex examples may be related to your user request:\n\nexample: Write a BPF code that traces md flush events and displays the time, process ID, command, and device information of each event.\n\n```\n#ifndef BPFTRACE_HAVE_BTF\n#include <linux/genhd.h>\n#include <linux/bio.h>\n#endif\n\nBEGIN\n{\n\tprintf("Tracing md flush events... Hit Ctrl-C to end.\\n");\n\tprintf("%-8s %-6s %-16s %s\\n", "TIME", "PID", "COMM", "DEVICE");\n}\n\nkprobe:md_flush_request\n{\n\ttime("%H:%M:%S ");\n\tprintf("%-6d %-16s %s\\n", pid, comm,\n\t    ((struct bio *)arg1)->bi_bdev->bd_disk->disk_name);\n}\n\n```\n\nexample: Write a BPF code that traces sync-related system calls, such as sync(), syncfs(), fsync(), and fdatasync(), and prints the time, process ID, command, and event for each traced system call.\n\n```\nBEGIN\n{\n\tprintf("Tracing sync syscalls... Hit Ctrl-C to end.\\n");\n\tprintf("%-9s %-6s %-16s %s\\n", "TIME", "PID", "COMM", "EVENT");\n}\n\ntracepoint:syscalls:sys_enter_sync,\ntracepoint:syscalls:sys_enter_syncfs,\ntracepoint:syscalls:sys_enter_fsync,\ntracepoint:syscalls:sys_enter_fdatasync,\ntracepoint:syscalls:sys_enter_sync_file_range*,\ntracepoint:syscalls:sys_enter_msync\n{\n\ttime("%H:%M:%S  ");\n\tprintf("%-6d %-16s %s\\n", pid, comm, probe);\n}\n\n```\n\n\nYou can refer to the above examples to write your own bpftrace program to help user with:\n\nTrace md flush events with pid and process name\n\nUse a tool provided to execute your bpftrace program.\nYou should only write the bpftrace program itself.\n'}
+
+
+[retry]: left:  3
+error  stdin:1:21-21: ERROR: unexpected end of file, expected {
+#./ebpf_signal_trace
+                    
+
+
+
+
+full prompt:  
+Write a bpftrace program that traces or profile the following user request:
+
+### User Request
+
+Trace md flush events with pid and process name
+
+### Examples
+
+Here are some simple examples to help you get started with bpftrace:
+
+
+Below are some simple examples of bpftrace programs:
+
+trace processes calling sleep:
+```
+kprobe:do_nanosleep { printf("PID %d sleeping...", pid); }
+```
+
+count syscalls by process name:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
+
+Files opened by process:
+```
+tracepoint:syscalls:sys_enter_open { printf("%s %s", comm, str(args->filename)); }
+```
+
+Syscall count by program:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
+
+Read bytes by process:
+```
+tracepoint:syscalls:sys_exit_read /args->ret/ { @[comm] = sum(args->ret); }
+```
+
+Read size distribution by process:
+```
+tracepoint:syscalls:sys_exit_read { @[comm] = hist(args->ret); }
+```
+
+Show per-second syscall rates:
+```
+tracepoint:raw_syscalls:sys_enter { @ = count(); } interval:s:1 { print(@); clear(@); }
+```
+
+Trace disk size by process:
+```
+tracepoint:block:block_rq_issue { printf("%d %s %d", pid, comm, args->bytes); }
+```
+
+Count page faults by process
+```
+software:faults:1 { @[comm] = count(); }
+```
+
+Count LLC cache misses by process name and PID (uses PMCs):
+```
+hardware:cache-misses:1000000 { @[comm, pid] = count(); }
+```
+
+Profile user-level stacks at 99 Hertz, for PID 189:
+```
+profile:hz:99 /pid == 189/ { @[ustack] = count(); }
+```
+
+Files opened, for processes in the root cgroup-v2
+```
+tracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s", str(args->filename)); }
+```
+
+tcp connect events with PID and process name
+```
+kprobe:tcp_connect { printf("connected from pid %d, comm %s", pid, comm); }
+```
+
+
+Here are some complex examples may be related to your user request:
+
+example: Write a BPF code that traces md flush events and displays the time, process ID, command, and device information of each event.
+
+```
+#ifndef BPFTRACE_HAVE_BTF
+#include <linux/genhd.h>
+#include <linux/bio.h>
+#endif
+
+BEGIN
+{
+	printf("Tracing md flush events... Hit Ctrl-C to end.\n");
+	printf("%-8s %-6s %-16s %s\n", "TIME", "PID", "COMM", "DEVICE");
+}
+
+kprobe:md_flush_request
+{
+	time("%H:%M:%S ");
+	printf("%-6d %-16s %s\n", pid, comm,
+	    ((struct bio *)arg1)->bi_bdev->bd_disk->disk_name);
+}
+
+```
+
+example: Write a BPF code that traces sync-related system calls, such as sync(), syncfs(), fsync(), and fdatasync(), and prints the time, process ID, command, and event for each traced system call.
+
+```
+BEGIN
+{
+	printf("Tracing sync syscalls... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %-16s %s\n", "TIME", "PID", "COMM", "EVENT");
+}
+
+tracepoint:syscalls:sys_enter_sync,
+tracepoint:syscalls:sys_enter_syncfs,
+tracepoint:syscalls:sys_enter_fsync,
+tracepoint:syscalls:sys_enter_fdatasync,
+tracepoint:syscalls:sys_enter_sync_file_range*,
+tracepoint:syscalls:sys_enter_msync
+{
+	time("%H:%M:%S  ");
+	printf("%-6d %-16s %s\n", pid, comm, probe);
+}
+
+```
+
+
+You can refer to the above examples to write your own bpftrace program to help user with:
+
+Trace md flush events with pid and process name
+
+Use a tool provided to execute your bpftrace program.
+You should only write the bpftrace program itself.
+
+Run the bpftrace program
+```
+ #./ebpf_signal_trace
+```
+with the following error and ouput:
+```
+stdin:1:21-21: ERROR: unexpected end of file, expected {
+#./ebpf_signal_trace
+                    
+
+```
+This is your trail 1 out of 3 trails.
+Please retry generating the bpftrace program for: Trace md flush events with pid and process name
+And fix the error.
+
+
+
+[run_bpftrace_prog_with_function_call]:  
+Write a bpftrace program that traces or profile the following user request:
+
+### User Request
+
+Trace md flush events with pid and process name
+
+### Examples
+
+Here are some simple examples to help you get started with bpftrace:
+
+
+Below are some simple examples of bpftrace programs:
+
+trace processes calling sleep:
+```
+kprobe:do_nanosleep { printf("PID %d sleeping...", pid); }
+```
+
+count syscalls by process name:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
+
+Files opened by process:
+```
+tracepoint:syscalls:sys_enter_open { printf("%s %s", comm, str(args->filename)); }
+```
+
+Syscall count by program:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
+
+Read bytes by process:
+```
+tracepoint:syscalls:sys_exit_read /args->ret/ { @[comm] = sum(args->ret); }
+```
+
+Read size distribution by process:
+```
+tracepoint:syscalls:sys_exit_read { @[comm] = hist(args->ret); }
+```
+
+Show per-second syscall rates:
+```
+tracepoint:raw_syscalls:sys_enter { @ = count(); } interval:s:1 { print(@); clear(@); }
+```
+
+Trace disk size by process:
+```
+tracepoint:block:block_rq_issue { printf("%d %s %d", pid, comm, args->bytes); }
+```
+
+Count page faults by process
+```
+software:faults:1 { @[comm] = count(); }
+```
+
+Count LLC cache misses by process name and PID (uses PMCs):
+```
+hardware:cache-misses:1000000 { @[comm, pid] = count(); }
+```
+
+Profile user-level stacks at 99 Hertz, for PID 189:
+```
+profile:hz:99 /pid == 189/ { @[ustack] = count(); }
+```
+
+Files opened, for processes in the root cgroup-v2
+```
+tracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s", str(args->filename)); }
+```
+
+tcp connect events with PID and process name
+```
+kprobe:tcp_connect { printf("connected from pid %d, comm %s", pid, comm); }
+```
+
+
+Here are some complex examples may be related to your user request:
+
+example: Write a BPF code that traces md flush events and displays the time, process ID, command, and device information of each event.
+
+```
+#ifndef BPFTRACE_HAVE_BTF
+#include <linux/genhd.h>
+#include <linux/bio.h>
+#endif
+
+BEGIN
+{
+	printf("Tracing md flush events... Hit Ctrl-C to end.\n");
+	printf("%-8s %-6s %-16s %s\n", "TIME", "PID", "COMM", "DEVICE");
+}
+
+kprobe:md_flush_request
+{
+	time("%H:%M:%S ");
+	printf("%-6d %-16s %s\n", pid, comm,
+	    ((struct bio *)arg1)->bi_bdev->bd_disk->disk_name);
+}
+
+```
+
+example: Write a BPF code that traces sync-related system calls, such as sync(), syncfs(), fsync(), and fdatasync(), and prints the time, process ID, command, and event for each traced system call.
+
+```
+BEGIN
+{
+	printf("Tracing sync syscalls... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %-16s %s\n", "TIME", "PID", "COMM", "EVENT");
+}
+
+tracepoint:syscalls:sys_enter_sync,
+tracepoint:syscalls:sys_enter_syncfs,
+tracepoint:syscalls:sys_enter_fsync,
+tracepoint:syscalls:sys_enter_fdatasync,
+tracepoint:syscalls:sys_enter_sync_file_range*,
+tracepoint:syscalls:sys_enter_msync
+{
+	time("%H:%M:%S  ");
+	printf("%-6d %-16s %s\n", pid, comm, probe);
+}
+
+```
+
+
+You can refer to the above examples to write your own bpftrace program to help user with:
+
+Trace md flush events with pid and process name
+
+Use a tool provided to execute your bpftrace program.
+You should only write the bpftrace program itself.
+
+Run the bpftrace program
+```
+ #./ebpf_signal_trace
+```
+with the following error and ouput:
+```
+stdin:1:21-21: ERROR: unexpected end of file, expected {
+#./ebpf_signal_trace
+                    
+
+```
+This is your trail 1 out of 3 trails.
+Please retry generating the bpftrace program for: Trace md flush events with pid and process name
+And fix the error.
+ 
+
+[{'generated_text': 'Generate a eBPF program Traces process signals and logs the signal names and process IDs affected.\n\n### Usage\n\n```\n#./ebpf_signal_trace\n```\n\n### Output\n\n```\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID'}]
+The bpf program to run is: sudo timeout --preserve-status -s 2 20 bpftrace -e #./ebpf_signal_trace
+kill process 818198
+{"command": "sudo timeout --preserve-status -s 2 20 bpftrace -e #./ebpf_signal_trace", "stdout": "", "stderr": "stdin:1:21-21: ERROR: unexpected end of file, expected {\n#./ebpf_signal_trace\n                    \n", "returncode": 1}
+{'command': 'sudo timeout --preserve-status -s 2 20 bpftrace -e #./ebpf_signal_trace', 'stdout': '', 'stderr': 'stdin:1:21-21: ERROR: unexpected end of file, expected {\n#./ebpf_signal_trace\n                    \n', 'returncode': 1, 'prompt': '\nWrite a bpftrace program that traces or profile the following user request:\n\n### User Request\n\nTrace md flush events with pid and process name\n\n### Examples\n\nHere are some simple examples to help you get started with bpftrace:\n\n\nBelow are some simple examples of bpftrace programs:\n\ntrace processes calling sleep:\n```\nkprobe:do_nanosleep { printf("PID %d sleeping...", pid); }\n```\n\ncount syscalls by process name:\n```\ntracepoint:raw_syscalls:sys_enter { @[comm] = count(); }\n```\n\nFiles opened by process:\n```\ntracepoint:syscalls:sys_enter_open { printf("%s %s", comm, str(args->filename)); }\n```\n\nSyscall count by program:\n```\ntracepoint:raw_syscalls:sys_enter { @[comm] = count(); }\n```\n\nRead bytes by process:\n```\ntracepoint:syscalls:sys_exit_read /args->ret/ { @[comm] = sum(args->ret); }\n```\n\nRead size distribution by process:\n```\ntracepoint:syscalls:sys_exit_read { @[comm] = hist(args->ret); }\n```\n\nShow per-second syscall rates:\n```\ntracepoint:raw_syscalls:sys_enter { @ = count(); } interval:s:1 { print(@); clear(@); }\n```\n\nTrace disk size by process:\n```\ntracepoint:block:block_rq_issue { printf("%d %s %d", pid, comm, args->bytes); }\n```\n\nCount page faults by process\n```\nsoftware:faults:1 { @[comm] = count(); }\n```\n\nCount LLC cache misses by process name and PID (uses PMCs):\n```\nhardware:cache-misses:1000000 { @[comm, pid] = count(); }\n```\n\nProfile user-level stacks at 99 Hertz, for PID 189:\n```\nprofile:hz:99 /pid == 189/ { @[ustack] = count(); }\n```\n\nFiles opened, for processes in the root cgroup-v2\n```\ntracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s", str(args->filename)); }\n```\n\ntcp connect events with PID and process name\n```\nkprobe:tcp_connect { printf("connected from pid %d, comm %s", pid, comm); }\n```\n\n\nHere are some complex examples may be related to your user request:\n\nexample: Write a BPF code that traces md flush events and displays the time, process ID, command, and device information of each event.\n\n```\n#ifndef BPFTRACE_HAVE_BTF\n#include <linux/genhd.h>\n#include <linux/bio.h>\n#endif\n\nBEGIN\n{\n\tprintf("Tracing md flush events... Hit Ctrl-C to end.\\n");\n\tprintf("%-8s %-6s %-16s %s\\n", "TIME", "PID", "COMM", "DEVICE");\n}\n\nkprobe:md_flush_request\n{\n\ttime("%H:%M:%S ");\n\tprintf("%-6d %-16s %s\\n", pid, comm,\n\t    ((struct bio *)arg1)->bi_bdev->bd_disk->disk_name);\n}\n\n```\n\nexample: Write a BPF code that traces sync-related system calls, such as sync(), syncfs(), fsync(), and fdatasync(), and prints the time, process ID, command, and event for each traced system call.\n\n```\nBEGIN\n{\n\tprintf("Tracing sync syscalls... Hit Ctrl-C to end.\\n");\n\tprintf("%-9s %-6s %-16s %s\\n", "TIME", "PID", "COMM", "EVENT");\n}\n\ntracepoint:syscalls:sys_enter_sync,\ntracepoint:syscalls:sys_enter_syncfs,\ntracepoint:syscalls:sys_enter_fsync,\ntracepoint:syscalls:sys_enter_fdatasync,\ntracepoint:syscalls:sys_enter_sync_file_range*,\ntracepoint:syscalls:sys_enter_msync\n{\n\ttime("%H:%M:%S  ");\n\tprintf("%-6d %-16s %s\\n", pid, comm, probe);\n}\n\n```\n\n\nYou can refer to the above examples to write your own bpftrace program to help user with:\n\nTrace md flush events with pid and process name\n\nUse a tool provided to execute your bpftrace program.\nYou should only write the bpftrace program itself.\n\nRun the bpftrace program\n```\n #./ebpf_signal_trace\n```\nwith the following error and ouput:\n```\nstdin:1:21-21: ERROR: unexpected end of file, expected {\n#./ebpf_signal_trace\n                    \n\n```\nThis is your trail 1 out of 3 trails.\nPlease retry generating the bpftrace program for: Trace md flush events with pid and process name\nAnd fix the error.\n'}
+
+
+[retry]: left:  2
+error  stdin:1:21-21: ERROR: unexpected end of file, expected {
+#./ebpf_signal_trace
+                    
+
+
+
+
+full prompt:  
+Write a bpftrace program that traces or profile the following user request:
+
+### User Request
+
+Trace md flush events with pid and process name
+
+### Examples
+
+Here are some simple examples to help you get started with bpftrace:
+
+
+Below are some simple examples of bpftrace programs:
+
+trace processes calling sleep:
+```
+kprobe:do_nanosleep { printf("PID %d sleeping...", pid); }
+```
+
+count syscalls by process name:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
+
+Files opened by process:
+```
+tracepoint:syscalls:sys_enter_open { printf("%s %s", comm, str(args->filename)); }
+```
+
+Syscall count by program:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
+
+Read bytes by process:
+```
+tracepoint:syscalls:sys_exit_read /args->ret/ { @[comm] = sum(args->ret); }
+```
+
+Read size distribution by process:
+```
+tracepoint:syscalls:sys_exit_read { @[comm] = hist(args->ret); }
+```
+
+Show per-second syscall rates:
+```
+tracepoint:raw_syscalls:sys_enter { @ = count(); } interval:s:1 { print(@); clear(@); }
+```
+
+Trace disk size by process:
+```
+tracepoint:block:block_rq_issue { printf("%d %s %d", pid, comm, args->bytes); }
+```
+
+Count page faults by process
+```
+software:faults:1 { @[comm] = count(); }
+```
+
+Count LLC cache misses by process name and PID (uses PMCs):
+```
+hardware:cache-misses:1000000 { @[comm, pid] = count(); }
+```
+
+Profile user-level stacks at 99 Hertz, for PID 189:
+```
+profile:hz:99 /pid == 189/ { @[ustack] = count(); }
+```
+
+Files opened, for processes in the root cgroup-v2
+```
+tracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s", str(args->filename)); }
+```
+
+tcp connect events with PID and process name
+```
+kprobe:tcp_connect { printf("connected from pid %d, comm %s", pid, comm); }
+```
+
+
+Here are some complex examples may be related to your user request:
+
+example: Write a BPF code that traces md flush events and displays the time, process ID, command, and device information of each event.
+
+```
+#ifndef BPFTRACE_HAVE_BTF
+#include <linux/genhd.h>
+#include <linux/bio.h>
+#endif
+
+BEGIN
+{
+	printf("Tracing md flush events... Hit Ctrl-C to end.\n");
+	printf("%-8s %-6s %-16s %s\n", "TIME", "PID", "COMM", "DEVICE");
+}
+
+kprobe:md_flush_request
+{
+	time("%H:%M:%S ");
+	printf("%-6d %-16s %s\n", pid, comm,
+	    ((struct bio *)arg1)->bi_bdev->bd_disk->disk_name);
+}
+
+```
+
+example: Write a BPF code that traces sync-related system calls, such as sync(), syncfs(), fsync(), and fdatasync(), and prints the time, process ID, command, and event for each traced system call.
+
+```
+BEGIN
+{
+	printf("Tracing sync syscalls... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %-16s %s\n", "TIME", "PID", "COMM", "EVENT");
+}
+
+tracepoint:syscalls:sys_enter_sync,
+tracepoint:syscalls:sys_enter_syncfs,
+tracepoint:syscalls:sys_enter_fsync,
+tracepoint:syscalls:sys_enter_fdatasync,
+tracepoint:syscalls:sys_enter_sync_file_range*,
+tracepoint:syscalls:sys_enter_msync
+{
+	time("%H:%M:%S  ");
+	printf("%-6d %-16s %s\n", pid, comm, probe);
+}
+
+```
+
+
+You can refer to the above examples to write your own bpftrace program to help user with:
+
+Trace md flush events with pid and process name
+
+Use a tool provided to execute your bpftrace program.
+You should only write the bpftrace program itself.
+
+Run the bpftrace program
+```
+ #./ebpf_signal_trace
+```
+with the following error and ouput:
+```
+stdin:1:21-21: ERROR: unexpected end of file, expected {
+#./ebpf_signal_trace
+                    
+
+```
+This is your trail 1 out of 3 trails.
+Please retry generating the bpftrace program for: Trace md flush events with pid and process name
+And fix the error.
+
+Run the bpftrace program
+```
+ #./ebpf_signal_trace
+```
+with the following error and ouput:
+```
+stdin:1:21-21: ERROR: unexpected end of file, expected {
+#./ebpf_signal_trace
+                    
+
+```
+This is your trail 2 out of 3 trails.
+Please retry generating the bpftrace program for: Trace md flush events with pid and process name
+And fix the error.
+
+
+
+[run_bpftrace_prog_with_function_call]:  
+Write a bpftrace program that traces or profile the following user request:
+
+### User Request
+
+Trace md flush events with pid and process name
+
+### Examples
+
+Here are some simple examples to help you get started with bpftrace:
+
+
+Below are some simple examples of bpftrace programs:
+
+trace processes calling sleep:
+```
+kprobe:do_nanosleep { printf("PID %d sleeping...", pid); }
+```
+
+count syscalls by process name:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
+
+Files opened by process:
+```
+tracepoint:syscalls:sys_enter_open { printf("%s %s", comm, str(args->filename)); }
+```
+
+Syscall count by program:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
+
+Read bytes by process:
+```
+tracepoint:syscalls:sys_exit_read /args->ret/ { @[comm] = sum(args->ret); }
+```
+
+Read size distribution by process:
+```
+tracepoint:syscalls:sys_exit_read { @[comm] = hist(args->ret); }
+```
+
+Show per-second syscall rates:
+```
+tracepoint:raw_syscalls:sys_enter { @ = count(); } interval:s:1 { print(@); clear(@); }
+```
+
+Trace disk size by process:
+```
+tracepoint:block:block_rq_issue { printf("%d %s %d", pid, comm, args->bytes); }
+```
+
+Count page faults by process
+```
+software:faults:1 { @[comm] = count(); }
+```
+
+Count LLC cache misses by process name and PID (uses PMCs):
+```
+hardware:cache-misses:1000000 { @[comm, pid] = count(); }
+```
+
+Profile user-level stacks at 99 Hertz, for PID 189:
+```
+profile:hz:99 /pid == 189/ { @[ustack] = count(); }
+```
+
+Files opened, for processes in the root cgroup-v2
+```
+tracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s", str(args->filename)); }
+```
+
+tcp connect events with PID and process name
+```
+kprobe:tcp_connect { printf("connected from pid %d, comm %s", pid, comm); }
+```
+
+
+Here are some complex examples may be related to your user request:
+
+example: Write a BPF code that traces md flush events and displays the time, process ID, command, and device information of each event.
+
+```
+#ifndef BPFTRACE_HAVE_BTF
+#include <linux/genhd.h>
+#include <linux/bio.h>
+#endif
+
+BEGIN
+{
+	printf("Tracing md flush events... Hit Ctrl-C to end.\n");
+	printf("%-8s %-6s %-16s %s\n", "TIME", "PID", "COMM", "DEVICE");
+}
+
+kprobe:md_flush_request
+{
+	time("%H:%M:%S ");
+	printf("%-6d %-16s %s\n", pid, comm,
+	    ((struct bio *)arg1)->bi_bdev->bd_disk->disk_name);
+}
+
+```
+
+example: Write a BPF code that traces sync-related system calls, such as sync(), syncfs(), fsync(), and fdatasync(), and prints the time, process ID, command, and event for each traced system call.
+
+```
+BEGIN
+{
+	printf("Tracing sync syscalls... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %-16s %s\n", "TIME", "PID", "COMM", "EVENT");
+}
+
+tracepoint:syscalls:sys_enter_sync,
+tracepoint:syscalls:sys_enter_syncfs,
+tracepoint:syscalls:sys_enter_fsync,
+tracepoint:syscalls:sys_enter_fdatasync,
+tracepoint:syscalls:sys_enter_sync_file_range*,
+tracepoint:syscalls:sys_enter_msync
+{
+	time("%H:%M:%S  ");
+	printf("%-6d %-16s %s\n", pid, comm, probe);
+}
+
+```
+
+
+You can refer to the above examples to write your own bpftrace program to help user with:
+
+Trace md flush events with pid and process name
+
+Use a tool provided to execute your bpftrace program.
+You should only write the bpftrace program itself.
+
+Run the bpftrace program
+```
+ #./ebpf_signal_trace
+```
+with the following error and ouput:
+```
+stdin:1:21-21: ERROR: unexpected end of file, expected {
+#./ebpf_signal_trace
+                    
+
+```
+This is your trail 1 out of 3 trails.
+Please retry generating the bpftrace program for: Trace md flush events with pid and process name
+And fix the error.
+
+Run the bpftrace program
+```
+ #./ebpf_signal_trace
+```
+with the following error and ouput:
+```
+stdin:1:21-21: ERROR: unexpected end of file, expected {
+#./ebpf_signal_trace
+                    
+
+```
+This is your trail 2 out of 3 trails.
+Please retry generating the bpftrace program for: Trace md flush events with pid and process name
+And fix the error.
+ 
+
+[{'generated_text': 'Generate a eBPF program Traces process signals and logs the signal names and process IDs affected.\n\n### Usage\n\n```\n#./ebpf_signal_trace\n```\n\n### Output\n\n```\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID'}]
+The bpf program to run is: sudo timeout --preserve-status -s 2 20 bpftrace -e #./ebpf_signal_trace
+kill process 820948
+{"command": "sudo timeout --preserve-status -s 2 20 bpftrace -e #./ebpf_signal_trace", "stdout": "", "stderr": "stdin:1:21-21: ERROR: unexpected end of file, expected {\n#./ebpf_signal_trace\n                    \n", "returncode": 1}
+{'command': 'sudo timeout --preserve-status -s 2 20 bpftrace -e #./ebpf_signal_trace', 'stdout': '', 'stderr': 'stdin:1:21-21: ERROR: unexpected end of file, expected {\n#./ebpf_signal_trace\n                    \n', 'returncode': 1, 'prompt': '\nWrite a bpftrace program that traces or profile the following user request:\n\n### User Request\n\nTrace md flush events with pid and process name\n\n### Examples\n\nHere are some simple examples to help you get started with bpftrace:\n\n\nBelow are some simple examples of bpftrace programs:\n\ntrace processes calling sleep:\n```\nkprobe:do_nanosleep { printf("PID %d sleeping...", pid); }\n```\n\ncount syscalls by process name:\n```\ntracepoint:raw_syscalls:sys_enter { @[comm] = count(); }\n```\n\nFiles opened by process:\n```\ntracepoint:syscalls:sys_enter_open { printf("%s %s", comm, str(args->filename)); }\n```\n\nSyscall count by program:\n```\ntracepoint:raw_syscalls:sys_enter { @[comm] = count(); }\n```\n\nRead bytes by process:\n```\ntracepoint:syscalls:sys_exit_read /args->ret/ { @[comm] = sum(args->ret); }\n```\n\nRead size distribution by process:\n```\ntracepoint:syscalls:sys_exit_read { @[comm] = hist(args->ret); }\n```\n\nShow per-second syscall rates:\n```\ntracepoint:raw_syscalls:sys_enter { @ = count(); } interval:s:1 { print(@); clear(@); }\n```\n\nTrace disk size by process:\n```\ntracepoint:block:block_rq_issue { printf("%d %s %d", pid, comm, args->bytes); }\n```\n\nCount page faults by process\n```\nsoftware:faults:1 { @[comm] = count(); }\n```\n\nCount LLC cache misses by process name and PID (uses PMCs):\n```\nhardware:cache-misses:1000000 { @[comm, pid] = count(); }\n```\n\nProfile user-level stacks at 99 Hertz, for PID 189:\n```\nprofile:hz:99 /pid == 189/ { @[ustack] = count(); }\n```\n\nFiles opened, for processes in the root cgroup-v2\n```\ntracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s", str(args->filename)); }\n```\n\ntcp connect events with PID and process name\n```\nkprobe:tcp_connect { printf("connected from pid %d, comm %s", pid, comm); }\n```\n\n\nHere are some complex examples may be related to your user request:\n\nexample: Write a BPF code that traces md flush events and displays the time, process ID, command, and device information of each event.\n\n```\n#ifndef BPFTRACE_HAVE_BTF\n#include <linux/genhd.h>\n#include <linux/bio.h>\n#endif\n\nBEGIN\n{\n\tprintf("Tracing md flush events... Hit Ctrl-C to end.\\n");\n\tprintf("%-8s %-6s %-16s %s\\n", "TIME", "PID", "COMM", "DEVICE");\n}\n\nkprobe:md_flush_request\n{\n\ttime("%H:%M:%S ");\n\tprintf("%-6d %-16s %s\\n", pid, comm,\n\t    ((struct bio *)arg1)->bi_bdev->bd_disk->disk_name);\n}\n\n```\n\nexample: Write a BPF code that traces sync-related system calls, such as sync(), syncfs(), fsync(), and fdatasync(), and prints the time, process ID, command, and event for each traced system call.\n\n```\nBEGIN\n{\n\tprintf("Tracing sync syscalls... Hit Ctrl-C to end.\\n");\n\tprintf("%-9s %-6s %-16s %s\\n", "TIME", "PID", "COMM", "EVENT");\n}\n\ntracepoint:syscalls:sys_enter_sync,\ntracepoint:syscalls:sys_enter_syncfs,\ntracepoint:syscalls:sys_enter_fsync,\ntracepoint:syscalls:sys_enter_fdatasync,\ntracepoint:syscalls:sys_enter_sync_file_range*,\ntracepoint:syscalls:sys_enter_msync\n{\n\ttime("%H:%M:%S  ");\n\tprintf("%-6d %-16s %s\\n", pid, comm, probe);\n}\n\n```\n\n\nYou can refer to the above examples to write your own bpftrace program to help user with:\n\nTrace md flush events with pid and process name\n\nUse a tool provided to execute your bpftrace program.\nYou should only write the bpftrace program itself.\n\nRun the bpftrace program\n```\n #./ebpf_signal_trace\n```\nwith the following error and ouput:\n```\nstdin:1:21-21: ERROR: unexpected end of file, expected {\n#./ebpf_signal_trace\n                    \n\n```\nThis is your trail 1 out of 3 trails.\nPlease retry generating the bpftrace program for: Trace md flush events with pid and process name\nAnd fix the error.\n\nRun the bpftrace program\n```\n #./ebpf_signal_trace\n```\nwith the following error and ouput:\n```\nstdin:1:21-21: ERROR: unexpected end of file, expected {\n#./ebpf_signal_trace\n                    \n\n```\nThis is your trail 2 out of 3 trails.\nPlease retry generating the bpftrace program for: Trace md flush events with pid and process name\nAnd fix the error.\n'}
+
+
+[retry]: left:  1
+error  stdin:1:21-21: ERROR: unexpected end of file, expected {
+#./ebpf_signal_trace
+                    
+
+
+
+
+full prompt:  
+Write a bpftrace program that traces or profile the following user request:
+
+### User Request
+
+Trace md flush events with pid and process name
+
+### Examples
+
+Here are some simple examples to help you get started with bpftrace:
+
+
+Below are some simple examples of bpftrace programs:
+
+trace processes calling sleep:
+```
+kprobe:do_nanosleep { printf("PID %d sleeping...", pid); }
+```
+
+count syscalls by process name:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
+
+Files opened by process:
+```
+tracepoint:syscalls:sys_enter_open { printf("%s %s", comm, str(args->filename)); }
+```
+
+Syscall count by program:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
+
+Read bytes by process:
+```
+tracepoint:syscalls:sys_exit_read /args->ret/ { @[comm] = sum(args->ret); }
+```
+
+Read size distribution by process:
+```
+tracepoint:syscalls:sys_exit_read { @[comm] = hist(args->ret); }
+```
+
+Show per-second syscall rates:
+```
+tracepoint:raw_syscalls:sys_enter { @ = count(); } interval:s:1 { print(@); clear(@); }
+```
+
+Trace disk size by process:
+```
+tracepoint:block:block_rq_issue { printf("%d %s %d", pid, comm, args->bytes); }
+```
+
+Count page faults by process
+```
+software:faults:1 { @[comm] = count(); }
+```
+
+Count LLC cache misses by process name and PID (uses PMCs):
+```
+hardware:cache-misses:1000000 { @[comm, pid] = count(); }
+```
+
+Profile user-level stacks at 99 Hertz, for PID 189:
+```
+profile:hz:99 /pid == 189/ { @[ustack] = count(); }
+```
+
+Files opened, for processes in the root cgroup-v2
+```
+tracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s", str(args->filename)); }
+```
+
+tcp connect events with PID and process name
+```
+kprobe:tcp_connect { printf("connected from pid %d, comm %s", pid, comm); }
+```
+
+
+Here are some complex examples may be related to your user request:
+
+example: Write a BPF code that traces md flush events and displays the time, process ID, command, and device information of each event.
+
+```
+#ifndef BPFTRACE_HAVE_BTF
+#include <linux/genhd.h>
+#include <linux/bio.h>
+#endif
+
+BEGIN
+{
+	printf("Tracing md flush events... Hit Ctrl-C to end.\n");
+	printf("%-8s %-6s %-16s %s\n", "TIME", "PID", "COMM", "DEVICE");
+}
+
+kprobe:md_flush_request
+{
+	time("%H:%M:%S ");
+	printf("%-6d %-16s %s\n", pid, comm,
+	    ((struct bio *)arg1)->bi_bdev->bd_disk->disk_name);
+}
+
+```
+
+example: Write a BPF code that traces sync-related system calls, such as sync(), syncfs(), fsync(), and fdatasync(), and prints the time, process ID, command, and event for each traced system call.
+
+```
+BEGIN
+{
+	printf("Tracing sync syscalls... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %-16s %s\n", "TIME", "PID", "COMM", "EVENT");
+}
+
+tracepoint:syscalls:sys_enter_sync,
+tracepoint:syscalls:sys_enter_syncfs,
+tracepoint:syscalls:sys_enter_fsync,
+tracepoint:syscalls:sys_enter_fdatasync,
+tracepoint:syscalls:sys_enter_sync_file_range*,
+tracepoint:syscalls:sys_enter_msync
+{
+	time("%H:%M:%S  ");
+	printf("%-6d %-16s %s\n", pid, comm, probe);
+}
+
+```
+
+
+You can refer to the above examples to write your own bpftrace program to help user with:
+
+Trace md flush events with pid and process name
+
+Use a tool provided to execute your bpftrace program.
+You should only write the bpftrace program itself.
+
+Run the bpftrace program
+```
+ #./ebpf_signal_trace
+```
+with the following error and ouput:
+```
+stdin:1:21-21: ERROR: unexpected end of file, expected {
+#./ebpf_signal_trace
+                    
+
+```
+This is your trail 1 out of 3 trails.
+Please retry generating the bpftrace program for: Trace md flush events with pid and process name
+And fix the error.
+
+Run the bpftrace program
+```
+ #./ebpf_signal_trace
+```
+with the following error and ouput:
+```
+stdin:1:21-21: ERROR: unexpected end of file, expected {
+#./ebpf_signal_trace
+                    
+
+```
+This is your trail 2 out of 3 trails.
+Please retry generating the bpftrace program for: Trace md flush events with pid and process name
+And fix the error.
+
+Run the bpftrace program
+```
+ #./ebpf_signal_trace
+```
+with the following error and ouput:
+```
+stdin:1:21-21: ERROR: unexpected end of file, expected {
+#./ebpf_signal_trace
+                    
+
+```
+This is your trail 3 out of 3 trails.
+Please retry generating the bpftrace program for: Trace md flush events with pid and process name
+And fix the error.
+
+
+
+[run_bpftrace_prog_with_function_call]:  
+Write a bpftrace program that traces or profile the following user request:
+
+### User Request
+
+Trace md flush events with pid and process name
+
+### Examples
+
+Here are some simple examples to help you get started with bpftrace:
+
+
+Below are some simple examples of bpftrace programs:
+
+trace processes calling sleep:
+```
+kprobe:do_nanosleep { printf("PID %d sleeping...", pid); }
+```
+
+count syscalls by process name:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
+
+Files opened by process:
+```
+tracepoint:syscalls:sys_enter_open { printf("%s %s", comm, str(args->filename)); }
+```
+
+Syscall count by program:
+```
+tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }
+```
+
+Read bytes by process:
+```
+tracepoint:syscalls:sys_exit_read /args->ret/ { @[comm] = sum(args->ret); }
+```
+
+Read size distribution by process:
+```
+tracepoint:syscalls:sys_exit_read { @[comm] = hist(args->ret); }
+```
+
+Show per-second syscall rates:
+```
+tracepoint:raw_syscalls:sys_enter { @ = count(); } interval:s:1 { print(@); clear(@); }
+```
+
+Trace disk size by process:
+```
+tracepoint:block:block_rq_issue { printf("%d %s %d", pid, comm, args->bytes); }
+```
+
+Count page faults by process
+```
+software:faults:1 { @[comm] = count(); }
+```
+
+Count LLC cache misses by process name and PID (uses PMCs):
+```
+hardware:cache-misses:1000000 { @[comm, pid] = count(); }
+```
+
+Profile user-level stacks at 99 Hertz, for PID 189:
+```
+profile:hz:99 /pid == 189/ { @[ustack] = count(); }
+```
+
+Files opened, for processes in the root cgroup-v2
+```
+tracepoint:syscalls:sys_enter_openat /cgroup == cgroupid("/sys/fs/cgroup/unified/mycg")/ { printf("%s", str(args->filename)); }
+```
+
+tcp connect events with PID and process name
+```
+kprobe:tcp_connect { printf("connected from pid %d, comm %s", pid, comm); }
+```
+
+
+Here are some complex examples may be related to your user request:
+
+example: Write a BPF code that traces md flush events and displays the time, process ID, command, and device information of each event.
+
+```
+#ifndef BPFTRACE_HAVE_BTF
+#include <linux/genhd.h>
+#include <linux/bio.h>
+#endif
+
+BEGIN
+{
+	printf("Tracing md flush events... Hit Ctrl-C to end.\n");
+	printf("%-8s %-6s %-16s %s\n", "TIME", "PID", "COMM", "DEVICE");
+}
+
+kprobe:md_flush_request
+{
+	time("%H:%M:%S ");
+	printf("%-6d %-16s %s\n", pid, comm,
+	    ((struct bio *)arg1)->bi_bdev->bd_disk->disk_name);
+}
+
+```
+
+example: Write a BPF code that traces sync-related system calls, such as sync(), syncfs(), fsync(), and fdatasync(), and prints the time, process ID, command, and event for each traced system call.
+
+```
+BEGIN
+{
+	printf("Tracing sync syscalls... Hit Ctrl-C to end.\n");
+	printf("%-9s %-6s %-16s %s\n", "TIME", "PID", "COMM", "EVENT");
+}
+
+tracepoint:syscalls:sys_enter_sync,
+tracepoint:syscalls:sys_enter_syncfs,
+tracepoint:syscalls:sys_enter_fsync,
+tracepoint:syscalls:sys_enter_fdatasync,
+tracepoint:syscalls:sys_enter_sync_file_range*,
+tracepoint:syscalls:sys_enter_msync
+{
+	time("%H:%M:%S  ");
+	printf("%-6d %-16s %s\n", pid, comm, probe);
+}
+
+```
+
+
+You can refer to the above examples to write your own bpftrace program to help user with:
+
+Trace md flush events with pid and process name
+
+Use a tool provided to execute your bpftrace program.
+You should only write the bpftrace program itself.
+
+Run the bpftrace program
+```
+ #./ebpf_signal_trace
+```
+with the following error and ouput:
+```
+stdin:1:21-21: ERROR: unexpected end of file, expected {
+#./ebpf_signal_trace
+                    
+
+```
+This is your trail 1 out of 3 trails.
+Please retry generating the bpftrace program for: Trace md flush events with pid and process name
+And fix the error.
+
+Run the bpftrace program
+```
+ #./ebpf_signal_trace
+```
+with the following error and ouput:
+```
+stdin:1:21-21: ERROR: unexpected end of file, expected {
+#./ebpf_signal_trace
+                    
+
+```
+This is your trail 2 out of 3 trails.
+Please retry generating the bpftrace program for: Trace md flush events with pid and process name
+And fix the error.
+
+Run the bpftrace program
+```
+ #./ebpf_signal_trace
+```
+with the following error and ouput:
+```
+stdin:1:21-21: ERROR: unexpected end of file, expected {
+#./ebpf_signal_trace
+                    
+
+```
+This is your trail 3 out of 3 trails.
+Please retry generating the bpftrace program for: Trace md flush events with pid and process name
+And fix the error.
+ 
+
+[{'generated_text': 'Generate a eBPF program Traces process signals and logs the signal names and process IDs affected.\n\n### Usage\n\n```\n#./ebpf_signal_trace\n```\n\n### Output\n\n```\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID: 12345\nSignal: SIGINT\nProcess ID'}]
+The bpf program to run is: sudo timeout --preserve-status -s 2 20 bpftrace -e #./ebpf_signal_trace
+kill process 822814
+{"command": "sudo timeout --preserve-status -s 2 20 bpftrace -e #./ebpf_signal_trace", "stdout": "", "stderr": "stdin:1:21-21: ERROR: unexpected end of file, expected {\n#./ebpf_signal_trace\n                    \n", "returncode": 1}
+{"command": "sudo timeout --preserve-status -s 2 20 bpftrace -e #./ebpf_signal_trace", "stdout": "", "stderr": "stdin:1:21-21: ERROR: unexpected end of file, expected {\n#./ebpf_signal_trace\n                    \n", "returncode": 1, "prompt": "\nWrite a bpftrace program that traces or profile the following user request:\n\n### User Request\n\nTrace md flush events with pid and process name\n\n### Examples\n\nHere are some simple examples to help you get started with bpftrace:\n\n\nBelow are some simple examples of bpftrace programs:\n\ntrace processes calling sleep:\n```\nkprobe:do_nanosleep { printf(\"PID %d sleeping...\", pid); }\n```\n\ncount syscalls by process name:\n```\ntracepoint:raw_syscalls:sys_enter { @[comm] = count(); }\n```\n\nFiles opened by process:\n```\ntracepoint:syscalls:sys_enter_open { printf(\"%s %s\", comm, str(args->filename)); }\n```\n\nSyscall count by program:\n```\ntracepoint:raw_syscalls:sys_enter { @[comm] = count(); }\n```\n\nRead bytes by process:\n```\ntracepoint:syscalls:sys_exit_read /args->ret/ { @[comm] = sum(args->ret); }\n```\n\nRead size distribution by process:\n```\ntracepoint:syscalls:sys_exit_read { @[comm] = hist(args->ret); }\n```\n\nShow per-second syscall rates:\n```\ntracepoint:raw_syscalls:sys_enter { @ = count(); } interval:s:1 { print(@); clear(@); }\n```\n\nTrace disk size by process:\n```\ntracepoint:block:block_rq_issue { printf(\"%d %s %d\", pid, comm, args->bytes); }\n```\n\nCount page faults by process\n```\nsoftware:faults:1 { @[comm] = count(); }\n```\n\nCount LLC cache misses by process name and PID (uses PMCs):\n```\nhardware:cache-misses:1000000 { @[comm, pid] = count(); }\n```\n\nProfile user-level stacks at 99 Hertz, for PID 189:\n```\nprofile:hz:99 /pid == 189/ { @[ustack] = count(); }\n```\n\nFiles opened, for processes in the root cgroup-v2\n```\ntracepoint:syscalls:sys_enter_openat /cgroup == cgroupid(\"/sys/fs/cgroup/unified/mycg\")/ { printf(\"%s\", str(args->filename)); }\n```\n\ntcp connect events with PID and process name\n```\nkprobe:tcp_connect { printf(\"connected from pid %d, comm %s\", pid, comm); }\n```\n\n\nHere are some complex examples may be related to your user request:\n\nexample: Write a BPF code that traces md flush events and displays the time, process ID, command, and device information of each event.\n\n```\n#ifndef BPFTRACE_HAVE_BTF\n#include <linux/genhd.h>\n#include <linux/bio.h>\n#endif\n\nBEGIN\n{\n\tprintf(\"Tracing md flush events... Hit Ctrl-C to end.\\n\");\n\tprintf(\"%-8s %-6s %-16s %s\\n\", \"TIME\", \"PID\", \"COMM\", \"DEVICE\");\n}\n\nkprobe:md_flush_request\n{\n\ttime(\"%H:%M:%S \");\n\tprintf(\"%-6d %-16s %s\\n\", pid, comm,\n\t    ((struct bio *)arg1)->bi_bdev->bd_disk->disk_name);\n}\n\n```\n\nexample: Write a BPF code that traces sync-related system calls, such as sync(), syncfs(), fsync(), and fdatasync(), and prints the time, process ID, command, and event for each traced system call.\n\n```\nBEGIN\n{\n\tprintf(\"Tracing sync syscalls... Hit Ctrl-C to end.\\n\");\n\tprintf(\"%-9s %-6s %-16s %s\\n\", \"TIME\", \"PID\", \"COMM\", \"EVENT\");\n}\n\ntracepoint:syscalls:sys_enter_sync,\ntracepoint:syscalls:sys_enter_syncfs,\ntracepoint:syscalls:sys_enter_fsync,\ntracepoint:syscalls:sys_enter_fdatasync,\ntracepoint:syscalls:sys_enter_sync_file_range*,\ntracepoint:syscalls:sys_enter_msync\n{\n\ttime(\"%H:%M:%S  \");\n\tprintf(\"%-6d %-16s %s\\n\", pid, comm, probe);\n}\n\n```\n\n\nYou can refer to the above examples to write your own bpftrace program to help user with:\n\nTrace md flush events with pid and process name\n\nUse a tool provided to execute your bpftrace program.\nYou should only write the bpftrace program itself.\n\nRun the bpftrace program\n```\n #./ebpf_signal_trace\n```\nwith the following error and ouput:\n```\nstdin:1:21-21: ERROR: unexpected end of file, expected {\n#./ebpf_signal_trace\n                    \n\n```\nThis is your trail 1 out of 3 trails.\nPlease retry generating the bpftrace program for: Trace md flush events with pid and process name\nAnd fix the error.\n\nRun the bpftrace program\n```\n #./ebpf_signal_trace\n```\nwith the following error and ouput:\n```\nstdin:1:21-21: ERROR: unexpected end of file, expected {\n#./ebpf_signal_trace\n                    \n\n```\nThis is your trail 2 out of 3 trails.\nPlease retry generating the bpftrace program for: Trace md flush events with pid and process name\nAnd fix the error.\n\nRun the bpftrace program\n```\n #./ebpf_signal_trace\n```\nwith the following error and ouput:\n```\nstdin:1:21-21: ERROR: unexpected end of file, expected {\n#./ebpf_signal_trace\n                    \n\n```\nThis is your trail 3 out of 3 trails.\nPlease retry generating the bpftrace program for: Trace md flush events with pid and process name\nAnd fix the error.\n"}
+ Memory usage: [38;5;22m▂▂▂▂▂▃▄▄▄▄▄▄▅▅▆▇▇▇▇▇▇▇▅▆▇▇▇[0m (max: 1.545 GB, growth rate:   1%)  
+ /home/victoryang00/KEN/evaluation/chain.py: % of time =  99.55% (22m:52.963s) 
+                              out of 22m:58.889s.                              
+       ╷      ╷       ╷      ╷       ╷       ╷       ╷               ╷       ╷ 
+ [1m      [0m│[1;34mTime[0m[1m [0m[1m [0m│[1;34m––––––[0m[1m [0m│[1;34m––––…[0m[1m [0m│[1;38;5;106m––––––[0m[1m [0m│[1;38;5;22mMemory[0m[1m [0m│[1;38;5;22m––––––[0m[1m [0m│[1;38;5;22m–––––––––––[0m[1m   [0m[1m [0m│[1;38;5;106mCopy[0m[1m  [0m[1m [0m│ 
+ [1m [0m[1;2mLine[0m[1m [0m│[1;3;34mPyth…[0m[1m [0m│[1;3;34mnative[0m[1m [0m│[1;3;34msyst…[0m[1m [0m│[1;3;38;5;106mGPU[0m[1m   [0m[1m [0m│[1;3;38;5;22mPython[0m[1m [0m│[1;3;38;5;22mpeak[0m[1m  [0m[1m [0m│[1;3;38;5;22mtimeline[0m[1;38;5;22m/%[0m[1m    [0m[1m [0m│[1;3;38;5;106m(MB/s)[0m[1m [0m│ 
+╺━━━━━━┿━━━━━━┿━━━━━━━┿━━━━━━┿━━━━━━━┿━━━━━━━┿━━━━━━━┿━━━━━━━━━━━━━━━┿━━━━━━━┿╸
+ [2m [0m[2m    [0m[2m [0m│[34m     [0m[34m [0m│[34m      [0m[34m [0m│[34m     [0m[34m [0m│[38;5;106m      [0m[38;5;106m [0m│[38;5;22m      [0m[38;5;22m [0m│[38;5;22m      [0m[38;5;22m [0m│[38;5;22m              [0m[38;5;22m [0m│[38;5;106m      [0m[38;5;106m [0m│ 
+╶──────┼──────┼───────┼──────┼───────┼───────┼───────┼───────────────┼───────┼╴
+ [2m [0m[2m    [0m[2m [0m│[34m     [0m[34m [0m│[34m      [0m[34m [0m│[34m     [0m[34m [0m│[38;5;106m      [0m[38;5;106m [0m│[38;5;22m      [0m[38;5;22m [0m│[38;5;22m      [0m[38;5;22m [0m│[38;5;22m              [0m[38;5;22m [0m│[38;5;106m      [0m[38;5;106m [0m│ 
+ [2m [0m[2m 164[0m[2m [0m│[1;31m   3…[0m[34m [0m│[1;31m   13%[0m[34m [0m│[34m  46%[0m[34m [0m│[1;31m 99%[0m[38;5;106m  [0m[38;5;106m [0m│[38;5;22m      [0m[38;5;22m [0m│[38;5;22m  650M[0m[38;5;22m [0m│[1;31m█████████ 100%[0m[38;5;22m [0m│[38;5;106m    46[0m[38;5;106m [0m│ 
+ [2m [0m[2m 211[0m[2m [0m│[34m     [0m[34m [0m│[34m      [0m[34m [0m│[34m     [0m[34m [0m│[38;5;106m      [0m[38;5;106m [0m│[38;5;22m      [0m[38;5;22m [0m│[38;5;22m      [0m[38;5;22m [0m│[38;5;22m              [0m[38;5;22m [0m│[38;5;106m      [0m[38;5;106m [0m│ 
+       ╵      ╵       ╵      ╵       ╵       ╵       ╵               ╵       ╵ 
+Top AVERAGE memory consumption, by line:
+[38;5;22m(1)   171:   650 MB[0m                                                             
+Top PEAK memory consumption, by line:
+[38;5;22m(1)   171:   650 MB[0m                                                             
+[38;5;22m(2)   165:   610 MB[0m                                                             
+[38;5;22m(3)    19:   192 MB[0m                                                             
+[3m/home/victoryang00/KEN/evaluation/gpttrace.py: % of time =   0.45% (5.927s) out[0m
+[3m                                of 22m:58.889s.                                [0m
+       ╷      ╷       ╷      ╷       ╷       ╷       ╷               ╷       ╷ 
+ [1m      [0m│[1;34mTime[0m[1m [0m[1m [0m│[1;34m––––––[0m[1m [0m│[1;34m––––…[0m[1m [0m│[1;38;5;106m––––––[0m[1m [0m│[1;38;5;22mMemory[0m[1m [0m│[1;38;5;22m––––––[0m[1m [0m│[1;38;5;22m–––––––––––[0m[1m   [0m[1m [0m│[1;38;5;106mCopy[0m[1m  [0m[1m [0m│ 
+ [1m [0m[1;2mLine[0m[1m [0m│[1;3;34mPyth…[0m[1m [0m│[1;3;34mnative[0m[1m [0m│[1;3;34msyst…[0m[1m [0m│[1;3;38;5;106mGPU[0m[1m   [0m[1m [0m│[1;3;38;5;22mPython[0m[1m [0m│[1;3;38;5;22mpeak[0m[1m  [0m[1m [0m│[1;3;38;5;22mtimeline[0m[1;38;5;22m/%[0m[1m    [0m[1m [0m│[1;3;38;5;106m(MB/s)[0m[1m [0m│ 
+╺━━━━━━┿━━━━━━┿━━━━━━━┿━━━━━━┿━━━━━━━┿━━━━━━━┿━━━━━━━┿━━━━━━━━━━━━━━━┿━━━━━━━┿╸
+ [2m [0m[2m    [0m[2m [0m│[34m     [0m[34m [0m│[34m      [0m[34m [0m│[34m     [0m[34m [0m│[38;5;106m      [0m[38;5;106m [0m│[38;5;22m      [0m[38;5;22m [0m│[38;5;22m      [0m[38;5;22m [0m│[38;5;22m              [0m[38;5;22m [0m│[38;5;106m      [0m[38;5;106m [0m│ 
+╶──────┼──────┼───────┼──────┼───────┼───────┼───────┼───────────────┼───────┼╴
+ [2m [0m[2m    [0m[2m [0m│[34m     [0m[34m [0m│[34m      [0m[34m [0m│[34m     [0m[34m [0m│[38;5;106m      [0m[38;5;106m [0m│[38;5;22m      [0m[38;5;22m [0m│[38;5;22m      [0m[38;5;22m [0m│[38;5;22m              [0m[38;5;22m [0m│[38;5;106m      [0m[38;5;106m [0m│ 
+ [2m [0m[2m 161[0m[2m [0m│[34m     [0m[34m [0m│[34m      [0m[34m [0m│[34m     [0m[34m [0m│[38;5;106m      [0m[38;5;106m [0m│[38;5;22m  61% [0m[38;5;22m [0m│[38;5;22m   57M[0m[38;5;22m [0m│[38;5;22m▁▁▁▁▁▁        [0m[38;5;22m [0m│[38;5;106m      [0m[38;5;106m [0m│ 
+ [2m [0m[2m 203[0m[2m [0m│[34m     [0m[34m [0m│[34m      [0m[34m [0m│[34m     [0m[34m [0m│[38;5;106m      [0m[38;5;106m [0m│[38;5;22m      [0m[38;5;22m [0m│[38;5;22m      [0m[38;5;22m [0m│[38;5;22m              [0m[38;5;22m [0m│[38;5;106m      [0m[38;5;106m [0m│ 
+       ╵      ╵       ╵      ╵       ╵       ╵       ╵               ╵       ╵ 
+Top PEAK memory consumption, by line:
+[38;5;22m(1)     1:    60 MB[0m                                                             
+[38;5;22m(2)   182:    57 MB[0m                                                             
+[38;5;22m(3)    12:    10 MB[0m                                                             

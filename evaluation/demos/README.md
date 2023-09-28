@@ -11,7 +11,7 @@ use TheBloke/WizardCoder-Guanaco-15B-V1.0-GPTQ
 shoul use the venv first:
 
 ```
-source /home/victoryang00/cuda12venv/bin/accelerate
+source /home/victoryang00/cuda12venv/bin/activate
 ```
 
 And run: 
