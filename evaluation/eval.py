@@ -92,6 +92,10 @@ def test_with_test_cases(
             with open(save_file, "a") as f:
                 f.write(json.dumps({"error": str(e)}))
 
+def test_zero_shot():
+    save_file = f"zero_shot.json"
+    test_with_test_cases(chain.run_zero_shot_bpftrace, save_file)
+
 def test_few_shot():
     save_file = f"few_shot.json"
     test_with_test_cases(chain.run_few_shot_bpftrace, save_file)

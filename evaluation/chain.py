@@ -282,12 +282,8 @@ def run_zero_shot_bpftrace(user_request: str) -> str:
     prompt = f"""
 Write a bpftrace program that traces or profile the following user request:
 
-### User Request
-
 {user_request}
-
-### Examples
-
+The program should now contain the bpftrace command, it shoud starts with kprobe or tracepoint, etc
 Use a tool provided to execute your bpftrace program.
 You should only write the bpftrace program itself.
 """
