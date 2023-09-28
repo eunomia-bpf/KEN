@@ -61,7 +61,8 @@ def get_cpu_pixel_ebpf_rules()->int:
 # greggs brandon
 def get_kprobe_brandon_dataset()->int:
     os.chdir("../submodules/ebpf-syscall-dataset")
-    res = subprocess.run(["git log|grep kprobe|wc -l"], stdout=subprocess.PIPE)
+    res = subprocess.run(["grep kprobe *.bt"], stdout=subprocess.PIPE)
+    return res
 
 def get_tracepoint_brandon_dataset()->int:
     pass

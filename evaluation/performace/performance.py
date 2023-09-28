@@ -4,8 +4,11 @@ import pynvml
 import psutil
 import time
 
-def start_magic_trace():
-    os.system("./magic")
+def wget_magic_trace():
+    os.system("wget https://github.com/janestreet/magic-trace/releases/download/v1.1.0/magic-trace")
+
+def start_magic_trace(command)->int:
+    os.system("./magic-trace run "+command)
     pass
 
 def get_vram(desired_pid) -> int:
@@ -55,9 +58,10 @@ def get_ps(desired_pid) ->(float, float):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Get GPU memory usage for a given PID")
     parser.add_argument("--pid", type=int, required=False)
+    parser.add_argument("--command", type=str, required=False)
     args = parser.parse_args()
     if args.pid is None:
-        pid=start_magic_trace()
+        pid=start_magic_trace(command=args.command)
     else:
         desired_pid = args.pid
 
