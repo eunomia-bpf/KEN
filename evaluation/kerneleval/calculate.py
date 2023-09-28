@@ -94,4 +94,4 @@ if __name__ == "__main__":
         clone_pixel_kernel()
     if not os.path.exists("raviole-kernel"):
         clone_raviole_kernel()
-    calculate_pixel_ebpf_rules()
+    print(calculate_pixel_ebpf_rules())
