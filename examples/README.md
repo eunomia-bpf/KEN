@@ -151,10 +151,10 @@ kprobe:tcp_connect
     $sport = ($sk->__sk_common.skc_num);
     $dport = ($sk->__sk_common.skc_dport);
 
-    // Assumption for byte order
-    assume($dport == bswap($sk->__sk_common.skc_dport));
-
     printf("TCP connect: %s:%d -> %s:%d\n", $saddr, $sport, $daddr, $dport);
+
+    // Assumption for byte order
+    sassert($dport == bswap($sk->__sk_common.skc_dport));
 }
 ```
 
