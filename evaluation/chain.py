@@ -16,7 +16,7 @@ from langchain.prompts import (
 from langchain.prompts.chat import ChatPromptTemplate, HumanMessagePromptTemplate
 from langchain.schema import HumanMessage, SystemMessage
 import unittest
-from transformers import pipeline
+# from transformers import pipeline
 
 message_prompt = HumanMessagePromptTemplate(
     prompt=PromptTemplate(
@@ -26,7 +26,7 @@ message_prompt = HumanMessagePromptTemplate(
 )
 prompt_template = ChatPromptTemplate.from_messages([message_prompt])
 
-model = "code-llama"  # can be "code-llama" or "gpt-3.5-turbo" or "gpt-3.5-turbo-16k"
+model = "gpt-4"  # can be "code-llama" or "gpt-3.5-turbo" or "gpt-3.5-turbo-16k"
 local_code_llama = True
 
 def run_bpftrace_prog_with_func_call_define(prog: str) -> str:
@@ -470,8 +470,6 @@ def run_vector_db_bpftrace(user_request: str) -> str:
     complex_examples = gpttrace.get_top_n_example_from_bpftrace_vec_db(user_request, 2)
     prompt = f"""
 Write a bpftrace program that traces or profile the following user request:
-
-### User Request
 
 {user_request}
 

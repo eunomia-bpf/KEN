@@ -272,6 +272,7 @@ RUN_PROGRAM_PROMPT: str = """
 
 global_save_file: str = "result/program-" + str(os.getpid()) + ".json"
 
+log_successful = False
 
 def bpftrace_run_program(program: str) -> str:
     res = run_command(
@@ -287,7 +288,7 @@ def bpftrace_run_program(program: str) -> str:
             program,
         ]
     )
-    if res["returncode"] == 0:
+    if res["returncode"] == 0 and log_successful:
         with open("agent_successful_run_commands.json", "w") as f:
             f.write(json.dumps(res) + '\n')
     return json.dumps(res)

@@ -13,7 +13,6 @@ formated_file_list = ["tracepoint:irq:irq_handler_entry","tracepoint:sched:sched
 result1 = np.zeros((2, 40))
 N = 100
 
-
 def plot_TS_expect(result, *name):
     for i in range(len(name)):
         plt.figure(figsize=(16, 9))
