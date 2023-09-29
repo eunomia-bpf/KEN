@@ -63,6 +63,12 @@ def get_pipe4(cmd1,cmd2,cmd3,cmd4):
 
     return int(result)
 
+def make_percentage(result):
+    for i in range(len(result)):
+        for j in range(len(result[i])):
+            result[i][j] = result[i][j]/sum(result[i])*100
+
+    return result
 # https://source.android.com/docs/core/architecture/kernel/bpf
 def clone_pixel_kernel():
     os.system("mkdir -p pixel_kernel")
@@ -129,28 +135,39 @@ def plot_TS_expect(result1,result2,cate1,cate2):
     # Flatten the axes array to make indexing easier
     axes = axes.flatten()
     for i in range(len(cate1)):
-        for j in range(num_names):
-            axes[0].bar(i,result1[j], color=colors[i])
-            axes[0].set_title("Trace Type")
-            axes[0].set_xticks([0, 1,2,3])
-            axes[0].set_xticklabels(names)
-            axes[0].set_ylim([0, 100])
-    for i in range(len(cate2)):
-        for j in range(num_names):
-            axes[1].bar(i,result2[j], color=colors[i])
-            axes[1].set_title("Category")
-            axes[1].set_xticks([0, 1,2,3])
-            axes[1].set_xticklabels(names)
-            axes[1].set_ylim([0, 100])
+        bar_width = 0.1  # width of the bars
+        r = np.arange(len(result1))  # the label locations
         
+        # Plotting bars
+        axes[0].bar(r + i*bar_width, result1[:, i], width=bar_width, color=colors[i], label=cate1[i])
+        
+    # Customize x-axis
+    axes[0].set_xticks(r + bar_width/2)
+    axes[0].set_xticklabels(names)
+    axes[0].set_title("Trace Type")
+    axes[0].set_ylabel("Percentage")
+
+    # Plot for cate2
+    for i in range(len(cate2)):
+        bar_width = 0.1  # width of the bars
+        r = np.arange(len(result2))  # the label locations
+        
+        # Plotting bars
+        axes[1].bar(r + i*bar_width, result2[:, i], width=bar_width, color=colors[i], label=cate2[i])
+        
+    # Customize x-axis
+    axes[1].set_xticks(r + bar_width/2)
+    axes[1].set_xticklabels(names)
+    axes[1].set_title("Category")
+    axes[1].set_ylabel("Percentage")
     plt.tight_layout()
     plt.show()
 
 if __name__ == "__main__":
-    # if not os.path.exists("pixel_kernel"):
-    #     clone_pixel_kernel()
-    # if not os.path.exists("raviole-kernel"):
-    #     clone_raviole_kernel()
+    if not os.path.exists("pixel_kernel"):
+        clone_pixel_kernel()
+    if not os.path.exists("raviole-kernel"):
+        clone_raviole_kernel()
     result_cate1=np.zeros((4, 3))
     result_cate2=np.zeros((4, 5))
     os.chdir("raviole-kernel")
@@ -231,4 +248,4 @@ if __name__ == "__main__":
     
 
     print("plot_graph")
-    plot_TS_expect(result_cate1,result_cate2,cate1,cate2)
+    plot_TS_expect(make_percentage(result_cate1),make_percentage(result_cate2),cate1,cate2)

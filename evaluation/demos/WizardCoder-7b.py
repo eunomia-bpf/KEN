@@ -2,7 +2,7 @@
 from transformers import pipeline
 
 pipe = pipeline("text-generation",
-                model="TheBloke/WizardCoder-Guanaco-15B-V1.0-GPTQ", 
+                model="WizardLM/WizardCoder-Python-7B-V1.0", 
                 device_map="auto", 
                 batch_size=1, 
                 max_new_tokens=1024)
