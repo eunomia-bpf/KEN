@@ -16,17 +16,21 @@ axes = axes.flatten()
 for i in range(40):
     # Calculate success and failure percentages for the first CSV file
     success_percent1 = (df1[str(i)] == 0).mean() * 100
-    failure_percent1 = (df1[str(i)] != 0).mean() * 100
+    failure_percent1 = (df1[str(i)] > 0).mean() * 100
+    fp_percent1 = (df1[str(i)] == -2).mean() * 100
 
     # Calculate success and failure percentages for the second CSV file
     success_percent2 = (df2[str(i)] == 0).mean() * 100
-    failure_percent2 = (df2[str(i)] != 0).mean() * 100
+    failure_percent2 = (df2[str(i)] > 0).mean() * 100
+    fp_percent2 = (df2[str(i)] == -2).mean() * 100
 
     # Plot a stacked bar chart in the corresponding subplot
     axes[i].bar(1, success_percent1, color='green')
-    axes[i].bar(1, failure_percent1, bottom=success_percent1, color='red')
+    axes[i].bar(1, fp_percent1, bottom=success_percent1, color='blue')
+    axes[i].bar(1, failure_percent1, bottom=fp_percent1, color='red')
     axes[i].bar(2, success_percent2, color='green')
-    axes[i].bar(2, failure_percent2, bottom=success_percent2, color='red')
+    axes[i].bar(2, fp_percent2, bottom=success_percent2, color='blue')
+    axes[i].bar(2, failure_percent2, bottom=fp_percent2, color='red')
     axes[i].set_title(f'Test case {i+1}')
     axes[i].set_xticks([1, 2])
     axes[i].set_xticklabels(['base', 'smt'])
