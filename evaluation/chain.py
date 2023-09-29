@@ -4,6 +4,7 @@ from typing import Callable, Optional
 import time
 import gpttrace
 import smtdriver
+import requests
 from langchain.chains import LLMChain
 from langchain.chains.openai_functions import create_openai_fn_chain
 from langchain.chat_models import ChatOpenAI
@@ -26,9 +27,29 @@ message_prompt = HumanMessagePromptTemplate(
 )
 prompt_template = ChatPromptTemplate.from_messages([message_prompt])
 
-model = "gpt-4"  # can be "code-llama" or "gpt-3.5-turbo" or "gpt-3.5-turbo-16k"
+model = "code-llama"  # can be "code-llama" or "gpt-3.5-turbo" or "gpt-3.5-turbo-16k"
 local_code_llama = True
 
+API_URL = "https://vbvhusef1oe4a22d.us-east-1.aws.endpoints.huggingface.cloud"
+headers = {
+    "Authorization": "Bearer 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",
+    "Content-Type": "application/json"
+}
+
+def query_endpoint(input: str):
+    # set inpu to be last 1000
+    input = input[-1000:]
+    response = requests.post(API_URL, headers=headers, json={
+        "inputs": input,
+        "parameters": {
+            "temperature": 0.5,
+            "max_new_tokens": 512,
+        }
+    })
+    output = response.json()
+    print(output)
+    return output[0]['generated_text']
+    
 def run_bpftrace_prog_with_func_call_define(prog: str) -> str:
     """Runs a bpftrace program. You should only input the eBPF program itself.
 
@@ -70,45 +91,45 @@ def run_gpt_for_bpftrace_hooks(input: str, model_name: str) -> str:
         [bpftrace_get_hooks], llm, prompt_template, verbose=False
     )
     full_prompt = f"""
-	Find possoble hook points for {input}
+    Find possoble hook points for {input}
 
-	Attention: Only the first 10 matches will be returned in the bpftrace_get_hooks function.
-	For optimal results, craft your regex pattern with precision.
+    Attention: Only the first 10 matches will be returned in the bpftrace_get_hooks function.
+    For optimal results, craft your regex pattern with precision.
 
-	You should think about what hooks you would like for this user request, and
-	search for the most possible ones.
+    You should think about what hooks you would like for this user request, and
+    search for the most possible ones.
 
-		Example:
+        Example:
 
-				regex: kprobe:*sleep*
+                regex: kprobe:*sleep*
 
-		Will return:
-				kprobe:__x64_sys_clock_nanosleep_time32
-				kprobe:__x64_sys_nanosleep
-				kprobe:__x64_sys_nanosleep_time32
-				...
+        Will return:
+                kprobe:__x64_sys_clock_nanosleep_time32
+                kprobe:__x64_sys_nanosleep
+                kprobe:__x64_sys_nanosleep_time32
+                ...
 
-		Additional regex examples:
-				1. List open related syscall enter tracepoints:
-				regex: tracepoint:syscalls:sys_enter_open*
+        Additional regex examples:
+                1. List open related syscall enter tracepoints:
+                regex: tracepoint:syscalls:sys_enter_open*
 
-				2. List raw syscalls tracepoints
-				regex: tracepoint:raw_syscalls:**
+                2. List raw syscalls tracepoints
+                regex: tracepoint:raw_syscalls:**
 
-				3. List all kprobes related to btrfs file operations:
-				regex: kprobe:*btrfs*file_*
+                3. List all kprobes related to btrfs file operations:
+                regex: kprobe:*btrfs*file_*
 
-				4. List all things related to task switches:
-				regex: *sched_switch*
+                4. List all things related to task switches:
+                regex: *sched_switch*
 
-				5. Retrieve hooks related to vmalloc:
-				regex: kprobe:*vmalloc*
+                5. Retrieve hooks related to vmalloc:
+                regex: kprobe:*vmalloc*
 
-				6. hardware events related to cache:
-				hardware:*cache*
-	
-				7. tcp related kprobes:
-				kprobe:tcp_*
+                6. hardware events related to cache:
+                hardware:*cache*
+    
+                7. tcp related kprobes:
+                kprobe:tcp_*
 """
     res = chain.run(full_prompt)
     print(res)
@@ -179,12 +200,12 @@ def run_code_llama_for_prog(question: str) -> str:
         question = question[: 5 * 3000]
 
     input_full_prompt = f"""<s>[INST] <<SYS>>
-	You should only write the bpftrace program itself.
-	No explain and no instructions. No words other than bpftrace program.
-	<</SYS>> {question} [/INST]
-	"""
+    You should only write the bpftrace program itself.
+    No explain and no instructions. No words other than bpftrace program.
+    <</SYS>> {question} [/INST]
+    """
     if local_code_llama:
-        res = local_code_llama_generate_response(input_full_prompt)
+        res = query_endpoint(input_full_prompt)
     else:
         res = deepinfra_code_llama_generate_response(input_full_prompt)
     return extract_code_blocks(res)
@@ -380,8 +401,8 @@ def ask_code_llama(question: str, sys_prompt: str) -> str:
     }
 
     template = f"""<s>[INST] <<SYS>>
-	{sys_prompt}
-	<</SYS>> {question} [/INST]"""
+    {sys_prompt}
+    <</SYS>> {question} [/INST]"""
 
     print("\n\n[ask code llama] prompt: ", template)
     print(len(template))
@@ -435,12 +456,12 @@ to avoid more mistakes.
 """
     hooks = get_bpftrace_possible_hooks_and_hints(prompt)
     hooks_prompt = f"""
-	### possible related hook locations
-	{hooks}
+    ### possible related hook locations
+    {hooks}
 
-	Note: these hooks may not be correct for the user request,
-	it's just for reference.
-		"""
+    Note: these hooks may not be correct for the user request,
+    it's just for reference.
+        """
     if model == "gpt-4":
         prompt = prompt + hooks_prompt
         hints = "\n## hints \n" + generate_hints(prompt)
@@ -458,10 +479,10 @@ def run_few_shot_with_vector_db_and_smt_bpftrace(user_request: str) -> str:
     complex_examples = gpttrace.get_top_n_example_from_bpftrace_vec_db(user_request, 2)
     vecdb_prompt = f"""
 
-	Here are some more complex examples may be related to your user request:
+    Here are some more complex examples may be related to your user request:
 
-	{complex_examples}
-	"""
+    {complex_examples}
+    """
 
     return run_few_shot_and_smt_bpftrace(user_request, vecdb_prompt)
 

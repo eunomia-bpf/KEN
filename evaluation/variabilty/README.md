@@ -1,5 +1,7 @@
 # eval
 
+we use return code to indicate the result of each test case:, TP should be 0, ERROR should be -1, and FP should be -2. 
+
 ## OpenCopilot/evaluation/variabilty/vec_db_with_examples_3trails_with_feedback-1.json
 
 - Total Pass: 32
