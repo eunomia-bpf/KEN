@@ -1,5 +1,9 @@
 # evaluation for KEN
 
+https://huggingface.co/codellama/CodeLlama-7b-Instruct-hf
+
+
+
 ## evaluation cases
 
 use llm and vector data base examples to generate eBPF programs:
@@ -52,3 +56,4 @@ real    22m0.315s
 user    13m28.816s
 sys     8m27.571s
 ```
+

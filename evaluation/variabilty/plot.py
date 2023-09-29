@@ -52,4 +52,4 @@ for i in range(40):
 plt.tight_layout()
 
 # Save the figure
-plt.savefig("testcases.png")
+plt.savefig("testcases.pdf")
