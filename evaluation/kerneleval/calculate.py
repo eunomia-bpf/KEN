@@ -10,11 +10,11 @@ from statistics import mean
 import seaborn as sns
 import pandas as pd
 
-formatted_file_list = ["tracepoint:irq:irq_handler_entry","tracepoint:sched:sched_process_fork","kprobe:__kmalloc","kprobe:do_prlimit","tracepoint:signal:signal_deliver","tracepoint:raw_syscalls:sys_exit","kprobe:tcp_v4_syn_recv_sock","tracepoint:raw_syscalls:sys_enter1","tracepoint:raw_syscalls:sys_enter2","tracepoint:syscalls:sys_enter_socket","tracepoint:syscalls:sys_enter_openat","tracepoint:syscalls:sys_enter_read","kprobe:net_namespace","tracepoint:syscalls:sys_enter_open","hardware:cache","tracepoint:exceptions:page_fault_user","uretprobe:/bin/bash:readline","kprobe:d_lookup","kprobe:md_flush_request","tracepoint:sched:sched_switch1","tracepoint:sched:sched_switch1","uprobe:libpthread:pthread_create","hardware:kvm_exit","tracepoint:syscalls:sys_enter_mount","kprobe:bpf_int_jit_compile","kprobe:__blk_account_io_done","kprobe:btrfs_file_write_iter","kprobe:cap_capable","kprobe:compact_zone","kprobe:preempt_schedule_irq","tracepoint:syscalls:sys_enter_kill","kprobe:mutex_lock","tracepoint:syscalls:sys_enter_shmget","kprobe:kmem_cache_alloc","tracepoint:syscalls:sys_enter_sync","kprobe:tcp_rcv_established","kprobe:zpl","kprobe:swap_readpage","kprobe:tcp_v4_connect","kprobe:xfs_file_read"]
+formatted_file_list = ["tracepoint:irq:irq_handler_entry","tracepoint:sched:sched_process_fork","kprobe:__kmalloc","kprobe:do_prlimit","tracepoint:signal:signal_deliver","tracepoint:raw_syscalls:sys_exit","kprobe:tcp_v4_syn_recv_sock","tracepoint:raw_syscalls:sys_enter1","tracepoint:raw_syscalls:sys_enter2","tracepoint:syscalls:sys_enter_socket","tracepoint:syscalls:sys_enter_openat","tracepoint:syscalls:sys_enter_read","kprobe:net_namespace","tracepoint:syscalls:sys_enter_open","hardware:cache","tracepoint:exceptions:page_fault_user","uretprobe:/bin/bash:readline","kprobe:d_lookup","kprobe:md_flush_request","tracepoint:sched:sched_switch1","tracepoint:sched:sched_switch2","uprobe:libpthread:pthread_create","hardware:kvm_exit","tracepoint:syscalls:sys_enter_mount","kprobe:bpf_int_jit_compile","kprobe:__blk_account_io_done","kprobe:btrfs_file_write_iter","kprobe:cap_capable","kprobe:compact_zone","kprobe:preempt_schedule_irq","tracepoint:syscalls:sys_enter_kill","kprobe:mutex_lock","tracepoint:syscalls:sys_enter_shmget","kprobe:kmem_cache_alloc","tracepoint:syscalls:sys_enter_sync","kprobe:tcp_rcv_established","kprobe:zpl","kprobe:swap_readpage","kprobe:tcp_v4_connect","kprobe:xfs_file_read"]
 cate1 = ["kprobe","uprobe","tracepoint"]
 cate2 = ["application","syscall","network","fs","hardware"]
 names=["Pixel Kernel", "Brandon Dataset", "EBPFNLDataset","all"]
-colors=["green","red","blue","yellow","black","cyan","pink"]
+colors=["#e7e1ef","#c994c7","#dd1c77","#fde0dd","#c51b8a","cyan","pink"]
 def get_pipe3(cmd1,cmd2,cmd3):
     # Set up the first subprocess
     p1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -164,88 +164,89 @@ def plot_TS_expect(result1,result2,cate1,cate2):
     plt.show()
 
 if __name__ == "__main__":
-    if not os.path.exists("pixel_kernel"):
-        clone_pixel_kernel()
-    if not os.path.exists("raviole-kernel"):
-        clone_raviole_kernel()
-    result_cate1=np.zeros((4, 3))
-    result_cate2=np.zeros((4, 5))
-    os.chdir("raviole-kernel")
-    print("get_kprobe_pixel_kernel")
-    print(get_kprobe_pixel_kernel())
-    result_cate1[0][0] = get_kprobe_pixel_kernel()
+    # if not os.path.exists("pixel_kernel"):
+    #     clone_pixel_kernel()
+    # if not os.path.exists("raviole-kernel"):
+    #     clone_raviole_kernel()
+    result_cate1=np.zeros((1, 3))
+    result_cate2=np.zeros((1, 5))
+    # os.chdir("raviole-kernel")
+    # print("get_kprobe_pixel_kernel")
+    # print(get_kprobe_pixel_kernel())
+    # result_cate1[0][0] = get_kprobe_pixel_kernel()
 
-    print("get_uprobe_pixel_kernel")
-    print(get_uprobe_pixel_kernel())
-    result_cate1[0][1] = get_uprobe_pixel_kernel()
+    # print("get_uprobe_pixel_kernel")
+    # print(get_uprobe_pixel_kernel())
+    # result_cate1[0][1] = get_uprobe_pixel_kernel()
 
-    print("get_tracepoint_pixel_kernel")
-    print(get_tracepoint_pixel_kernel())
-    result_cate1[0][2] = get_tracepoint_pixel_kernel()
+    # print("get_tracepoint_pixel_kernel")
+    # print(get_tracepoint_pixel_kernel())
+    # result_cate1[0][2] = get_tracepoint_pixel_kernel()
 
-    print("get_application_pixel_kernel")
-    print(get_application_pixel_kernel())
-    result_cate2[0][0] = get_application_pixel_kernel()
+    # print("get_application_pixel_kernel")
+    # print(get_application_pixel_kernel())
+    # result_cate2[0][0] = get_application_pixel_kernel()
 
-    print("get_syscall_pixel_kernel")
-    print(get_syscall_pixel_kernel())
-    result_cate2[0][1] = get_syscall_pixel_kernel()
+    # print("get_syscall_pixel_kernel")
+    # print(get_syscall_pixel_kernel())
+    # result_cate2[0][1] = get_syscall_pixel_kernel()
 
-    print("get_network_pixel_kernel")
-    print(get_network_pixel_kernel())
-    result_cate2[0][2] = get_network_pixel_kernel()
+    # print("get_network_pixel_kernel")
+    # print(get_network_pixel_kernel())
+    # result_cate2[0][2] = get_network_pixel_kernel()
 
-    print("get_fs_pixel_ebpf_rules")
-    print(get_fs_pixel_ebpf_rules())
-    result_cate2[0][3] = get_fs_pixel_ebpf_rules()
+    # print("get_fs_pixel_ebpf_rules")
+    # print(get_fs_pixel_ebpf_rules())
+    # result_cate2[0][3] = get_fs_pixel_ebpf_rules()
 
-    print("get_hardware_pixel_ebpf_rules")
-    print(get_hardware_pixel_ebpf_rules())
-    result_cate2[0][4] = get_hardware_pixel_ebpf_rules()
+    # print("get_hardware_pixel_ebpf_rules")
+    # print(get_hardware_pixel_ebpf_rules())
+    # result_cate2[0][4] = get_hardware_pixel_ebpf_rules()
 
-    os.chdir("../../../dataset/")
-    print("get_kprobe_brandon_dataset")
-    print(get_kprobe_brandon_dataset())
-    result_cate1[1][0] = get_kprobe_brandon_dataset()
+    # os.chdir("../../../dataset/")
+    # print("get_kprobe_brandon_dataset")
+    # print(get_kprobe_brandon_dataset())
+    # result_cate1[1][0] = get_kprobe_brandon_dataset()
 
-    print("get_uprobe_brandon_dataset")
-    print(get_uprobe_brandon_dataset())
-    result_cate1[1][1] = get_uprobe_brandon_dataset()
+    # print("get_uprobe_brandon_dataset")
+    # print(get_uprobe_brandon_dataset())
+    # result_cate1[1][1] = get_uprobe_brandon_dataset()
 
-    print("get_tracepoint_brandon_dataset")
-    print(get_tracepoint_brandon_dataset())
-    result_cate1[1][2] = get_tracepoint_brandon_dataset()
+    # print("get_tracepoint_brandon_dataset")
+    # print(get_tracepoint_brandon_dataset())
+    # result_cate1[1][2] = get_tracepoint_brandon_dataset()
 
-    print("get_application_brandon_ebpf_rules")
-    result_cate2[1][0] = 8
+    # print("get_application_brandon_ebpf_rules")
+    # result_cate2[1][0] = 8
 
-    print("get_syscall_brandon")
-    result_cate2[1][1] = 7
+    # print("get_syscall_brandon")
+    # result_cate2[1][1] = 7
 
-    print("get_network_brandon")
-    result_cate2[1][2] = 14
+    # print("get_network_brandon")
+    # result_cate2[1][2] = 14
 
-    print("get_fs_brandon")
-    result_cate2[1][3] = 12
+    # print("get_fs_brandon")
+    # result_cate2[1][3] = 12
 
-    print("get_hardware_brandon")
-    result_cate2[1][4] = 24
+    # print("get_hardware_brandon")
+    # result_cate2[1][4] = 24
 
-    print("get_ebpfnl_rules")
-    result_cate1[2][0] = sum(1 for s in formatted_file_list if s.startswith("kprobe")) + sum(1 for s in formatted_file_list if s.startswith("kretprobe"))
-    result_cate1[2][1] = sum(1 for s in formatted_file_list if s.startswith("uprobe")) + sum(1 for s in formatted_file_list if s.startswith("uretprobe"))
-    result_cate1[2][2] = sum(1 for s in formatted_file_list if s.startswith("tracepoint"))
-    result_cate2[2][0] =6
-    result_cate2[2][1] = sum(1 for s in formatted_file_list if s.__contains__("syscall")) 
-    result_cate2[2][2] =sum(1 for s in formatted_file_list if s.__contains__("tcp")) +sum(1 for s in formatted_file_list if s.__contains__("net"))
-    result_cate2[2][3] =sum(1 for s in formatted_file_list if s.__contains__("fs")) 
-    result_cate2[2][4] =4
+    # print("get_ebpfnl_rules")
+    result_cate1[0][0] = sum(1 for s in formatted_file_list if s.startswith("kprobe")) + sum(1 for s in formatted_file_list if s.startswith("kretprobe"))
+    result_cate1[0][1] = sum(1 for s in formatted_file_list if s.startswith("uprobe")) + sum(1 for s in formatted_file_list if s.startswith("uretprobe"))
+    result_cate1[0][2] = sum(1 for s in formatted_file_list if s.startswith("tracepoint"))
+    result_cate2[0][0] =6
+    result_cate2[0][1] = sum(1 for s in formatted_file_list if s.__contains__("syscall")) 
+    result_cate2[0][2] =sum(1 for s in formatted_file_list if s.__contains__("tcp")) +sum(1 for s in formatted_file_list if s.__contains__("net"))
+    result_cate2[0][3] =sum(1 for s in formatted_file_list if s.__contains__("fs")) 
+    result_cate2[0][4] =4
 
-    for j in range(3):
-        result_cate1[3][j] = result_cate1[2][j] + result_cate1[0][j] + result_cate1[1][j]
-    for j in range(5):
-        result_cate2[3][j] = result_cate2[2][j] + result_cate2[0][j] + result_cate2[1][j]
+    # for j in range(3):
+    #     result_cate1[3][j] = result_cate1[0][j] + result_cate1[0][j] + result_cate1[1][j]
+    # for j in range(5):
+    #     result_cate2[3][j] = result_cate2[0][j] + result_cate2[0][j] + result_cate2[1][j]
     
 
-    print("plot_graph")
-    plot_TS_expect(make_percentage(result_cate1),make_percentage(result_cate2),cate1,cate2)
+    # print("plot_graph")
+    # plot_TS_expect(make_percentage(result_cate1),make_percentage(result_cate2),cate1,cate2)
+    print(result_cate1,result_cate2)

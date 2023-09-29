@@ -6,7 +6,7 @@ df1 = pd.read_csv('vector_db_with_example_files.csv')
 df2 = pd.read_csv('vec_db_with_examples_3trails_and_smt_files.csv')
 
 # Initialize a figure with 40 subplots arranged in a grid
-fig, axes = plt.subplots(4, 10, figsize=(20, 20))
+fig, axes = plt.subplots(5, 8, figsize=(20, 20))
 
 # Flatten the axes array to make indexing easier
 axes = axes.flatten()
@@ -35,17 +35,17 @@ for i in range(40):
         fp_percent2 = fp_percent2 * 100 / (100 - error_percent2)
 
     # Plot a stacked bar chart in the corresponding subplot
-    axes[i].bar(1, success_percent1, color='green')
-    axes[i].bar(1, failure_percent1, bottom=success_percent1, color='red')
-    axes[i].bar(1, fp_percent1, bottom=success_percent1 + failure_percent1, color='blue')
+    axes[i].bar(1, success_percent1, color='#dd1c77')
+    axes[i].bar(1, failure_percent1, bottom=success_percent1, color='#c994c7')
+    axes[i].bar(1, fp_percent1, bottom=success_percent1 + failure_percent1, color='#e7e1ef')
 
-    axes[i].bar(2, success_percent2, color='green')
-    axes[i].bar(2, failure_percent2, bottom=success_percent2, color='red')
-    axes[i].bar(2, fp_percent2, bottom=success_percent2 + failure_percent2, color='blue')
+    axes[i].bar(2, success_percent2, color='#dd1c77')
+    axes[i].bar(2, failure_percent2, bottom=success_percent2, color='#c994c7')
+    axes[i].bar(2, fp_percent2, bottom=success_percent2 + failure_percent2, color='#e7e1ef')
 
-    axes[i].set_title(f'Test case {i+1}')
+    axes[i].set_title(f'Case {i+1}', fontsize=18)
     axes[i].set_xticks([1, 2])
-    axes[i].set_xticklabels(['base', 'smt'])
+    axes[i].set_xticklabels(['C', 'K'], fontsize=18)
     axes[i].set_ylim([0, 100])
 
 # Automatically adjust subplot parameters to give specified padding
