@@ -184,7 +184,7 @@ def deepinfra_code_llama_generate_response(input_full_prompt: str) -> str:
 
 def local_code_llama_generate_response(input_full_prompt: str) -> str:
     pipe = pipeline("text-generation",
-                model="TheBloke/CodeLlama-13B-Instruct-GPTQ", 
+                model="TheBloke/CodeLlama-7B-Instruct-GPTQ", 
                 device_map="auto", 
                 batch_size=2, 
                 max_new_tokens=1024)
