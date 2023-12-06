@@ -1,10 +1,11 @@
 import os
-from flask import Flask, jsonify, request, Response, stream_with_context
+
+from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 from gpttrace import simple_examples, get_top_n_example_from_bpftrace_vec_db
-import os
 from langchain.chat_models import ChatOpenAI
 from langchain.llms import CTransformers
+from chain import run_gpt_for_bpftrace_progs, run_code_llama_for_prog, run_gpt_for_libbpf_progs
 
 app = Flask(__name__)
 CORS(app)
@@ -43,8 +44,20 @@ def handler(user_query, additional_contex, bpf_type, model, api_key):
         print(
             "Either provide your access token through `-k` or through environment variable `OPENAI_API_KEY`")
         return
-    llm = get_llm(model)
-    result = llm.predict(prompt(user_query))
+    
+    llm_input = prompt(user_query)
+    if bpf_type == "bpftrace":
+        if model == "code-llama":
+            result =  run_code_llama_for_prog(llm_input)
+        elif model == "gpt-4" or model == "gpt-3.5-turbo" or model == "gpt-3.5-turbo-16k":
+            result =  run_gpt_for_bpftrace_progs(llm_input, model)
+    elif bpf_type == "libbpf":
+        if model == "code-llama":
+            result =  run_code_llama_for_prog(llm_input)
+        elif model == "gpt-4" or model == "gpt-3.5-turbo" or model == "gpt-3.5-turbo-16k":
+            result =  run_gpt_for_libbpf_progs(llm_input, model)
+    # llm = get_llm(model)
+    # result = llm.predict(prompt(user_query))
     return result
 
 

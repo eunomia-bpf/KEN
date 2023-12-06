@@ -629,9 +629,9 @@ class CommandResult(TypedDict):
 if __name__ == "__main__":
     context = ""
     program = ""
-    with open("program.bt", "r") as file:
+    with open("program.bt.example", "r") as file:
         program = file.read()
-    with open("context.txt", "r") as file:
+    with open("context.txt.example", "r") as file:
         context = file.read()
     print("\n\n[run verifier]\n\n")
     res = run_bpftrace_verifier(context, program)
