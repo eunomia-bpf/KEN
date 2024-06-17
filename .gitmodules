@@ -1,0 +1,4 @@
+[submodule "bpftrace"]
+	path = bpftrace
+	url = https://github.com/victoryang00/bpftrace
+	branch = master

@@ -1,6 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 # Load the data from the CSV files
 df1 = pd.read_csv('vector_db_with_example_files.csv')
 df2 = pd.read_csv('vec_db_with_examples_3trails_and_smt_files.csv')
