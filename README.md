@@ -1,4 +1,4 @@
-# KEN: Kernel Extensions using Natural Language
+# KEN: Kernel Extensions Large Language Model Agent
 
 - Stable Mapping from Natural Language to eBPF semantics
 - Context Abstraction: thread isolation and information refinement 
