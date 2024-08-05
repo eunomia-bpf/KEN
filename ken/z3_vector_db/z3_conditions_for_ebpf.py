@@ -79,18 +79,18 @@ def run_gpt_for_bpftrace_func(input: str, model_name: str) -> str:
 
 def libbpf_prompt(statement, doc):
     prompt = """
-    I'm working on a project involving eBPF (Extended Berkeley Packet Filter) programs and I need to generate Z3 conditions for various eBPF helpers. These conditions will be used to prove the correctness of the eBPF programs. 
+    I'm working on a project involving eBPF (Extended Berkeley Packet Filter) programs and I need to generate Z3 conditions for various eBPF helpers. These conditions will be used to prove the correctness of the eBPF programs. Note that only function parameter constraints are needed.
     The output should be in JSON format. For example:
     ```json
     {
         "bpf_map_update_elem": {
             "description": "Add or update the value of the entry associated to *key* in *map* with *value*.",
+            "proto" :"static long (*bpf_map_update_elem)(void *map, const void *key, const void *value, __u64 flags)",
             "pre": {
                 "map": "!=null",
                 "key": "!=null",
                 "value": "!=null",
                 "flags": "in [BPF_NOEXIST, BPF_EXIST, BPF_ANY]",
-                "map_type": "not in [BPF_MAP_TYPE_ARRAY, BPF_MAP_TYPE_PERCPU_ARRAY] when flags == BPF_NOEXIST"
             },
             "post": {
                 "return": "in [0, negative number]"
@@ -111,17 +111,17 @@ def bpftrace_prompt(statement, doc, is_return:True):
     prompt = """
     I'm working on a project involving eBPF (Extended Berkeley Packet Filter) programs and I need to generate Z3 conditions for various eBPF helpers. These conditions will be used to prove the correctness of the eBPF programs. 
     """+("Remember this is the kretprobe function of the bpftrace, which the post condition is the return value's constraints and the name should be kretprobe:[function name]" if is_return else  "Remember this is the kprobe function of the bpftrace, which the pre condition is the input argument's constraints and the name should be kprobe:[function name]" )+("""
-    The output should be in JSON format. For example:
+    The output should be in JSON format. Only function parameter need the conditions. For example:
     ```json
     {
         "kretprobe:bpf_map_update_elem": {
             "description": "Add or update the value of the entry associated to *key* in *map* with *value*.",
+            "proto" :"static long (*bpf_map_update_elem)(void *map, const void *key, const void *value, __u64 flags)",
             "pre": {
                 "map": "!=null",
                 "key": "!=null",
                 "value": "!=null",
                 "flags": "in [BPF_NOEXIST, BPF_EXIST, BPF_ANY]",
-                "map_type": "not in [BPF_MAP_TYPE_ARRAY, BPF_MAP_TYPE_PERCPU_ARRAY] when flags == BPF_NOEXIST"
             },
         }
     }
@@ -132,12 +132,12 @@ def bpftrace_prompt(statement, doc, is_return:True):
     {
         "kprobe:bpf_map_update_elem": {
             "description": "Add or update the value of the entry associated to *key* in *map* with *value*.",
+            "proto" :"static long (*bpf_map_update_elem)(void *map, const void *key, const void *value, __u64 flags)",
             "pre": {
                 "map": "!=null",
                 "key": "!=null",
                 "value": "!=null",
                 "flags": "in [BPF_NOEXIST, BPF_EXIST, BPF_ANY]",
-                "map_type": "not in [BPF_MAP_TYPE_ARRAY, BPF_MAP_TYPE_PERCPU_ARRAY] when flags == BPF_NOEXIST"
             },
         }
     }
