@@ -3,7 +3,7 @@
 CC := clang
 
 ARCH := $(shell uname -m | sed -e 's/x86_64/x86/' -e 's/aarch64/arm64/')
-DOCKER_PATH := /code/OpenCopilot/opencopilot/ebpf_vector_db/libbpf/
+DOCKER_PATH := /code/KEN/opencopilot/ebpf_vector_db/libbpf/
 SRC_C = ${wildcard *.bpf.c}
 SRC_LL = ${wildcard ./build/*.bpf.ll}
 OBJ_O = ${patsubst %.bpf.c, %.bpf.o, $(SRC_C)}

@@ -1,4 +1,4 @@
-(base) victoryang00@gpu01:/media/victoryang00/Documents/plos23/OpenCopilot-upstream/evaluation/demos$ time /home/victoryang00/cuda12venv/bin/python3 ./WizardCoder-13b.py 
+(base) victoryang00@gpu01:/media/victoryang00/Documents/plos23/KEN-upstream/evaluation/demos$ time /home/victoryang00/cuda12venv/bin/python3 ./WizardCoder-13b.py 
 Loading checkpoint shards: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [00:16<00:00,  5.42s/it]
 /home/victoryang00/cuda12venv/lib/python3.11/site-packages/transformers/generation/utils.py:1417: UserWarning: You have modified the pretrained model configuration to control generation. This is a deprecated strategy to control generation and will be removed soon, in a future version. Please use a generation configuration file (see https://huggingface.co/docs/transformers/main_classes/text_generation )
   warnings.warn(
@@ -204,7 +204,7 @@ This program can be executed with `sudo bpftrace./program.bt` and will print the
 real    46m37.193s
 user    43m29.155s
 sys     3m32.742s
-(base) victoryang00@gpu01:/media/victoryang00/Documents/plos23/OpenCopilot-upstream/evaluation/demos$ time /home/victoryang00/cuda12venv/bin/python3 ./WizardCoder-7b.py 
+(base) victoryang00@gpu01:/media/victoryang00/Documents/plos23/KEN-upstream/evaluation/demos$ time /home/victoryang00/cuda12venv/bin/python3 ./WizardCoder-7b.py 
 Loading checkpoint shards: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:13<00:00,  6.55s/it]
 /home/victoryang00/cuda12venv/lib/python3.11/site-packages/transformers/generation/utils.py:1417: UserWarning: You have modified the pretrained model configuration to control generation. This is a deprecated strategy to control generation and will be removed soon, in a future version. Please use a generation configuration file (see https://huggingface.co/docs/transformers/main_classes/text_generation )
   warnings.warn(
