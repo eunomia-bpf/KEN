@@ -32,7 +32,7 @@ eBPF'24 paper: [Kgent: Kernel Extensions Large Language Model Agent](https://dl.
 
 For additional details, refer to the earlier Arxiv version: [KEN: Kernel Extensions using Natural Language](https://arxiv.org/abs/2312.05531).
 
-For a more usable tool, please check [GPTtrace](https://github.com/eunomia-bpf/GPTtrace). GPTtrace is without the verify part of the Kgent, but it is more user-friendly.
+This is only for evaluation scripts and code for the paper. For a more usable and simplified tool we maintained, please check [GPTtrace](https://github.com/eunomia-bpf/GPTtrace).
 
 For the GPTtrace simplify web demo, see GPTtrace [web demo](https://github.com/eunomia-bpf/GPTtrace-web).
 
