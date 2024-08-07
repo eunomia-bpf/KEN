@@ -36,9 +36,14 @@ For a more usable tool, please check [GPTtrace](https://github.com/eunomia-bpf/G
 
 For the GPTtrace simplify web demo, see GPTtrace [web demo](https://github.com/eunomia-bpf/GPTtrace-web).
 
-## Evaluation
+## Contents
 
-The evaluation details and results are provided in the paper. Kgent was tested using a new corpus of natural language prompts for eBPF programs and achieved an 80% success rate in producing correct eBPF programs.
+- [dataset](dataset): the dataset used in kgent.
+  - [dataset/libbpf/output.json](dataset/libbpf/output.json): the libbpf examples database with description.
+  - [dataset/bpftrace/output.json](dataset/bpftrace/output.json): the bpftrace examples database with description.
+  - [dataset/spec/helper_spec.json](dataset/spec/helper_spec.json): the z3 spec for the helper function.
+  - [dataset/spec/kprobe_spec.json](dataset/spec/kprobe_spec.json): the z3 spec for the kprobe function.
+- [evaluation](evaluation): the evaluation code.
 
 ## cite our work
 

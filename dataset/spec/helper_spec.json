@@ -1,0 +1,2993 @@
+[{
+    "bpf_map_lookup_elem": {
+        "description": "Perform a lookup in *map* for an entry associated to *key*.",
+        "pre": {
+            "map": "!=null",
+            "key": "!=null"
+        },
+        "post": {
+            "return": "==null"
+        }
+    }
+},
+{
+    "bpf_map_update_elem": {
+        "description": "Add or update the value of the entry associated to *key* in *map* with *value*.",
+        "pre": {
+            "map": "!=null",
+            "key": "!=null",
+            "value": "!=null",
+            "flags": "in [BPF_NOEXIST, BPF_EXIST, BPF_ANY]",
+            "map_type": "not in [BPF_MAP_TYPE_ARRAY, BPF_MAP_TYPE_PERCPU_ARRAY] when flags == BPF_NOEXIST"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_map_delete_elem": {
+        "description": "Delete entry with *key* from *map*.",
+        "pre": {
+            "map": "!=null",
+            "key": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_probe_read": {
+        "description": "For tracing programs, safely attempt to read *size* bytes from kernel space address *unsafe_ptr* and store the data in *dst*.",
+        "pre": {
+            "dst": "!=null",
+            "size": ">=0",
+            "unsafe_ptr": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_ktime_get_ns": {
+        "description": "Return the time elapsed since system boot, in nanoseconds. Does not include time the system was suspended. See: clock_gettime (CLOCK_MONOTONIC)",
+        "pre": {},
+        "post": {
+            "return": "Current ktime"
+        }
+    }
+},
+{
+    "bpf_trace_printk": {
+        "description": "This helper is a \"printk()-like\" facility for debugging. It prints a message defined by format *fmt* (of size *fmt_size*) to file */sys/kernel/tracing/trace* from TraceFS, if available. It can take up to three additional **u64** arguments (as an eBPF helpers, the total number of arguments is limited to five).",
+        "pre": {
+            "fmt": "!=null",
+            "fmt_size": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_get_prandom_u32": {
+        "description": "Get a pseudo-random number.",
+        "pre": {},
+        "post": {
+            "return": "32-bit unsigned value"
+        }
+    }
+},
+{
+    "bpf_get_smp_processor_id": {
+        "description": "Get the SMP (symmetric multiprocessing) processor id. Note that all programs run with migration disabled, which means that the SMP processor id is stable during all the execution of the program.",
+        "pre": {},
+        "post": {
+            "return": ">= 0"
+        }
+    }
+},
+{
+    "bpf_skb_store_bytes": {
+        "description": "Store *len* bytes from address *from* into the packet associated to *skb*, at *offset*. *flags* are a combination of **BPF_F_RECOMPUTE_CSUM** (automatically recompute the checksum for the packet after storing the bytes) and **BPF_F_INVALIDATE_HASH** (set *skb*->hash, *skb*->swhash and *skb*->l4hash to 0).",
+        "pre": {
+            "skb": "!=null",
+            "offset": ">=0",
+            "from": "!=null",
+            "len": ">=0",
+            "flags": ">=0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_l3_csum_replace": {
+        "description": "Recompute the layer 3 (e.g. IP) checksum for the packet associated to *skb*.",
+        "pre": {
+            "skb": "!=null",
+            "offset": ">=0",
+            "from": ">=0",
+            "to": ">=0",
+            "size": "in [2, 4]"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_l4_csum_replace": {
+        "description": "Recompute the layer 4 (e.g. TCP, UDP or ICMP) checksum for the packet associated to *skb*.",
+        "pre": {
+            "skb": "!=null",
+            "offset": ">=0",
+            "from": ">=0",
+            "to": ">=0",
+            "flags": ">=0",
+            "flags & 0xF": "in [2, 4]",
+            "flags & ~0xF": "in [0, BPF_F_MARK_MANGLED_0, BPF_F_MARK_MANGLED_0 | BPF_F_MARK_ENFORCE, BPF_F_PSEUDO_HDR]"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_tail_call": {
+        "description": "This special helper is used to trigger a 'tail call', or in other words, to jump into another eBPF program.",
+        "pre": {
+            "ctx": "!=null",
+            "prog_array_map": "!=null",
+            "index": "!=null",
+            "prog_array_map_type": "== BPF_MAP_TYPE_PROG_ARRAY"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_clone_redirect": {
+        "description": "Clone and redirect the packet associated to *skb* to another net device of index *ifindex*.",
+        "pre": {
+            "skb": "!=null",
+            "ifindex": "!=null",
+            "flags": "in [BPF_F_INGRESS]"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_get_current_pid_tgid": {
+        "description": "Get the current pid and tgid.",
+        "pre": {},
+        "post": {
+            "return": "64-bit integer containing the current tgid and pid, created as: *current_task*->tgid << 32 | *current_task*->pid"
+        }
+    }
+},
+{
+    "bpf_get_current_uid_gid": {
+        "description": "Get the current uid and gid.",
+        "pre": {},
+        "post": {
+            "return": "64-bit integer containing the current GID and UID, created as such: *current_gid* << 32 | *current_uid*"
+        }
+    }
+},
+{
+    "bpf_get_current_comm": {
+        "description": "Copy the comm attribute of the current task into buf of size_of_buf. The comm attribute contains the name of the executable (excluding the path) for the current task. The size_of_buf must be strictly positive. On success, the helper makes sure that the buf is NUL-terminated. On failure, it is filled with zeroes.",
+        "pre": {
+            "buf": "!=null",
+            "size_of_buf": ">0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_get_cgroup_classid": {
+        "description": "Retrieve the classid for the current task, i.e. for the net_cls cgroup to which *skb* belongs.",
+        "pre": {
+            "skb": "!=null"
+        },
+        "post": {
+            "return": ">= 0"
+        }
+    }
+},
+{
+    "bpf_skb_vlan_push": {
+        "description": "Push a *vlan_tci* (VLAN tag control information) of protocol *vlan_proto* to the packet associated to *skb*, then update the checksum. Note that if *vlan_proto* is different from **ETH_P_8021Q** and **ETH_P_8021AD**, it is considered to be **ETH_P_8021Q**.",
+        "pre": {
+            "skb": "!=null",
+            "vlan_proto": "!=null",
+            "vlan_tci": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_vlan_pop": {
+        "description": "Pop a VLAN header from the packet associated to *skb*.",
+        "pre": {
+            "skb": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_get_tunnel_key": {
+        "description": "Get tunnel metadata.",
+        "pre": {
+            "skb": "!=null",
+            "key": "!=null",
+            "size": ">=sizeof(struct bpf_tunnel_key)",
+            "flags": "in [0, BPF_F_TUNINFO_IPV6]"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_set_tunnel_key": {
+        "description": "Populate tunnel metadata for packet associated to *skb*.",
+        "pre": {
+            "skb": "!=null",
+            "key": "!=null",
+            "size": ">=0",
+            "flags": ">=0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_perf_event_read": {
+        "description": "Read the value of a perf event counter.",
+        "pre": {
+            "map": "!=null",
+            "flags": ">=0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_redirect": {
+        "description": "Redirect the packet to another net device of index *ifindex*.",
+        "pre": {
+            "ifindex": "!=null",
+            "flags": "in [0, BPF_F_INGRESS]"
+        },
+        "post": {
+            "return": "in [XDP_REDIRECT, XDP_ABORTED, TC_ACT_REDIRECT, TC_ACT_SHOT]"
+        }
+    }
+},
+{
+    "bpf_get_route_realm": {
+        "description": "Retrieve the realm or the route, that is to say the **tclassid** field of the destination for the *skb*.",
+        "pre": {
+            "skb": "!=null"
+        },
+        "post": {
+            "return": ">=0"
+        }
+    }
+},
+{
+    "bpf_perf_event_output": {
+        "description": "Write raw *data* blob into a special BPF perf event held by *map* of type BPF_MAP_TYPE_PERF_EVENT_ARRAY. This perf event must have the following attributes: PERF_SAMPLE_RAW as sample_type, PERF_TYPE_SOFTWARE as type, and PERF_COUNT_SW_BPF_OUTPUT as config.",
+        "pre": {
+            "ctx": "!=null",
+            "map": "!=null",
+            "flags": "in [BPF_F_INDEX_MASK, BPF_F_CURRENT_CPU]",
+            "data": "!=null",
+            "size": ">=0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_load_bytes": {
+        "description": "This helper was provided as an easy way to load data from a packet. It can be used to load *len* bytes from *offset* from the packet associated to *skb*, into the buffer pointed by *to*.",
+        "pre": {
+            "skb": "!=null",
+            "offset": ">=0",
+            "to": "!=null",
+            "len": ">=0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_get_stackid": {
+        "description": "Walk a user or a kernel stack and return its id.",
+        "pre": {
+            "ctx": "!=null",
+            "map": "!=null",
+            "flags": ">=0, <=255"
+        },
+        "post": {
+            "return": ">=0, negative number"
+        }
+    }
+},
+{
+    "bpf_csum_diff": {
+        "description": "Compute a checksum difference from the raw buffer pointed by *from* towards the raw buffer pointed by *to*.",
+        "pre": {
+            "from": "!=null",
+            "from_size": "% 4 == 0",
+            "to": "!=null",
+            "to_size": "% 4 == 0",
+            "seed": ">= 0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_get_tunnel_opt": {
+        "description": "Retrieve tunnel options metadata for the packet associated to *skb*, and store the raw tunnel option data to the buffer *opt* of *size*.",
+        "pre": {
+            "skb": "!=null",
+            "opt": "!=null",
+            "size": "!=null"
+        },
+        "post": {
+            "return": ">=0"
+        }
+    }
+},
+{
+    "bpf_skb_set_tunnel_opt": {
+        "description": "Set tunnel options metadata for the packet associated to *skb* to the option data contained in the raw buffer *opt* of *size*.",
+        "pre": {
+            "skb": "!=null",
+            "opt": "!=null",
+            "size": ">=0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_change_proto": {
+        "description": "Change the protocol of the *skb* to *proto*. Currently supported are transition from IPv4 to IPv6, and from IPv6 to IPv4. The helper takes care of the groundwork for the transition, including resizing the socket buffer. The eBPF program is expected to fill the new headers, if any, via **skb_store_bytes**\\ () and to recompute the checksums with **bpf_l3_csum_replace**\\ () and **bpf_l4_csum_replace**\\ (). The main case for this helper is to perform NAT64 operations out of an eBPF program.\\n\\nInternally, the GSO type is marked as dodgy so that headers are checked and segments are recalculated by the GSO/GRO engine. The size for GSO target is adapted as well.\\n\\nAll values for *flags* are reserved for future usage, and must be left at zero.\\n\\nA call to this helper is susceptible to change the underlying packet buffer. Therefore, at load time, all checks on pointers previously done by the verifier are invalidated and must be performed again, if the helper is used in combination with direct packet access.",
+        "pre": {
+            "skb": "!=null",
+            "proto": "!=null",
+            "flags": "==0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_change_type": {
+        "description": "Change the packet type for the packet associated to *skb*.",
+        "pre": {
+            "skb": "!=null",
+            "type": "in [PACKET_HOST, PACKET_BROADCAST, PACKET_MULTICAST, PACKET_OTHERHOST]"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_under_cgroup": {
+        "description": "Check whether *skb* is a descendant of the cgroup2 held by *map* of type **BPF_MAP_TYPE_CGROUP_ARRAY**, at *index*.",
+        "pre": {
+            "skb": "!=null",
+            "map": "!=null",
+            "index": "!=null",
+            "map_type": "== BPF_MAP_TYPE_CGROUP_ARRAY"
+        },
+        "post": {
+            "return": "in [0, 1, negative number]"
+        }
+    }
+},
+{
+    "bpf_get_hash_recalc": {
+        "description": "Retrieve the hash of the packet, skb->hash. If it is not set, in particular if the hash was cleared due to mangling, recompute this hash. Later accesses to the hash can be done directly with skb->hash.",
+        "pre": {
+            "skb": "!=null"
+        },
+        "post": {
+            "return": "32-bit integer"
+        }
+    }
+},
+{
+    "bpf_get_current_task": {
+        "description": "Get the current task.",
+        "pre": {},
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_probe_write_user": {
+        "description": "Attempt in a safe way to write *len* bytes from the buffer *src* to *dst* in memory.",
+        "pre": {
+            "dst": "!=null",
+            "src": "!=null",
+            "len": ">=0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_current_task_under_cgroup": {
+        "description": "Check whether the probe is being run in the context of a given subset of the cgroup2 hierarchy.",
+        "pre": {
+            "map": "!=null",
+            "index": "!=null",
+            "map_type": "BPF_MAP_TYPE_CGROUP_ARRAY"
+        },
+        "post": {
+            "return": "in [1, 0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_change_tail": {
+        "description": "Resize (trim or grow) the packet associated to *skb* to the new *len*. The *flags* are reserved for future usage, and must be left at zero.",
+        "pre": {
+            "skb": "!=null",
+            "len": ">=0",
+            "flags": "==0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_pull_data": {
+        "description": "Pull in non-linear data in case the *skb* is non-linear and not all of *len* are part of the linear section. Make *len* bytes from *skb* readable and writable. If a zero value is passed for *len*, then all bytes in the linear part of *skb* will be made readable and writable.",
+        "pre": {
+            "skb": "!=null",
+            "len": ">=0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_csum_update": {
+        "description": "Add the checksum *csum* into *skb*->csum in case the driver has supplied a checksum for the entire packet into that field. Return an error otherwise. This helper is intended to be used in combination with bpf_csum_diff(), in particular when the checksum needs to be updated after data has been written into the packet through direct packet access.",
+        "pre": {
+            "skb": "!=null",
+            "csum": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_set_hash_invalid": {
+        "description": "Invalidate the current skb->hash. It can be used after mangling on headers through direct packet access, in order to indicate that the hash is outdated and to trigger a recalculation the next time the kernel tries to access this hash or when the bpf_get_hash_recalc() helper is called.",
+        "pre": {},
+        "post": {
+            "return": "void"
+        }
+    }
+},
+{
+    "bpf_get_numa_node_id": {
+        "description": "Return the id of the current NUMA node. The primary use case for this helper is the selection of sockets for the local NUMA node, when the program is attached to sockets using the SO_ATTACH_REUSEPORT_EBPF option (see also socket(7)), but the helper is also available to other eBPF program types, similarly to bpf_get_smp_processor_id().",
+        "pre": {},
+        "post": {
+            "return": ">= 0"
+        }
+    }
+},
+{
+    "bpf_skb_change_head": {
+        "description": "Grows headroom of packet associated to *skb* and adjusts the offset of the MAC header accordingly, adding *len* bytes of space. It automatically extends and reallocates memory as required. This helper can be used on a layer 3 *skb* to push a MAC header for redirection into a layer 2 device. All values for *flags* are reserved for future usage, and must be left at zero. A call to this helper is susceptible to change the underlying packet buffer. Therefore, at load time, all checks on pointers previously done by the verifier are invalidated and must be performed again, if the helper is used in combination with direct packet access.",
+        "pre": {
+            "skb": "!=null",
+            "len": ">=0",
+            "flags": "==0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_xdp_adjust_head": {
+        "description": "Adjust (move) *xdp_md* ->data by *delta* bytes. Note that it is possible to use a negative value for *delta*. This helper can be used to prepare the packet for pushing or popping headers.",
+        "pre": {
+            "xdp_md": "!=null",
+            "delta": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_probe_read_str": {
+        "description": "Copy a NUL terminated string from an unsafe kernel address *unsafe_ptr* to *dst*.",
+        "pre": {
+            "dst": "!=null",
+            "size": ">=0",
+            "unsafe_ptr": "!=null"
+        },
+        "post": {
+            "return": "in [>0, negative number]"
+        }
+    }
+},
+{
+    "bpf_get_socket_cookie": {
+        "description": "If the struct sk_buff pointed by skb has a known socket, retrieve the cookie (generated by the kernel) of this socket. If no cookie has been set yet, generate a new cookie. Once generated, the socket cookie remains stable for the life of the socket. This helper can be useful for monitoring per socket networking traffic statistics as it provides a global socket identifier that can be assumed unique.",
+        "pre": {
+            "skb": "!=null"
+        },
+        "post": {
+            "return": "in [0, 8-byte long unique number]"
+        }
+    }
+},
+{
+    "bpf_get_socket_uid": {
+        "description": "Get the owner UID of the socket associated to *skb*.",
+        "pre": {
+            "skb": "!=null"
+        },
+        "post": {
+            "return": ">= 0"
+        }
+    }
+},
+{
+    "bpf_set_hash": {
+        "description": "Set the full hash for *skb* (set the field *skb*->hash) to value *hash*.",
+        "pre": {
+            "skb": "!=null",
+            "hash": "!=null"
+        },
+        "post": {
+            "return": "0"
+        }
+    }
+},
+{
+    "bpf_setsockopt": {
+        "description": "Emulate a call to setsockopt() on the socket associated to bpf_socket.",
+        "pre": {
+            "bpf_socket": "!=null",
+            "level": "!=null",
+            "optname": "!=null",
+            "optval": "!=null",
+            "optlen": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_adjust_room": {
+        "description": "Grow or shrink the room for data in the packet associated to *skb* by *len_diff*, and according to the selected *mode*.",
+        "pre": {
+            "skb": "!=null",
+            "len_diff": "!=null",
+            "mode": "in [BPF_ADJ_ROOM_MAC, BPF_ADJ_ROOM_NET]",
+            "flags": "in [BPF_F_ADJ_ROOM_NO_CSUM_RESET, BPF_F_ADJ_ROOM_FIXED_GSO, BPF_F_ADJ_ROOM_ENCAP_L3_IPV4, BPF_F_ADJ_ROOM_ENCAP_L3_IPV6, BPF_F_ADJ_ROOM_ENCAP_L4_GRE, BPF_F_ADJ_ROOM_ENCAP_L4_UDP, BPF_F_ADJ_ROOM_ENCAP_L2_ETH, BPF_F_ADJ_ROOM_DECAP_L3_IPV4, BPF_F_ADJ_ROOM_DECAP_L3_IPV6]",
+            "flags_len": ">=0 when flags contains BPF_F_ADJ_ROOM_ENCAP_L2",
+            "flags_len": ">=0 when flags contains BPF_F_ADJ_ROOM_ENCAP_L2_ETH"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_redirect_map": {
+        "description": "Redirect the packet to the endpoint referenced by *map* at index *key*.",
+        "pre": {
+            "map": "!=null",
+            "key": "!=null",
+            "flags": "in [BPF_F_BROADCAST, BPF_F_EXCLUDE_INGRESS]",
+            "flags_lower_bits": "in [0, 1, 2, 3]",
+            "flags_higher_bits": "in [0, 1, 2, 3, 4, 5, 6, 7]",
+            "map_type": "not in [BPF_MAP_TYPE_ARRAY, BPF_MAP_TYPE_PERCPU_ARRAY]"
+        },
+        "post": {
+            "return": "in [XDP_REDIRECT, 0, 1, 2, 3]"
+        }
+    }
+},
+{
+    "bpf_sk_redirect_map": {
+        "description": "Redirect the packet to the socket referenced by *map* (of type **BPF_MAP_TYPE_SOCKMAP**) at index *key*. Both ingress and egress interfaces can be used for redirection. The **BPF_F_INGRESS** value in *flags* is used to make the distinction (ingress path is selected if the flag is present, egress path otherwise). This is the only flag supported for now.",
+        "pre": {
+            "skb": "!=null",
+            "map": "!=null",
+            "key": "!=null",
+            "flags": "in [BPF_F_INGRESS]"
+        },
+        "post": {
+            "return": "in [SK_PASS, SK_DROP]"
+        }
+    }
+},
+{
+    "bpf_sock_map_update": {
+        "description": "Add an entry to, or update a *map* referencing sockets.",
+        "pre": {
+            "skops": "!=null",
+            "map": "!=null",
+            "key": "!=null",
+            "flags": "in [BPF_NOEXIST, BPF_EXIST, BPF_ANY]"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_xdp_adjust_meta": {
+        "description": "Adjust the address pointed by *xdp_md*->data_meta by *delta* (which can be positive or negative).",
+        "pre": {
+            "xdp_md": "!=null",
+            "delta": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_perf_event_read_value": {
+        "description": "Read the value of a perf event counter, and store it into *buf* of size *buf_size*.",
+        "pre": {
+            "map": "!=null",
+            "flags": "!=null",
+            "buf": "!=null",
+            "buf_size": "!=null",
+            "map_type": "== BPF_MAP_TYPE_PERF_EVENT_ARRAY"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_perf_prog_read_value": {
+        "description": "For an eBPF program attached to a perf event, retrieve the value of the event counter associated to *ctx* and store it in the structure pointed by *buf* and of size *buf_size*. Enabled and running times are also stored in the structure (see description of helper **bpf_perf_event_read_value** for more details).",
+        "pre": {
+            "ctx": "!=null",
+            "buf": "!=null",
+            "buf_size": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_getsockopt": {
+        "description": "Emulate a call to getsockopt() on the socket associated to bpf_socket.",
+        "pre": {
+            "bpf_socket": "!=null",
+            "level": "!=null",
+            "optname": "!=null",
+            "optval": "!=null",
+            "optlen": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_override_return": {
+        "description": "Used for error injection, this helper uses kprobes to override the return value of the probed function, and to set it to *rc*. The first argument is the context *regs* on which the kprobe works.",
+        "pre": {
+            "regs": "!=null",
+            "rc": "!=null"
+        },
+        "post": {
+            "return": "0"
+        }
+    }
+},
+{
+    "bpf_sock_ops_cb_flags_set": {
+        "description": "Attempt to set the value of the bpf_sock_ops_cb_flags field for the full TCP socket associated to bpf_sock_ops to argval.",
+        "pre": {
+            "bpf_sock_ops": "!=null",
+            "argval": "in [BPF_SOCK_OPS_RTO_CB_FLAG, BPF_SOCK_OPS_RETRANS_CB_FLAG, BPF_SOCK_OPS_STATE_CB_FLAG, BPF_SOCK_OPS_RTT_CB_FLAG]"
+        },
+        "post": {
+            "return": "in [-EINVAL, positive number]"
+        }
+    }
+},
+{
+    "bpf_msg_redirect_map": {
+        "description": "This helper is used in programs implementing policies at the socket level. If the message *msg* is allowed to pass (i.e. if the verdict eBPF program returns **SK_PASS**), redirect it to the socket referenced by *map* (of type **BPF_MAP_TYPE_SOCKMAP**) at index *key*. Both ingress and egress interfaces can be used for redirection. The **BPF_F_INGRESS** value in *flags* is used to make the distinction (ingress path is selected if the flag is present, egress path otherwise). This is the only flag supported for now.",
+        "pre": {
+            "msg": "!=null",
+            "map": "!=null",
+            "key": "!=null",
+            "flags": "in [BPF_F_INGRESS]"
+        },
+        "post": {
+            "return": "in [SK_PASS, SK_DROP]"
+        }
+    }
+},
+{
+    "bpf_msg_apply_bytes": {
+        "description": "For socket policies, apply the verdict of the eBPF program to the next *bytes* (number of bytes) of message *msg*.",
+        "pre": {
+            "msg": "!=null",
+            "bytes": ">=0"
+        },
+        "post": {
+            "return": "0"
+        }
+    }
+},
+{
+    "bpf_msg_cork_bytes": {
+        "description": "For socket policies, prevent the execution of the verdict eBPF program for message *msg* until *bytes* (byte number) have been accumulated.",
+        "pre": {
+            "msg": "!=null",
+            "bytes": ">=0"
+        },
+        "post": {
+            "return": "0"
+        }
+    }
+},
+{
+    "bpf_msg_pull_data": {
+        "description": "For socket policies, pull in non-linear data from user space for *msg* and set pointers *msg*->data and *msg*->data_end to *start* and *end* bytes offsets into *msg*, respectively.",
+        "pre": {
+            "msg": "!=null",
+            "start": ">=0",
+            "end": ">=0",
+            "flags": "==0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_bind": {
+        "description": "Bind the socket associated to *ctx* to the address pointed by *addr*, of length *addr_len*.",
+        "pre": {
+            "ctx": "!=null",
+            "addr": "!=null",
+            "addr_len": ">=0",
+            "addr->sa_family": "==AF_INET || ==AF_INET6",
+            "addr->sin_port || addr->sin6_port": "==0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_xdp_adjust_tail": {
+        "description": "Adjust (move) *xdp_md*->data_end by *delta* bytes. It is possible to both shrink and grow the packet tail. Shrink done via *delta* being a negative integer.",
+        "pre": {
+            "xdp_md": "!=null",
+            "delta": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_get_xfrm_state": {
+        "description": "Retrieve the XFRM state at index in XFRM 'security path' for skb.",
+        "pre": {
+            "skb": "!=null",
+            "index": "!=null",
+            "xfrm_state": "!=null",
+            "size": "!=null",
+            "flags": "==0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_get_stack": {
+        "description": "Return a user or a kernel stack in bpf program provided buffer.",
+        "pre": {
+            "ctx": "!=null",
+            "buf": "!=null",
+            "size": ">=0",
+            "flags": ">=0 and <=255",
+            "flags & BPF_F_SKIP_FIELD_MASK": "==0",
+            "flags & BPF_F_USER_STACK": "in [0, 1]",
+            "flags & BPF_F_USER_BUILD_ID": "in [0, 1] when flags & BPF_F_USER_STACK == 1"
+        },
+        "post": {
+            "return": ">=0 or negative number"
+        }
+    }
+},
+{
+    "bpf_skb_load_bytes_relative": {
+        "description": "This helper is similar to bpf_skb_load_bytes() in that it provides an easy way to load len bytes from offset from the packet associated to skb, into the buffer pointed by to. The difference to bpf_skb_load_bytes() is that a fifth argument start_header exists in order to select a base offset to start from. start_header can be one of: BPF_HDR_START_MAC - Base offset to load data from is skb's mac header. BPF_HDR_START_NET - Base offset to load data from is skb's network header. In general, 'direct packet access' is the preferred method to access packet data, however, this helper is in particular useful in socket filters where skb->data does not always point to the start of the mac header and where 'direct packet access' is not available.",
+        "pre": {
+            "skb": "!=null",
+            "offset": ">=0",
+            "to": "!=null",
+            "len": ">=0",
+            "start_header": "in [BPF_HDR_START_MAC, BPF_HDR_START_NET]"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_fib_lookup": {
+        "description": "Do FIB lookup in kernel tables using parameters in *params*.",
+        "pre": {
+            "ctx": "!=null",
+            "params": "!=null",
+            "plen": ">=0",
+            "flags": ">=0",
+            "tbid": ">=0 when flags & BPF_FIB_LOOKUP_DIRECT",
+            "dmac": "!=null when !(flags & BPF_FIB_LOOKUP_SKIP_NEIGH)",
+            "smac": "!=null when !(flags & BPF_FIB_LOOKUP_SKIP_NEIGH)"
+        },
+        "post": {
+            "return": "<=0"
+        }
+    }
+},
+{
+    "bpf_sock_hash_update": {
+        "description": "Add an entry to, or update a sockhash *map* referencing sockets.",
+        "pre": {
+            "skops": "!=null",
+            "map": "!=null",
+            "key": "!=null",
+            "flags": "in [BPF_NOEXIST, BPF_EXIST, BPF_ANY]"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_msg_redirect_hash": {
+        "description": "This helper is used in programs implementing policies at the socket level. If the message *msg* is allowed to pass (i.e. if the verdict eBPF program returns **SK_PASS**), redirect it to the socket referenced by *map* (of type **BPF_MAP_TYPE_SOCKHASH**) using hash *key*. Both ingress and egress interfaces can be used for redirection. The **BPF_F_INGRESS** value in *flags* is used to make the distinction (ingress path is selected if the flag is present, egress path otherwise). This is the only flag supported for now.",
+        "pre": {
+            "msg": "!=null",
+            "map": "!=null",
+            "key": "!=null",
+            "flags": "in [BPF_F_INGRESS]"
+        },
+        "post": {
+            "return": "in [SK_PASS, SK_DROP]"
+        }
+    }
+},
+{
+    "bpf_sk_redirect_hash": {
+        "description": "This helper is used in programs implementing policies at the skb socket level. If the sk_buff *skb* is allowed to pass (i.e. if the verdict eBPF program returns SK_PASS), redirect it to the socket referenced by *map* (of type BPF_MAP_TYPE_SOCKHASH) using hash *key*. Both ingress and egress interfaces can be used for redirection. The BPF_F_INGRESS value in *flags* is used to make the distinction (ingress path is selected if the flag is present, egress otherwise). This is the only flag supported for now.",
+        "pre": {
+            "skb": "!=null",
+            "map": "!=null",
+            "key": "!=null",
+            "flags": "in [BPF_F_INGRESS, 0]"
+        },
+        "post": {
+            "return": "in [SK_PASS, SK_DROP]"
+        }
+    }
+},
+{
+    "bpf_lwt_push_encap": {
+        "description": "Encapsulate the packet associated to *skb* within a Layer 3 protocol header.",
+        "pre": {
+            "skb": "!=null",
+            "type": "!=null",
+            "hdr": "!=null",
+            "len": "!=null",
+            "type": "in [BPF_LWT_ENCAP_SEG6, BPF_LWT_ENCAP_SEG6_INLINE, BPF_LWT_ENCAP_IP]",
+            "hdr": "in [struct ipv6_sr_hdr, struct ipv6_sr_hdr, IPv4, IPv6]"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_lwt_seg6_store_bytes": {
+        "description": "Store *len* bytes from address *from* into the packet associated to *skb*, at *offset*. Only the flags, tag and TLVs inside the outermost IPv6 Segment Routing Header can be modified through this helper.",
+        "pre": {
+            "skb": "!=null",
+            "offset": "!=null",
+            "from": "!=null",
+            "len": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_lwt_seg6_adjust_srh": {
+        "description": "Adjust the size allocated to TLVs in the outermost IPv6 Segment Routing Header contained in the packet associated to *skb*, at position *offset* by *delta* bytes. Only offsets after the segments are accepted. *delta* can be as well positive (growing) as negative (shrinking). A call to this helper is susceptible to change the underlying packet buffer. Therefore, at load time, all checks on pointers previously done by the verifier are invalidated and must be performed again, if the helper is used in combination with direct packet access.",
+        "pre": {
+            "skb": "!=null",
+            "offset": "!=null",
+            "delta": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_lwt_seg6_action": {
+        "description": "Apply an IPv6 Segment Routing action to the packet.",
+        "pre": {
+            "skb": "!=null",
+            "action": "in [SEG6_LOCAL_ACTION_END_X, SEG6_LOCAL_ACTION_END_T, SEG6_LOCAL_ACTION_END_B6, SEG6_LOCAL_ACTION_END_B6_ENCAP]",
+            "param": "!=null",
+            "param_len": ">=0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_rc_repeat": {
+        "description": "This helper is used in programs implementing IR decoding, to report a successfully decoded repeat key message. This delays the generation of a key up event for previously generated key down event. Some IR protocols like NEC have a special IR message for repeating last button, for when a button is held down. The *ctx* should point to the lirc sample as passed into the program. This helper is only available if the kernel was compiled with the CONFIG_BPF_LIRC_MODE2 configuration option set to 'y'.",
+        "pre": {
+            "ctx": "!=null"
+        },
+        "post": {
+            "return": "0"
+        }
+    }
+},
+{
+    "bpf_rc_keydown": {
+        "description": "This helper is used in programs implementing IR decoding, to report a successfully decoded key press with scancode, toggle value in the given protocol. The scancode will be translated to a keycode using the rc keymap, and reported as an input key down event. After a period a key up event is generated. This period can be extended by calling either bpf_rc_keydown() again with the same values, or calling bpf_rc_repeat(). Some protocols include a toggle bit, in case the button was released and pressed again between consecutive scancodes. The ctx should point to the lirc sample as passed into the program. The protocol is the decoded protocol number (see enum rc_proto for some predefined values). This helper is only available if the kernel was compiled with the CONFIG_BPF_LIRC_MODE2 configuration option set to 'y'.",
+        "pre": {
+            "ctx": "!=null",
+            "protocol": "!=null",
+            "scancode": "!=null",
+            "toggle": "!=null"
+        },
+        "post": {
+            "return": "0"
+        }
+    }
+},
+{
+    "bpf_skb_cgroup_id": {
+        "description": "Return the cgroup v2 id of the socket associated with the *skb*.",
+        "pre": {
+            "skb": "!=null"
+        },
+        "post": {
+            "return": "in [0, positive number]"
+        }
+    }
+},
+{
+    "bpf_get_current_cgroup_id": {
+        "description": "Get the current cgroup id based on the cgroup within which the current task is running.",
+        "pre": {},
+        "post": {
+            "return": "64-bit integer"
+        }
+    }
+},
+{
+    "bpf_get_local_storage": {
+        "description": "Get the pointer to the local storage area.",
+        "pre": {
+            "map": "!=null",
+            "flags": "in [0]"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_sk_select_reuseport": {
+        "description": "Select a SO_REUSEPORT socket from a BPF_MAP_TYPE_REUSEPORT_SOCKARRAY map. It checks the selected socket is matching the incoming request in the socket buffer.",
+        "pre": {
+            "reuse": "!=null",
+            "map": "!=null",
+            "key": "!=null",
+            "flags": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_ancestor_cgroup_id": {
+        "description": "Return id of cgroup v2 that is ancestor of cgroup associated with the *skb* at the *ancestor_level*.",
+        "pre": {
+            "skb": "!=null",
+            "ancestor_level": ">= 0"
+        },
+        "post": {
+            "return": ">= 0"
+        }
+    }
+},
+{
+    "bpf_sk_lookup_tcp": {
+        "description": "Look for TCP socket matching *tuple*, optionally in a child network namespace *netns*. The return value must be checked, and if non-**NULL**, released via **bpf_sk_release**().",
+        "pre": {
+            "ctx": "!=null",
+            "tuple": "!=null",
+            "tuple_size": "sizeof(tuple->ipv4) or sizeof(tuple->ipv6)",
+            "netns": "any signed 32-bit integer",
+            "flags": "0"
+        },
+        "post": {
+            "return": "Pointer to struct bpf_sock, or NULL in case of failure."
+        }
+    }
+},
+{
+    "bpf_sk_lookup_udp": {
+        "description": "Look for UDP socket matching *tuple*, optionally in a child network namespace *netns*. The return value must be checked, and if non-**NULL**, released via **bpf_sk_release**().",
+        "pre": {
+            "ctx": "!=null",
+            "tuple": "!=null",
+            "tuple_size": "sizeof(tuple->ipv4) or sizeof(tuple->ipv6)",
+            "netns": "any signed 32-bit integer",
+            "flags": "0"
+        },
+        "post": {
+            "return": "Pointer to **struct bpf_sock**, or **NULL** in case of failure."
+        }
+    }
+},
+{
+    "bpf_sk_release": {
+        "description": "Release the reference held by *sock*. *sock* must be a non-**NULL** pointer that was returned from **bpf_sk_lookup_xxx**().",
+        "pre": {
+            "sock": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_map_push_elem": {
+        "description": "Push an element *value* in *map*.",
+        "pre": {
+            "map": "!=null",
+            "value": "!=null",
+            "flags": "in [BPF_EXIST]"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_map_pop_elem": {
+        "description": "Pop an element from *map*.",
+        "pre": {
+            "map": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_map_peek_elem": {
+        "description": "Get an element from *map* without removing it.",
+        "pre": {
+            "map": "!=null",
+            "value": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_msg_push_data": {
+        "description": "For socket policies, insert *len* bytes into *msg* at offset *start*.",
+        "pre": {
+            "msg": "!=null",
+            "start": "!=null",
+            "len": "!=null",
+            "flags": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_msg_pop_data": {
+        "description": "Will remove *len* bytes from a *msg* starting at byte *start*.",
+        "pre": {
+            "msg": "!=null",
+            "start": "!=null",
+            "len": "!=null",
+            "flags": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_rc_pointer_rel": {
+        "description": "This helper is used in programs implementing IR decoding, to report a successfully decoded pointer movement.",
+        "pre": {
+            "ctx": "!=null"
+        },
+        "post": {
+            "return": "0"
+        }
+    }
+},
+{
+    "bpf_spin_lock": {
+        "description": "Acquire a spinlock represented by the pointer *lock*, which is stored as part of a value of a map. Taking the lock allows to safely update the rest of the fields in that value.",
+        "pre": {
+            "lock": "!=null",
+            "lock_type": "in [BPF_MAP_TYPE_HASH, BPF_MAP_TYPE_ARRAY]",
+            "btf_description": "exists",
+            "no_other_locks": true,
+            "no_nested_locks": true,
+            "no_bpf_calls": true,
+            "no_bpf_ld_abs": true,
+            "no_bpf_ld_ind": true,
+            "aligned_lock_field": true,
+            "root_only": true,
+            "not_in_inner_map": true
+        },
+        "post": {
+            "return": 0
+        }
+    }
+},
+{
+    "bpf_spin_unlock": {
+        "description": "Release the *lock* previously locked by a call to **bpf_spin_lock** ( *lock* ).",
+        "pre": {
+            "lock": "!=null"
+        },
+        "post": {
+            "return": "0"
+        }
+    }
+},
+{
+    "bpf_sk_fullsock": {
+        "description": "This helper gets a struct bpf_sock pointer such that all the fields in this bpf_sock can be accessed.",
+        "pre": {},
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_tcp_sock": {
+        "description": "This helper gets a struct bpf_tcp_sock pointer from a struct bpf_sock pointer.",
+        "pre": {
+            "sk": "!=null"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_skb_ecn_set_ce": {
+        "description": "Set ECN (Explicit Congestion Notification) field of IP header to CE (Congestion Encountered) if current value is ECT (ECN Capable Transport). Otherwise, do nothing. Works with IPv6 and IPv4.",
+        "pre": {
+            "skb": "!=null"
+        },
+        "post": {
+            "return": "in [0, 1]"
+        }
+    }
+},
+{
+    "bpf_get_listener_sock": {
+        "description": "Return a struct bpf_sock pointer in TCP_LISTEN state. bpf_sk_release() is unnecessary and not allowed.",
+        "pre": {},
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_skc_lookup_tcp": {
+        "description": "Look for TCP socket matching *tuple*, optionally in a child network namespace *netns*. The return value must be checked, and if non-**NULL**, released via **bpf_sk_release**(). This function is identical to **bpf_sk_lookup_tcp**(), except that it also returns timewait or request sockets. Use **bpf_sk_fullsock**() or **bpf_tcp_sock**() to access the full structure. This helper is available only if the kernel was compiled with **CONFIG_NET** configuration option.",
+        "pre": {
+            "ctx": "!=null",
+            "tuple": "!=null",
+            "tuple_size": "!=null",
+            "netns": "!=null",
+            "flags": "!=null"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_tcp_check_syncookie": {
+        "description": "Check whether *iph* and *th* contain a valid SYN cookie ACK for the listening socket in *sk*.",
+        "pre": {
+            "sk": "!=null",
+            "iph": "!=null",
+            "iph_len": "sizeof(struct iphdr) or sizeof(struct ipv6hdr)",
+            "th": "!=null",
+            "th_len": ">= sizeof(struct tcphdr)"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_sysctl_get_name": {
+        "description": "Get name of sysctl in /proc/sys/ and copy it into provided by program buffer *buf* of size *buf_len*.",
+        "pre": {
+            "ctx": "!=null",
+            "buf": "!=null",
+            "buf_len": ">=0",
+            "flags": ">=0",
+            "flags": "in [0, BPF_F_SYSCTL_BASE_NAME]"
+        },
+        "post": {
+            "return": ">=0",
+            "return": "<=buf_len",
+            "return": "!= -E2BIG"
+        }
+    }
+},
+{
+    "bpf_sysctl_get_current_value": {
+        "description": "Get current value of sysctl as it is presented in /proc/sys (incl. newline, etc), and copy it as a string into provided by program buffer *buf* of size *buf_len*.",
+        "pre": {
+            "ctx": "!=null",
+            "buf": "!=null",
+            "buf_len": ">=0"
+        },
+        "post": {
+            "return": ">=0",
+            "return": "-E2BIG or -EINVAL"
+        }
+    }
+},
+{
+    "bpf_sysctl_get_new_value": {
+        "description": "Get new value being written by user space to sysctl (before the actual write happens) and copy it as a string into provided by program buffer *buf* of size *buf_len*.",
+        "pre": {
+            "ctx": "!=null",
+            "buf": "!=null",
+            "buf_len": ">=0"
+        },
+        "post": {
+            "return": ">=-E2BIG",
+            "return": ">=-EINVAL"
+        }
+    }
+},
+{
+    "bpf_sysctl_set_new_value": {
+        "description": "Override new value being written by user space to sysctl with value provided by program in buffer *buf* of size *buf_len*.",
+        "pre": {
+            "ctx": "!=null",
+            "buf": "!=null",
+            "buf_len": ">=0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_strtol": {
+        "description": "Convert the initial part of the string from buffer *buf* of size *buf_len* to a long integer according to the given base and save the result in *res*.",
+        "pre": {
+            "buf": "!=null",
+            "buf_len": ">=0",
+            "flags": ">=0",
+            "res": "!=null"
+        },
+        "post": {
+            "return": ">0",
+            "return <= buf_len": true,
+            "return": "in [-EINVAL, -ERANGE, positive number]"
+        }
+    }
+},
+{
+    "bpf_strtoul": {
+        "description": "Convert the initial part of the string from buffer *buf* of size *buf_len* to an unsigned long integer according to the given base and save the result in *res*.",
+        "pre": {
+            "buf": "!=null",
+            "buf_len": ">=0",
+            "flags": ">=0",
+            "res": "!=null"
+        },
+        "post": {
+            "return": ">0",
+            "return <= buf_len": true,
+            "return": "in [0, -EINVAL, -ERANGE]"
+        }
+    }
+},
+{
+    "bpf_sk_storage_get": {
+        "description": "Get a bpf-local-storage from a *sk*.",
+        "pre": {
+            "map": "!=null",
+            "sk": "!=null",
+            "value": "!=null",
+            "flags": "in [BPF_SK_STORAGE_GET_F_CREATE]",
+            "map_type": "== BPF_MAP_TYPE_SK_STORAGE"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_sk_storage_delete": {
+        "description": "Delete a bpf-local-storage from a *sk*.",
+        "pre": {
+            "map": "!=null",
+            "sk": "!=null"
+        },
+        "post": {
+            "return": "in [0, -ENOENT, -EINVAL]"
+        }
+    }
+},
+{
+    "bpf_send_signal": {
+        "description": "Send signal *sig* to the process of the current task. The signal may be delivered to any of this process's threads.",
+        "pre": {
+            "sig": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_tcp_gen_syncookie": {
+        "description": "Try to issue a SYN cookie for the packet with corresponding IP/TCP headers on the listening socket.",
+        "pre": {
+            "sk": "!=null",
+            "iph": "!=null",
+            "iph_len": "sizeof(struct iphdr) or sizeof(struct ipv6hdr)",
+            "th": "!=null",
+            "th_len": ">= sizeof(struct tcphdr)"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_output": {
+        "description": "Write raw *data* blob into a special BPF perf event held by *map* of type BPF_MAP_TYPE_PERF_EVENT_ARRAY. This perf event must have the following attributes: PERF_SAMPLE_RAW as sample_type, PERF_TYPE_SOFTWARE as type, and PERF_COUNT_SW_BPF_OUTPUT as config.",
+        "pre": {
+            "ctx": "!=null",
+            "map": "!=null",
+            "flags": "in [BPF_F_INDEX_MASK, BPF_F_CURRENT_CPU]",
+            "data": "!=null",
+            "size": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_probe_read_user": {
+        "description": "Safely attempt to read *size* bytes from user space address *unsafe_ptr* and store the data in *dst*.",
+        "pre": {
+            "dst": "!=null",
+            "size": ">=0",
+            "unsafe_ptr": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_probe_read_kernel": {
+        "description": "Safely attempt to read *size* bytes from kernel space address *unsafe_ptr* and store the data in *dst*.",
+        "pre": {
+            "dst": "!=null",
+            "size": ">=0",
+            "unsafe_ptr": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_probe_read_user_str": {
+        "description": "Copy a NUL terminated string from an unsafe user address to dst.",
+        "pre": {
+            "dst": "!=null",
+            "size": "!=null",
+            "unsafe_ptr": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_probe_read_kernel_str": {
+        "description": "Copy a NUL terminated string from an unsafe kernel address *unsafe_ptr* to *dst*. Same semantics as with bpf_probe_read_user_str() apply.",
+        "pre": {
+            "dst": "!=null",
+            "size": ">=0",
+            "unsafe_ptr": "!=null"
+        },
+        "post": {
+            "return": "in [>0, negative number]"
+        }
+    }
+},
+{
+    "bpf_tcp_send_ack": {
+        "description": "Send out a tcp-ack.",
+        "pre": {
+            "tp": "!=null",
+            "rcv_nxt": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_send_signal_thread": {
+        "description": "Send signal *sig* to the thread corresponding to the current task.",
+        "pre": {
+            "sig": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_jiffies64": {
+        "description": "Obtain the 64bit jiffies",
+        "pre": {},
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_read_branch_records": {
+        "description": "For an eBPF program attached to a perf event, retrieve the branch records (struct perf_branch_entry) associated to ctx and store it in the buffer pointed by buf up to size bytes.",
+        "pre": {
+            "ctx": "!=null",
+            "buf": "!=null",
+            "size": "!=null",
+            "flags": "in [BPF_F_GET_BRANCH_RECORDS_SIZE]",
+            "buf": "!=null when flags != BPF_F_GET_BRANCH_RECORDS_SIZE",
+            "size": "multiple of sizeof(struct perf_branch_entry)"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_get_ns_current_pid_tgid": {
+        "description": "Returns 0 on success, values for *pid* and *tgid* as seen from the current *namespace* will be returned in *nsdata*.",
+        "pre": {
+            "dev": "!=null",
+            "ino": "!=null",
+            "nsdata": "!=null",
+            "size": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        },
+        "returns": {
+            "0": "success",
+            "-EINVAL": "if dev and inum supplied don't match dev_t and inode number with nsfs of current task, or if dev conversion to dev_t lost high bits.",
+            "-ENOENT": "if pidns does not exists for the current task."
+        }
+    }
+},
+{
+    "bpf_xdp_output": {
+        "description": "Write raw *data* blob into a special BPF perf event held by *map* of type BPF_MAP_TYPE_PERF_EVENT_ARRAY. This perf event must have the following attributes: PERF_SAMPLE_RAW as sample_type, PERF_TYPE_SOFTWARE as type, and PERF_COUNT_SW_BPF_OUTPUT as config.",
+        "pre": {
+            "ctx": "!=null",
+            "map": "!=null",
+            "flags": "in [BPF_F_INDEX_MASK, BPF_F_CURRENT_CPU]",
+            "data": "!=null",
+            "size": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_get_netns_cookie": {
+        "description": "Retrieve the cookie (generated by the kernel) of the network namespace the input *ctx* is associated with.",
+        "pre": {
+            "ctx": "==null"
+        },
+        "post": {
+            "return": "8-byte long opaque number"
+        }
+    }
+},
+{
+    "bpf_get_current_ancestor_cgroup_id": {
+        "description": "Return id of cgroup v2 that is ancestor of the cgroup associated with the current task at the *ancestor_level*.",
+        "pre": {
+            "ancestor_level": ">= 0"
+        },
+        "post": {
+            "return": ">= 0"
+        }
+    }
+},
+{
+    "bpf_sk_assign": {
+        "description": "Assign the *sk* to the *skb*. When combined with appropriate routing configuration to receive the packet towards the socket, will cause *skb* to be delivered to the specified socket. Subsequent redirection of *skb* via **bpf_redirect** (), **bpf_clone_redirect** () or other methods outside of BPF may interfere with successful delivery to the socket. This operation is only valid from TC ingress path.",
+        "pre": {
+            "ctx": "!=null",
+            "sk": "!=null",
+            "flags": "==0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        },
+        "errors": {
+            "-EINVAL": "specified *flags* are not supported",
+            "-ENOENT": "the socket is unavailable for assignment",
+            "-ENETUNREACH": "the socket is unreachable (wrong netns)",
+            "-EOPNOTSUPP": "the operation is not supported, for example a call from outside of TC ingress",
+            "-ESOCKTNOSUPPORT": "the socket type is not supported (reuseport)"
+        }
+    }
+},
+{
+    "bpf_ktime_get_boot_ns": {
+        "description": "Return the time elapsed since system boot, in nanoseconds. Does include the time the system was suspended. See: clock_gettime (CLOCK_BOOTTIME)",
+        "pre": {},
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_seq_printf": {
+        "description": "bpf_seq_printf uses seq_file seq_printf to print out the format string.",
+        "pre": {
+            "m": "!=null",
+            "fmt": "!=null",
+            "fmt_size": "!=null",
+            "data": "!=null",
+            "data_len": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_seq_write": {
+        "description": "Uses seq_file seq_write() to write the data.",
+        "pre": {
+            "m": "!=null",
+            "data": "!=null",
+            "len": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_sk_cgroup_id": {
+        "description": "Return the cgroup v2 id of the socket *sk*.",
+        "pre": {
+            "sk": "!=null"
+        },
+        "post": {
+            "return": "in [0, positive number]"
+        }
+    }
+},
+{
+    "bpf_sk_ancestor_cgroup_id": {
+        "description": "Return id of cgroup v2 that is ancestor of cgroup associated with the *sk* at the *ancestor_level*.",
+        "pre": {
+            "sk": "!=null",
+            "ancestor_level": ">= 0"
+        },
+        "post": {
+            "return": ">= 0"
+        }
+    }
+},
+{
+    "bpf_ringbuf_output": {
+        "description": "Copy *size* bytes from *data* into a ring buffer *ringbuf*.",
+        "pre": {
+            "ringbuf": "!=null",
+            "data": "!=null",
+            "size": "!=null",
+            "flags": "in [BPF_RB_NO_WAKEUP, BPF_RB_FORCE_WAKEUP, 0]"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_ringbuf_reserve": {
+        "description": "Reserve *size* bytes of payload in a ring buffer *ringbuf*. *flags* must be 0.",
+        "pre": {
+            "ringbuf": "!=null",
+            "size": "!=null",
+            "flags": "==0"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_ringbuf_submit": {
+        "description": "Submit reserved ring buffer sample, pointed to by *data*.",
+        "pre": {
+            "data": "!=null",
+            "flags": "in [BPF_RB_NO_WAKEUP, BPF_RB_FORCE_WAKEUP, 0]"
+        },
+        "post": {
+            "return": "Always succeeds"
+        }
+    }
+},
+{
+    "bpf_ringbuf_discard": {
+        "description": "Discard reserved ring buffer sample, pointed to by *data*.",
+        "pre": {
+            "data": "!=null",
+            "flags": "in [BPF_RB_NO_WAKEUP, BPF_RB_FORCE_WAKEUP, 0]"
+        },
+        "post": {
+            "return": "Always succeeds"
+        }
+    }
+},
+{
+    "bpf_ringbuf_query": {
+        "description": "Query various characteristics of provided ring buffer.",
+        "pre": {
+            "ringbuf": "!=null",
+            "flags": "in [BPF_RB_AVAIL_DATA, BPF_RB_RING_SIZE, BPF_RB_CONS_POS, BPF_RB_PROD_POS]"
+        },
+        "post": {
+            "return": "in [0, positive number]"
+        }
+    }
+},
+{
+    "bpf_csum_level": {
+        "description": "Change the skbs checksum level by one layer up or down, or reset it entirely to none in order to have the stack perform checksum validation.",
+        "pre": {
+            "skb": "!=null",
+            "level": "in [BPF_CSUM_LEVEL_INC, BPF_CSUM_LEVEL_DEC, BPF_CSUM_LEVEL_RESET, BPF_CSUM_LEVEL_QUERY]"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skc_to_tcp6_sock": {
+        "description": "Dynamically cast a *sk* pointer to a *tcp6_sock* pointer.",
+        "pre": {
+            "sk": "!=null"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_skc_to_tcp_sock": {
+        "description": "Dynamically cast a *sk* pointer to a *tcp_sock* pointer.",
+        "pre": {
+            "sk": "!=null"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_skc_to_tcp_timewait_sock": {
+        "description": "Dynamically cast a *sk* pointer to a *tcp_timewait_sock* pointer.",
+        "pre": {
+            "sk": "!=null"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_skc_to_tcp_request_sock": {
+        "description": "Dynamically cast a *sk* pointer to a *tcp_request_sock* pointer.",
+        "pre": {
+            "sk": "!=null"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_skc_to_udp6_sock": {
+        "description": "Dynamically cast a *sk* pointer to a *udp6_sock* pointer.",
+        "pre": {
+            "sk": "!=null"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_get_task_stack": {
+        "description": "Return a user or a kernel stack in bpf program provided buffer.",
+        "pre": {
+            "task": "!=null",
+            "buf": "!=null",
+            "size": ">=0",
+            "flags": ">=0 && <=255",
+            "flags & BPF_F_SKIP_FIELD_MASK": "==0",
+            "flags & BPF_F_USER_STACK": "in [0, 1]",
+            "flags & BPF_F_USER_BUILD_ID": "in [0, 1] when flags & BPF_F_USER_STACK == 1"
+        },
+        "post": {
+            "return": ">=0 || <0"
+        }
+    }
+},
+{
+    "bpf_load_hdr_opt": {
+        "description": "Load header option. Support reading a particular TCP header option for bpf program (BPF_PROG_TYPE_SOCK_OPS).",
+        "pre": {
+            "skops": "!=null",
+            "searchby_res": "!=null",
+            "len": ">=2",
+            "flags": "in [0, BPF_LOAD_HDR_OPT_TCP_SYN]",
+            "searchby_res[0]": "in [0, 1, 3, 253, 254]",
+            "searchby_res[1]": ">=0",
+            "searchby_res[2]": ">=0",
+            "searchby_res[3]": ">=0",
+            "searchby_res[4]": ">=0",
+            "searchby_res[5]": ">=0",
+            "searchby_res[6]": ">=0",
+            "searchby_res[7]": ">=0",
+            "searchby_res[8]": ">=0",
+            "searchby_res[9]": ">=0",
+            "searchby_res[10]": ">=0",
+            "searchby_res[11]": ">=0",
+            "searchby_res[12]": ">=0",
+            "searchby_res[13]": ">=0",
+            "searchby_res[14]": ">=0",
+            "searchby_res[15]": ">=0",
+            "searchby_res[16]": ">=0",
+            "searchby_res[17]": ">=0",
+            "searchby_res[18]": ">=0",
+            "searchby_res[19]": ">=0",
+            "searchby_res[20]": ">=0",
+            "searchby_res[21]": ">=0",
+            "searchby_res[22]": ">=0",
+            "searchby_res[23]": ">=0",
+            "searchby_res[24]": ">=0",
+            "searchby_res[25]": ">=0",
+            "searchby_res[26]": ">=0",
+            "searchby_res[27]": ">=0",
+            "searchby_res[28]": ">=0",
+            "searchby_res[29]": ">=0",
+            "searchby_res[30]": ">=0",
+            "searchby_res[31]": ">=0",
+            "searchby_res[32]": ">=0",
+            "searchby_res[33]": ">=0",
+            "searchby_res[34]": ">=0",
+            "searchby_res[35]": ">=0",
+            "searchby_res[36]": ">=0",
+            "searchby_res[37]": ">=0",
+            "searchby_res[38]": ">=0",
+            "searchby_res[39]": ">=0",
+            "searchby_res[40]": ">=0",
+            "searchby_res[41]": ">=0",
+            "searchby_res[42]": ">=0",
+            "searchby_res[43]": ">=0",
+            "searchby_res[44]": ">=0",
+            "searchby_res[45]": ">=0",
+            "searchby_res[46]": ">=0",
+            "searchby_res[47]": ">=0",
+            "searchby_res[48]": ">=0",
+            "searchby_res[49]": ">=0",
+            "searchby_res[50]": ">=0",
+            "searchby_res[51]": ">=0",
+            "searchby_res[52]": ">=0",
+            "searchby_res[53]": ">=0",
+            "searchby_res[54]": ">=0",
+            "searchby_res[55]": ">=0",
+            "searchby_res[56]": ">=0",
+            "searchby_res[57]": ">=0",
+            "searchby_res[58]": ">=0",
+            "searchby_res[59]": ">=0",
+            "searchby_res[60]": ">=0",
+            "searchby_res[61]": ">=0",
+            "searchby_res[62]": ">=0",
+            "searchby_res[63]": ">=0",
+            "searchby_res[64]": ">=0",
+            "searchby_res[65]": ">=0",
+            "searchby_res[66]": ">=0",
+            "searchby_res[67]": ">=0",
+            "searchby_res[68]": ">=0",
+            "searchby_res[69]": ">=0",
+            "searchby_res[70]": ">=0",
+            "searchby_res[71]": ">=0",
+            "searchby_res[72]": ">=0",
+            "searchby_res[73]": ">=0",
+            "searchby_res[74]": ">=0",
+            "searchby_res[75]": ">=0",
+            "searchby_res[76]": ">=0",
+            "searchby_res[77]": ">=0",
+            "searchby_res[78]": ">=0",
+            "searchby_res[79]": ">=0",
+            "searchby_res[80]": ">=0",
+            "searchby_res[81]": ">=0",
+            "searchby_res[82]": ">=0",
+            "searchby_res[83]": ">=0",
+            "searchby_res[84]": ">=0",
+            "searchby_res[85]": ">=0",
+            "searchby_res[86]": ">=0",
+            "searchby_res[87]": ">=0",
+            "searchby_res[88]": ">=0",
+            "searchby_res[89]": ">=0",
+            "searchby_res[90]": ">=0",
+            "searchby_res[91]": ">=0",
+            "searchby_res[92]": ">=0",
+            "searchby_res[93]": ">=0",
+            "searchby_res[94]": ">=0",
+            "searchby_res[95]": ">=0",
+            "searchby_res[96]": ">=0",
+            "searchby_res[97]": ">=0",
+            "searchby_res[98]": ">=0",
+            "searchby_res[99]": ">=0",
+            "searchby_res[100]": ">=0",
+            "searchby_res[101]": ">=0",
+            "searchby_res[102]": ">=0",
+            "searchby_res[103]": ">=0",
+            "searchby_res[104]": ">=0",
+            "searchby_res[105]": ">=0",
+            "searchby_res[106]": ">=0",
+            "searchby_res[107]": ">=0",
+            "searchby_res[108]": ">=0",
+            "searchby_res[109]": ">=0",
+            "searchby_res[110]": ">=0",
+            "searchby_res[111]": ">=0",
+            "searchby_res[112]": ">=0",
+            "searchby_res[113]": ">=0",
+            "searchby_res[114]": ">=0",
+            "searchby_res[115]": ">=0",
+            "searchby_res[116]": ">=0",
+            "searchby_res[117]": ">=0",
+            "searchby_res[118]": ">=0",
+            "searchby_res[119]": ">=0",
+            "searchby_res[120]": ">=0",
+            "searchby_res[121]": ">=0",
+            "searchby_res[122]": ">=0",
+            "searchby_res[123]": ">=0",
+            "searchby_res[124]": ">=0",
+            "searchby_res[125]": ">=0",
+            "searchby_res[126]": ">=0",
+            "searchby_res[127]": ">=0",
+            "searchby_res[128]": ">=0",
+            "searchby_res[129]": ">=0",
+            "searchby_res[130]": ">=0",
+            "searchby_res[131]": ">=0",
+            "searchby_res[132]": ">=0",
+            "searchby_res[133]": ">=0",
+            "searchby_res[134]": ">=0",
+            "searchby_res[135]": ">=0",
+            "searchby_res[136]": ">=0",
+            "searchby_res[137]": ">=0",
+            "searchby_res[138]": ">=0",
+            "searchby_res[139]": ">=0",
+            "searchby_res[140]": ">=0",
+            "searchby_res[141]": ">=0",
+            "searchby_res[142]": ">=0",
+            "searchby_res[143]": ">=0",
+            "searchby_res[144]": ">=0",
+            "searchby_res[145]": ">=0",
+            "searchby_res[146]": ">=0",
+            "searchby_res[147]": ">=0",
+            "searchby_res[148]": ">=0",
+            "searchby_res[149]": ">=0",
+            "searchby_res[150]": ">=0",
+            "searchby_res[151]": ">=0",
+            "searchby_res[152]": ">=0",
+            "searchby_res[153]": ">=0",
+            "searchby_res[154]": ">=0",
+            "searchby_res[155]": ">=0",
+            "searchby_res[156]": ">=0",
+            "searchby_res[157]": ">=0",
+            "searchby_res[158]": ">=0",
+            "searchby_res[159]": ">=0",
+            "searchby_res[160]": ">=0",
+            "searchby_res[161]": ">=0",
+            "searchby_res[162]": ">=0",
+            "searchby_res[163]": ">=0",
+            "searchby_res[164]": ">=0",
+            "searchby_res[165]": ">=0",
+            "searchby_res[166]": ">=0",
+            "searchby_res[167]": ">=0",
+            "searchby_res[168]": ">=0",
+            "searchby_res[169]": ">=0",
+            "searchby_res[170]": ">=0",
+            "searchby_res[171]": ">=0",
+            "searchby_res[172]": ">=0",
+            "searchby_res[173]": ">=0",
+            "searchby_res[174]": ">=0",
+            "searchby_res[175]": ">=0",
+            "searchby_res[176]": ">=0",
+            "searchby_res[177]": ">=0",
+            "searchby_res[178]": ">=0",
+            "searchby_res[179]": ">=0",
+            "searchby_res[180]": ">=0",
+            "searchby_res[181]": ">=0",
+            "searchby_res[182]": ">=0",
+            "searchby_res[183]": ">=0",
+            "searchby_res[184]": ">=0",
+            "searchby_res[185]": ">=0",
+            "searchby_res[186]": ">=0",
+            "searchby_res[187]": ">=0",
+            "searchby_res[188]": ">=0",
+            "searchby_res[189]": ">=0",
+            "searchby_res[190]": ">=0",
+            "searchby_res[191]": ">=0",
+            "searchby_res[192]": ">=0",
+            "searchby_res[193]": ">=0",
+            "searchby_res[194]": ">=0",
+            "searchby_res[195]": ">=0",
+            "searchby_res[196]": ">=0",
+            "searchby_res[197]": ">=0",
+            "searchby_res[198]": ">=0",
+            "searchby_res[199]": ">=0",
+            "searchby_res[200]": ">=0",
+            "searchby_res[201]": ">=0",
+            "searchby_res[202]": ">=0",
+            "searchby_res[203]": ">=0",
+            "searchby_res[204]": ">=0",
+            "searchby_res[205]": ">=0",
+            "searchby_res[206]": ">=0",
+            "searchby_res[207]": ">=0",
+            "searchby_res[208]": ">=0",
+            "searchby_res[209]": ">=0",
+            "searchby_res[210]": ">=0",
+            "searchby_res[211]": ">=0",
+            "searchby_res[212]": ">=0",
+            "searchby_res[213]": ">=0",
+            "searchby_res[214]": ">=0",
+            "searchby_res[215]": ">=0",
+            "searchby_res[216]": ">=0",
+            "searchby_res[217]": ">=0",
+            "searchby_res[218]": ">=0",
+            "searchby_res[219]": ">=0",
+            "searchby_res[220]": ">=0",
+            "searchby_res[221]": ">=0",
+            "searchby_res[222]": ">=0",
+            "searchby_res[223]": ">=0",
+            "searchby_res[224]": ">=0",
+            "searchby_res[225]": ">=0",
+            "searchby_res[226]": ">=0",
+            "searchby_res[227]": ">=0",
+            "searchby_res[228]": ">=0",
+            "searchby_res[229]": ">=0",
+            "searchby_res[230]": ">=0",
+            "searchby_res[231]": ">=0",
+            "searchby_res[232]": ">=0",
+            "searchby_res[233]": ">=0",
+            "searchby_res[234]": ">=0",
+            "searchby_res[235]": ">=0",
+            "searchby_res[236]": ">=0",
+            "searchby_res[237]": ">=0",
+            "searchby_res[238]": ">=0",
+            "searchby_res[239]": ">=0",
+            "searchby_res[240]": ">=0",
+            "searchby_res[241]": ">=0",
+            "searchby_res[242]": ">=0",
+            "searchby_res[243]": ">=0",
+            "searchby_res[244]": ">=0",
+            "searchby_res[245]": ">=0",
+            "searchby_res[246]": ">=0",
+            "searchby_res[247]": ">=0",
+            "searchby_res[248]": ">=0",
+            "searchby_res[249]": ">=0",
+            "searchby_res[250]": ">=0",
+            "searchby_res[251]": ">=0",
+            "searchby_res[252]": ">=0",
+            "searchby_res[253]": ">=0",
+            "searchby_res[254]": ">=0",
+            "searchby_res[255]": ">=0"
+        },
+        "post": {
+            "return": "in [>0, negative number]"
+        }
+    }
+},
+{
+    "bpf_store_hdr_opt": {
+        "description": "Store header option. The data will be copied from buffer *from* with length *len* to the TCP header.",
+        "pre": {
+            "skops": "!=null",
+            "from": "!=null",
+            "len": ">=0",
+            "flags": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        },
+        "errors": {
+            "-EINVAL": "If param is invalid.",
+            "-ENOSPC": "if there is not enough space in the header. Nothing has been written",
+            "-EEXIST": "if the option already exists.",
+            "-EFAULT": "on failure to parse the existing header options.",
+            "-EPERM": "if the helper cannot be used under the current *skops*->op."
+        }
+    }
+},
+{
+    "bpf_reserve_hdr_opt": {
+        "description": "Reserve *len* bytes for the bpf header option. The space will be used by bpf_store_hdr_opt() later in BPF_SOCK_OPS_WRITE_HDR_OPT_CB.",
+        "pre": {
+            "skops": "!=null",
+            "len": ">=0",
+            "flags": "not in [BPF_F_NO_PREALLOC, BPF_F_HDR_OPT]",
+            "skops->op": "==BPF_SOCK_OPS_HDR_OPT_LEN_CB"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        },
+        "errors": {
+            "-EINVAL": "Invalid parameter",
+            "-ENOSPC": "Not enough space in the header",
+            "-EPERM": "Cannot be used under the current skops->op"
+        }
+    }
+},
+{
+    "bpf_inode_storage_get": {
+        "description": "Get a bpf_local_storage from an *inode*.",
+        "pre": {
+            "map": "!=null",
+            "inode": "!=null",
+            "value": "!=null",
+            "flags": "in [BPF_LOCAL_STORAGE_GET_F_CREATE]",
+            "map_type": "== BPF_MAP_TYPE_INODE_STORAGE"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_inode_storage_delete": {
+        "description": "Delete a bpf_local_storage from an *inode*.",
+        "pre": {
+            "map": "!=null",
+            "inode": "!=null"
+        },
+        "post": {
+            "return": "in [0]"
+        }
+    }
+},
+{
+    "bpf_d_path": {
+        "description": "Return full path for given **struct path** object, which needs to be the kernel BTF *path* object. The path is returned in the provided buffer *buf* of size *sz* and is zero terminated.",
+        "pre": {
+            "path": "!=null",
+            "buf": "!=null",
+            "sz": "!=null"
+        },
+        "post": {
+            "return": "in [positive number, negative number]"
+        }
+    }
+},
+{
+    "bpf_copy_from_user": {
+        "description": "Read *size* bytes from user space address *user_ptr* and store the data in *dst*. This is a wrapper of **copy_from_user**().",
+        "pre": {
+            "dst": "!=null",
+            "size": "!=null",
+            "user_ptr": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_snprintf_btf": {
+        "description": "Use BTF to store a string representation of *ptr*->ptr in *str*, using *ptr*->type_id. The string can be subsequently shared with userspace via bpf_perf_event_output() or ring buffer interfaces. *flags* is a combination of BTF_F_COMPACT, BTF_F_NONAME, BTF_F_PTR_RAW, and BTF_F_ZERO.",
+        "pre": {
+            "str": "!=null",
+            "str_size": "!=null",
+            "ptr": "!=null",
+            "btf_ptr_size": "!=null",
+            "flags": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_seq_printf_btf": {
+        "description": "Use BTF to write to seq_write a string representation of *ptr*->ptr, using *ptr*->type_id as per bpf_snprintf_btf(). *flags* are identical to those used for bpf_snprintf_btf.",
+        "pre": {
+            "m": "!=null",
+            "ptr": "!=null",
+            "ptr_size": "!=null",
+            "flags": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_cgroup_classid": {
+        "description": "Retrieve the cgroup classid from the skb's associated socket.",
+        "pre": {
+            "skb": "!=null"
+        },
+        "post": {
+            "return": "in [0, positive number]"
+        }
+    }
+},
+{
+    "bpf_redirect_neigh": {
+        "description": "Redirect the packet to another net device of index *ifindex* and fill in L2 addresses from neighboring subsystem.",
+        "pre": {
+            "ifindex": "!=null",
+            "params": "!=null",
+            "plen": ">=0",
+            "flags": "==0"
+        },
+        "post": {
+            "return": "in [TC_ACT_REDIRECT, TC_ACT_SHOT]"
+        }
+    }
+},
+{
+    "bpf_per_cpu_ptr": {
+        "description": "Take a pointer to a percpu ksym, *percpu_ptr*, and return a pointer to the percpu kernel variable on *cpu*.",
+        "pre": {
+            "percpu_ptr": "!=null",
+            "cpu": ">=0",
+            "cpu": "<nr_cpu_ids"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_this_cpu_ptr": {
+        "description": "Take a pointer to a percpu ksym, *percpu_ptr*, and return a pointer to the percpu kernel variable on this cpu. See the description of 'ksym' in bpf_per_cpu_ptr(). bpf_this_cpu_ptr() has the same semantic as this_cpu_ptr() in the kernel. Different from bpf_per_cpu_ptr(), it would never return NULL.",
+        "pre": {
+            "percpu_ptr": "!=null"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_redirect_peer": {
+        "description": "Redirect the packet to another net device of index *ifindex*.",
+        "pre": {
+            "ifindex": "!=null",
+            "flags": "==0"
+        },
+        "post": {
+            "return": "in [TC_ACT_REDIRECT, TC_ACT_SHOT]"
+        }
+    }
+},
+{
+    "bpf_task_storage_get": {
+        "description": "Get a bpf_local_storage from the *task*.",
+        "pre": {
+            "map": "!=null",
+            "task": "!=null",
+            "value": "!=null",
+            "flags": "in [BPF_LOCAL_STORAGE_GET_F_CREATE]",
+            "map_type": "== BPF_MAP_TYPE_TASK_STORAGE"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_task_storage_delete": {
+        "description": "Delete a bpf_local_storage from a *task*.",
+        "pre": {
+            "map": "!=null",
+            "task": "!=null"
+        },
+        "post": {
+            "return": "in [0]"
+        }
+    }
+},
+{
+    "bpf_get_current_task_btf": {
+        "description": "Return a BTF pointer to the 'current' task. This pointer can also be used in helpers that accept an ARG_PTR_TO_BTF_ID of type task_struct.",
+        "pre": {},
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_bprm_opts_set": {
+        "description": "Set or clear certain options on *bprm*",
+        "pre": {
+            "bprm": "!=null",
+            "flags": "in [BPF_F_BPRM_SECUREEXEC]"
+        },
+        "post": {
+            "return": "in [-EINVAL, 0]"
+        }
+    }
+},
+{
+    "bpf_ktime_get_coarse_ns": {
+        "description": "Return a coarse-grained version of the time elapsed since system boot, in nanoseconds. Does not include time the system was suspended.",
+        "pre": {},
+        "post": {
+            "return": ">= 0"
+        }
+    }
+},
+{
+    "bpf_ima_inode_hash": {
+        "description": "Returns the stored IMA hash of the *inode* (if it's available). If the hash is larger than *size*, then only *size* bytes will be copied to *dst*.",
+        "pre": {
+            "inode": "!=null",
+            "dst": "!=null",
+            "size": ">=0"
+        },
+        "post": {
+            "return": "in [hash_algo, -EOPNOTSUP, -EINVAL]"
+        }
+    }
+},
+{
+    "bpf_sock_from_file": {
+        "description": "If the given file represents a socket, returns the associated socket.",
+        "pre": {
+            "file": "!=null"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_check_mtu": {
+        "description": "Check packet size against exceeding MTU of net device.",
+        "pre": {
+            "ctx": "!=null",
+            "ifindex": "!=null",
+            "mtu_len": "!=null",
+            "len_diff": "!=null",
+            "flags": "in [0, BPF_MTU_CHK_SEGS]",
+            "mtu_len": ">=0"
+        },
+        "post": {
+            "return": "in [0, negative number, BPF_MTU_CHK_RET_FRAG_NEEDED, BPF_MTU_CHK_RET_SEGS_TOOBIG]",
+            "mtu_len": ">=0"
+        }
+    }
+},
+{
+    "bpf_for_each_map_elem": {
+        "description": "For each element in **map**, call **callback_fn** function with **map**, **callback_ctx** and other map-specific parameters.",
+        "pre": {
+            "map": "!=null",
+            "callback_fn": "!=null",
+            "callback_ctx": "!=null",
+            "flags": "==0",
+            "map_type": "in [BPF_MAP_TYPE_HASH, BPF_MAP_TYPE_PERCPU_HASH, BPF_MAP_TYPE_LRU_HASH, BPF_MAP_TYPE_LRU_PERCPU_HASH, BPF_MAP_TYPE_ARRAY, BPF_MAP_TYPE_PERCPU_ARRAY]"
+        },
+        "post": {
+            "return": ">=-EINVAL"
+        }
+    }
+},
+{
+    "bpf_snprintf": {
+        "description": "Outputs a string into the **str** buffer of size **str_size** based on a format string stored in a read-only map pointed by **fmt**.",
+        "pre": {
+            "str": "!=null",
+            "str_size": "!=null",
+            "fmt": "!=null",
+            "data": "!=null",
+            "data_len": "!=null",
+            "data_len": "% 8 == 0"
+        },
+        "post": {
+            "return": "in [1, positive number]",
+            "str": "!=null",
+            "str": "length <= str_size"
+        }
+    }
+},
+{
+    "bpf_sys_bpf": {
+        "description": "Execute bpf syscall with given arguments.",
+        "pre": {
+            "cmd": "!=null",
+            "attr": "!=null",
+            "attr_size": "!=null"
+        },
+        "post": {
+            "return": "syscall result"
+        }
+    }
+},
+{
+    "bpf_btf_find_by_name_kind": {
+        "description": "Find BTF type with given name and kind in vmlinux BTF or in module's BTFs.",
+        "pre": {
+            "name": "!=null",
+            "name_sz": ">=0",
+            "kind": ">=0",
+            "flags": ">=0"
+        },
+        "post": {
+            "return": "btf_id and btf_obj_fd in lower and upper 32 bits"
+        }
+    }
+},
+{
+    "bpf_sys_close": {
+        "description": "Execute close syscall for given FD.",
+        "pre": {
+            "fd": "!=null"
+        },
+        "post": {
+            "return": "syscall result"
+        }
+    }
+},
+{
+    "bpf_timer_init": {
+        "description": "Initialize the timer.",
+        "pre": {
+            "timer": "!=null",
+            "map": "!=null",
+            "flags": "in [CLOCK_MONOTONIC, CLOCK_REALTIME, CLOCK_BOOTTIME]"
+        },
+        "post": {
+            "return": "in [0, -EBUSY, -EINVAL, -EPERM]"
+        }
+    }
+},
+{
+    "bpf_timer_set_callback": {
+        "description": "Configure the timer to call *callback_fn* static function.",
+        "pre": {
+            "timer": "!=null",
+            "callback_fn": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_timer_start": {
+        "description": "Set timer expiration N nanoseconds from the current time.",
+        "pre": {
+            "timer": "!=null",
+            "nsecs": "!=null",
+            "flags": "in [BPF_F_TIMER_ABS]"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_timer_cancel": {
+        "description": "Cancel the timer and wait for callback_fn to finish if it was running.",
+        "pre": {
+            "timer": "!=null"
+        },
+        "post": {
+            "return": "in [0, 1, -EINVAL, -EDEADLK]"
+        }
+    }
+},
+{
+    "bpf_get_func_ip": {
+        "description": "Get address of the traced function (for tracing and kprobe programs).",
+        "pre": {},
+        "post": {
+            "return": ">= 0"
+        }
+    }
+},
+{
+    "bpf_get_attach_cookie": {
+        "description": "Get bpf_cookie value provided (optionally) during the program attachment. It might be different for each individual attachment, even if BPF program itself is the same. Expects BPF program context *ctx* as a first argument. Supported for the following program types: - kprobe/uprobe; - tracepoint; - perf_event.",
+        "pre": {
+            "ctx": "!=null"
+        },
+        "post": {
+            "return": ">=0"
+        }
+    }
+},
+{
+    "bpf_task_pt_regs": {
+        "description": "Get the struct pt_regs associated with task.",
+        "pre": {
+            "task": "!=null"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_get_branch_snapshot": {
+        "description": "Get branch trace from hardware engines like Intel LBR.",
+        "pre": {
+            "entries": "!=null",
+            "size": "!=null",
+            "flags": "==0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_trace_vprintk": {
+        "description": "Behaves like bpf_trace_printk helper, but takes an array of u64 to format and can handle more format args as a result.",
+        "pre": {
+            "fmt": "!=null",
+            "fmt_size": "!=null",
+            "data": "!=null",
+            "data_len": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skc_to_unix_sock": {
+        "description": "Dynamically cast a *sk* pointer to a *unix_sock* pointer.",
+        "pre": {
+            "sk": "!=null"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_kallsyms_lookup_name": {
+        "description": "Get the address of a kernel symbol, returned in *res*. *res* is set to 0 if the symbol is not found.",
+        "pre": {
+            "name": "!=null",
+            "name_sz": "!=null",
+            "flags": "==0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        },
+        "errors": {
+            "-EINVAL": "if *flags* is not zero",
+            "-EINVAL": "if string *name* is not the same size as *name_sz*",
+            "-ENOENT": "if symbol is not found",
+            "-EPERM": "if caller does not have permission to obtain kernel address"
+        }
+    }
+},
+{
+    "bpf_find_vma": {
+        "description": "Find vma of *task* that contains *addr*, call *callback_fn* function with *task*, *vma*, and *callback_ctx*.",
+        "pre": {
+            "task": "!=null",
+            "addr": "!=null",
+            "callback_fn": "!=null",
+            "callback_ctx": "!=null",
+            "flags": "==0"
+        },
+        "post": {
+            "return": "in [0, -ENOENT, -EBUSY, -EINVAL]"
+        }
+    }
+},
+{
+    "bpf_loop": {
+        "description": "For nr_loops, call callback_fn function with callback_ctx as the context parameter. The callback_fn should be a static function and the callback_ctx should be a pointer to the stack. The flags is used to control certain aspects of the helper. Currently, the flags must be 0. Currently, nr_loops is limited to 1 << 23 (~8 million) loops.",
+        "pre": {
+            "nr_loops": "!=null",
+            "callback_fn": "!=null",
+            "callback_ctx": "!=null",
+            "flags": "==0"
+        },
+        "post": {
+            "return": "in [-E2BIG, -EINVAL, 0, 1]"
+        }
+    }
+},
+{
+    "bpf_strncmp": {
+        "description": "Do strncmp() between **s1** and **s2**. **s1** doesn't need to be null-terminated and **s1_sz** is the maximum storage size of **s1**. **s2** must be a read-only string.",
+        "pre": {
+            "s1": "!=null",
+            "s1_sz": ">=0",
+            "s2": "!=null"
+        },
+        "post": {
+            "return": "in [-1, 0, 1]"
+        }
+    }
+},
+{
+    "bpf_get_func_arg": {
+        "description": "Get the n-th argument register of the traced function (for tracing programs) and store it in value.",
+        "pre": {
+            "ctx": "!=null",
+            "n": ">=0",
+            "value": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_get_func_ret": {
+        "description": "Get return value of the traced function (for tracing programs) in **value**.",
+        "pre": {
+            "ctx": "!=null",
+            "value": "!=null"
+        },
+        "post": {
+            "return": "in [0, -EOPNOTSUPP]"
+        }
+    }
+},
+{
+    "bpf_get_func_arg_cnt": {
+        "description": "Get number of registers of the traced function (for tracing programs) where function arguments are stored in these registers.",
+        "pre": {},
+        "post": {
+            "return": ">= 0"
+        }
+    }
+},
+{
+    "bpf_get_retval": {
+        "description": "Get the BPF program's return value that will be returned to the upper layers.",
+        "pre": {},
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_set_retval": {
+        "description": "Set the BPF program's return value that will be returned to the upper layers.",
+        "pre": {
+            "retval": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_xdp_get_buff_len": {
+        "description": "Get the total size of a given xdp buff (linear and paged area).",
+        "pre": {
+            "xdp_md": "!=null"
+        },
+        "post": {
+            "return": ">= 0"
+        }
+    }
+},
+{
+    "bpf_xdp_load_bytes": {
+        "description": "This helper is provided as an easy way to load data from a xdp buffer. It can be used to load *len* bytes from *offset* from the frame associated to *xdp_md*, into the buffer pointed by *buf*.",
+        "pre": {
+            "xdp_md": "!=null",
+            "offset": ">=0",
+            "buf": "!=null",
+            "len": ">=0"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_xdp_store_bytes": {
+        "description": "Store *len* bytes from buffer *buf* into the frame associated to *xdp_md*, at *offset*.",
+        "pre": {
+            "xdp_md": "!=null",
+            "offset": "!=null",
+            "buf": "!=null",
+            "len": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_copy_from_user_task": {
+        "description": "Read *size* bytes from user space address *user_ptr* in *tsk*'s address space, and stores the data in *dst*. *flags* is not used yet and is provided for future extensibility. This helper can only be used by sleepable programs.",
+        "pre": {
+            "dst": "!=null",
+            "size": "!=null",
+            "user_ptr": "!=null",
+            "tsk": "!=null",
+            "flags": "any"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_skb_set_tstamp": {
+        "description": "Change the __sk_buff->tstamp_type to *tstamp_type* and set *tstamp* to the __sk_buff->tstamp together.",
+        "pre": {
+            "skb": "!=null",
+            "tstamp": "!=null",
+            "tstamp_type": "!=null",
+            "skb->protocol": "in [IPv4, IPv6]"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_ima_file_hash": {
+        "description": "Returns a calculated IMA hash of the *file*. If the hash is larger than *size*, then only *size* bytes will be copied to *dst*.",
+        "pre": {
+            "file": "!=null",
+            "dst": "!=null",
+            "size": ">=0"
+        },
+        "post": {
+            "return": "in [0, -EOPNOTSUP, -EINVAL]"
+        }
+    }
+},
+{
+    "bpf_kptr_xchg": {
+        "description": "Exchange kptr at pointer *map_value* with *ptr*, and return the old value. *ptr* can be NULL, otherwise it must be a referenced pointer which will be released when this helper is called.",
+        "pre": {
+            "map_value": "!=null",
+            "ptr": "any"
+        },
+        "post": {
+            "return": "any"
+        }
+    }
+},
+{
+    "bpf_map_lookup_percpu_elem": {
+        "description": "Perform a lookup in *percpu map* for an entry associated to *key* on *cpu*.",
+        "pre": {
+            "map": "!=null",
+            "key": "!=null",
+            "cpu": "valid"
+        },
+        "post": {
+            "return": "!=NULL"
+        }
+    }
+},
+{
+    "bpf_skc_to_mptcp_sock": {
+        "description": "Dynamically cast a *sk* pointer to a *mptcp_sock* pointer.",
+        "pre": {
+            "sk": "!=null"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_dynptr_from_mem": {
+        "description": "Get a dynptr to local memory *data*.",
+        "pre": {
+            "data": "!=null",
+            "size": ">=0 and <=DYNPTR_MAX_SIZE",
+            "flags": "==0"
+        },
+        "post": {
+            "return": "in [0, -E2BIG, -EINVAL]"
+        }
+    }
+},
+{
+    "bpf_ringbuf_reserve_dynptr": {
+        "description": "Reserve *size* bytes of payload in a ring buffer *ringbuf* through the dynptr interface. *flags* must be 0.",
+        "pre": {
+            "ringbuf": "!=null",
+            "size": "!=null",
+            "flags": "==0",
+            "ptr": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_ringbuf_submit_dynptr": {
+        "description": "Submit reserved ring buffer sample, pointed to by *data*, through the dynptr interface. This is a no-op if the dynptr is invalid/null.",
+        "pre": {
+            "ptr": "!=null",
+            "flags": "in [0, positive number]"
+        },
+        "post": {
+            "return": "undefined"
+        }
+    }
+},
+{
+    "bpf_ringbuf_discard_dynptr": {
+        "description": "Discard reserved ring buffer sample through the dynptr interface. This is a no-op if the dynptr is invalid/null.",
+        "pre": {
+            "ptr": "!=null",
+            "flags": "in [0, positive number]"
+        },
+        "post": {
+            "return": "undefined"
+        }
+    }
+},
+{
+    "bpf_dynptr_read": {
+        "description": "Read *len* bytes from *src* into *dst*, starting from *offset* into *src*.",
+        "pre": {
+            "dst": "!=null",
+            "len": ">=0",
+            "src": "!=null",
+            "offset": ">=0",
+            "flags": "==0"
+        },
+        "post": {
+            "return": "in [0, -E2BIG, -EINVAL]"
+        }
+    }
+},
+{
+    "bpf_dynptr_write": {
+        "description": "Write *len* bytes from *src* into *dst*, starting from *offset* into *dst*.",
+        "pre": {
+            "dst": "!=null",
+            "offset": ">=0",
+            "src": "!=null",
+            "len": ">=0",
+            "flags": "=0 for non-skb-type dynptrs, see **bpf_skb_store_bytes**() for skb-type dynptrs"
+        },
+        "post": {
+            "return": "in [0, -E2BIG, -EINVAL, other errors for skb-type dynptrs]"
+        }
+    }
+},
+{
+    "bpf_dynptr_data": {
+        "description": "Get a pointer to the underlying dynptr data.",
+        "pre": {
+            "ptr": "!=null",
+            "offset": "!=null",
+            "len": "!=null"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_tcp_raw_gen_syncookie_ipv4": {
+        "description": "Try to issue a SYN cookie for the packet with corresponding IPv4/TCP headers, *iph* and *th*, without depending on a listening socket.",
+        "pre": {
+            "iph": "!=null",
+            "th": "!=null",
+            "th_len": ">= sizeof(struct tcphdr)"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_tcp_raw_gen_syncookie_ipv6": {
+        "description": "Try to issue a SYN cookie for the packet with corresponding IPv6/TCP headers, *iph* and *th*, without depending on a listening socket.",
+        "pre": {
+            "iph": "!=null",
+            "th": "!=null",
+            "th_len": ">= sizeof(struct tcphdr)"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+},
+{
+    "bpf_tcp_raw_check_syncookie_ipv4": {
+        "description": "Check whether *iph* and *th* contain a valid SYN cookie ACK without depending on a listening socket.",
+        "pre": {
+            "iph": "!=null",
+            "th": "!=null"
+        },
+        "post": {
+            "return": "in [0, -EACCES]"
+        }
+    }
+},
+{
+    "bpf_tcp_raw_check_syncookie_ipv6": {
+        "description": "Check whether *iph* and *th* contain a valid SYN cookie ACK without depending on a listening socket.",
+        "pre": {
+            "iph": "!=null",
+            "th": "!=null"
+        },
+        "post": {
+            "return": "in [0, -EACCES, -EPROTONOSUPPORT]"
+        }
+    }
+},
+{
+    "bpf_ktime_get_tai_ns": {
+        "description": "A nonsettable system-wide clock derived from wall-clock time but ignoring leap seconds. This clock does not experience discontinuities and backwards jumps caused by NTP inserting leap seconds as CLOCK_REALTIME does.",
+        "pre": {},
+        "post": {
+            "return": "Current ktime."
+        }
+    }
+},
+{
+    "bpf_user_ringbuf_drain": {
+        "description": "Drain samples from the specified user ring buffer and invoke the provided callback for each sample.",
+        "pre": {
+            "map": "!=null",
+            "callback_fn": "!=null",
+            "ctx": "!=null",
+            "flags": "in [BPF_RB_NO_WAKEUP, BPF_RB_FORCE_WAKEUP]"
+        },
+        "post": {
+            "return": "in [-EBUSY, -EINVAL, -E2BIG, 0, positive number]"
+        }
+    }
+},
+{
+    "bpf_cgrp_storage_get": {
+        "description": "Get a bpf_local_storage from the *cgroup*.",
+        "pre": {
+            "map": "!=null",
+            "cgroup": "!=null",
+            "value": "!=null",
+            "flags": "in [BPF_LOCAL_STORAGE_GET_F_CREATE]",
+            "map_type": "== BPF_MAP_TYPE_CGRP_STORAGE"
+        },
+        "post": {
+            "return": "!=null"
+        }
+    }
+},
+{
+    "bpf_cgrp_storage_delete": {
+        "description": "Delete a bpf_local_storage from a *cgroup*.",
+        "pre": {
+            "map": "!=null",
+            "cgroup": "!=null"
+        },
+        "post": {
+            "return": "in [0, negative number]"
+        }
+    }
+}
+]
